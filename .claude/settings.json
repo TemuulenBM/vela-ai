@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Read:*",
+      "Bash:git:*",
+      "Bash:npm:*",
+      "Bash:npx:*",
+      "Bash:node:*",
+      "Bash:pnpm:*"
+    ],
+    "deny": [
+      "Read:env:*",
+      "Bash:sudo:*",
+      "Bash:rm -rf:*"
+    ]
+  }
+}
