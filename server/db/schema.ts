@@ -14,6 +14,7 @@ import {
   index,
   customType,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 // ─── Custom Types ──────────────────────────────────────────────
 const vector = customType<{ data: number[]; driverParam: string }>({
@@ -32,11 +33,30 @@ const vector = customType<{ data: number[]; driverParam: string }>({
 export const planEnum = pgEnum("plan_enum", ["free", "starter", "growth", "pro"]);
 
 export const eventTypeEnum = pgEnum("event_type_enum", [
+  "page_view",
   "product_view",
   "add_to_cart",
+  "checkout_started",
   "checkout_completed",
+  "recommendation_clicked",
   "chat_interaction",
   "search_query",
+]);
+
+export const channelEnum = pgEnum("channel_enum", ["web", "messenger", "email"]);
+
+export const convStatusEnum = pgEnum("conv_status_enum", [
+  "active",
+  "resolved",
+  "abandoned",
+  "escalated",
+]);
+
+export const subStatusEnum = pgEnum("sub_status_enum", [
+  "active",
+  "past_due",
+  "canceled",
+  "trialing",
 ]);
 
 export const paymentProviderEnum = pgEnum("payment_provider", ["qpay", "socialpay"]);
@@ -48,7 +68,7 @@ export const paymentStatusEnum = pgEnum("payment_status", [
   "refunded",
 ]);
 
-export const memberRoleEnum = pgEnum("member_role", ["member", "owner", "admin"]);
+export const memberRoleEnum = pgEnum("member_role", ["owner", "admin", "member", "viewer"]);
 
 export const messageRoleEnum = pgEnum("message_role", ["user", "assistant", "system", "tool"]);
 
@@ -113,7 +133,13 @@ export const products = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
-  (table) => [index("products_tenant_id_idx").on(table.tenantId)],
+  (table) => [
+    index("products_tenant_id_idx").on(table.tenantId),
+    index("products_embedding_idx").using("hnsw", sql`${table.embedding} vector_cosine_ops`),
+    index("products_tenant_category_idx")
+      .on(table.tenantId, table.category)
+      .where(sql`${table.deletedAt} IS NULL`),
+  ],
 );
 
 export const productImages = pgTable("product_images", {
@@ -197,8 +223,8 @@ export const conversations = pgTable(
     shopperId: uuid("shopper_id")
       .notNull()
       .references(() => shoppers.id),
-    channel: varchar("channel", { length: 50 }).notNull().default("web"),
-    status: varchar("status", { length: 50 }).notNull().default("active"),
+    channel: channelEnum("channel").notNull().default("web"),
+    status: convStatusEnum("status").notNull().default("active"),
     summary: text("summary"),
     metadata: jsonb("metadata"),
     rating: integer("rating"),
@@ -209,6 +235,11 @@ export const conversations = pgTable(
   (table) => [
     index("conversations_tenant_id_idx").on(table.tenantId),
     index("conversations_shopper_id_idx").on(table.shopperId),
+    index("conversations_tenant_status_created_idx").on(
+      table.tenantId,
+      table.status,
+      table.createdAt,
+    ),
   ],
 );
 
@@ -229,7 +260,10 @@ export const messages = pgTable(
     metadata: jsonb("metadata"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
-  (table) => [index("messages_conversation_id_idx").on(table.conversationId)],
+  (table) => [
+    index("messages_conversation_id_idx").on(table.conversationId),
+    index("messages_conversation_created_idx").on(table.conversationId, table.createdAt),
+  ],
 );
 
 // ─── ANALYTICS ─────────────────────────────────────────────────
@@ -242,6 +276,7 @@ export const events = pgTable(
       .references(() => tenants.id),
     shopperId: uuid("shopper_id").references(() => shoppers.id),
     conversationId: uuid("conversation_id").references(() => conversations.id),
+    sessionId: varchar("session_id", { length: 255 }),
     eventType: eventTypeEnum("event_type").notNull(),
     metadata: jsonb("metadata"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -250,6 +285,8 @@ export const events = pgTable(
     index("events_tenant_id_idx").on(table.tenantId),
     index("events_event_type_idx").on(table.eventType),
     index("events_created_at_idx").on(table.createdAt),
+    index("events_tenant_type_created_idx").on(table.tenantId, table.eventType, table.createdAt),
+    index("events_tenant_session_idx").on(table.tenantId, table.sessionId),
   ],
 );
 
@@ -289,7 +326,7 @@ export const subscriptions = pgTable(
       .notNull()
       .references(() => tenants.id),
     plan: planEnum("plan").notNull(),
-    status: varchar("status", { length: 50 }).notNull().default("active"),
+    status: subStatusEnum("status").notNull().default("active"),
     qpayInvoiceId: varchar("qpay_invoice_id", { length: 255 }),
     socialPayId: varchar("social_pay_id", { length: 255 }),
     periodStart: timestamp("period_start", { withTimezone: true }).notNull(),
@@ -312,6 +349,7 @@ export const paymentLogs = pgTable("payment_logs", {
   provider: paymentProviderEnum("provider").notNull(),
   providerTxId: varchar("provider_tx_id", { length: 255 }),
   amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+  status: paymentStatusEnum("status").notNull().default("pending"),
   currency: varchar("currency", { length: 3 }).notNull().default("MNT"),
   rawResponse: jsonb("raw_response"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),

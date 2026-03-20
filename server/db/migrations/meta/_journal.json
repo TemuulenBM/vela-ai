@@ -8,6 +8,13 @@
       "when": 1773964382961,
       "tag": "0000_tiny_hairball",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1773970947330,
+      "tag": "0001_bouncy_goblin_queen",
+      "breakpoints": true
     }
   ]
 }

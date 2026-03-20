@@ -1,5 +1,5 @@
 export type PlanType = "free" | "starter" | "growth" | "pro";
-export type MemberRole = "member" | "owner" | "admin";
+export type MemberRole = "owner" | "admin" | "member" | "viewer";
 
 export interface Tenant {
   id: string;
