@@ -28,6 +28,7 @@ The following patterns are hard failures. Never produce them:
 ## Handling Long Outputs
 
 When a response approaches the token limit:
+
 - Do not compress remaining sections.
 - Write at full quality up to a clean breakpoint.
 - End with: `[PAUSED — X of Y complete. Send "continue" to resume from: next section name]`
@@ -36,6 +37,7 @@ When a response approaches the token limit:
 ## Quick Check
 
 Before finalizing any response, verify:
+
 - No banned patterns appear anywhere in the output
 - Every item the user requested is present and finished
 - Code blocks contain actual runnable code, not descriptions

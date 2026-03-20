@@ -9,12 +9,14 @@ allowed tools: Read, Grep, Glob
 When reviewing code, check for:
 
 ### Quality
+
 - TypeScript strict mode compliance
 - Proper error handling (no swallowed errors)
 - No unused imports or variables
 - Functions under 50 lines, files under 300 lines
 
 ### Security
+
 - No API keys or secrets in client code
 - All user input sanitized
 - SQL injection prevention (use Drizzle ORM parameterized queries)
@@ -22,6 +24,7 @@ When reviewing code, check for:
 - tenant_id isolation enforced on all queries
 
 ### Project Conventions
+
 - File naming: `kebab-case.tsx`
 - Components: PascalCase exports
 - Hooks: `use-*.ts` pattern
@@ -30,6 +33,7 @@ When reviewing code, check for:
 - DB columns use snake_case
 
 ### Mongolian E-Commerce Specific
+
 - Price formatting for MNT (Mongolian Tugrik)
 - Mongolian language strings use proper Unicode
 - Payment integration (QPay/SocialPay) error handling

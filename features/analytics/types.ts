@@ -1,4 +1,9 @@
-export type EventType = "product_view" | "add_to_cart" | "checkout_completed" | "chat_interaction" | "search_query";
+export type EventType =
+  | "product_view"
+  | "add_to_cart"
+  | "checkout_completed"
+  | "chat_interaction"
+  | "search_query";
 
 export interface AnalyticsEvent {
   id: string;

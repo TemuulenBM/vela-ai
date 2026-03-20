@@ -24,20 +24,12 @@ const vector = customType<{ data: number[]; driverParam: string }>({
     return `[${value.join(",")}]`;
   },
   fromDriver(value: unknown) {
-    return (value as string)
-      .slice(1, -1)
-      .split(",")
-      .map(Number);
+    return (value as string).slice(1, -1).split(",").map(Number);
   },
 });
 
 // ─── Enums ─────────────────────────────────────────────────────
-export const planEnum = pgEnum("plan_enum", [
-  "free",
-  "starter",
-  "growth",
-  "pro",
-]);
+export const planEnum = pgEnum("plan_enum", ["free", "starter", "growth", "pro"]);
 
 export const eventTypeEnum = pgEnum("event_type_enum", [
   "product_view",
@@ -47,10 +39,7 @@ export const eventTypeEnum = pgEnum("event_type_enum", [
   "search_query",
 ]);
 
-export const paymentProviderEnum = pgEnum("payment_provider", [
-  "qpay",
-  "socialpay",
-]);
+export const paymentProviderEnum = pgEnum("payment_provider", ["qpay", "socialpay"]);
 
 export const paymentStatusEnum = pgEnum("payment_status", [
   "pending",
@@ -59,18 +48,9 @@ export const paymentStatusEnum = pgEnum("payment_status", [
   "refunded",
 ]);
 
-export const memberRoleEnum = pgEnum("member_role", [
-  "member",
-  "owner",
-  "admin",
-]);
+export const memberRoleEnum = pgEnum("member_role", ["member", "owner", "admin"]);
 
-export const messageRoleEnum = pgEnum("message_role", [
-  "user",
-  "assistant",
-  "system",
-  "tool",
-]);
+export const messageRoleEnum = pgEnum("message_role", ["user", "assistant", "system", "tool"]);
 
 // ─── CORE ──────────────────────────────────────────────────────
 export const tenants = pgTable("tenants", {
@@ -133,9 +113,7 @@ export const products = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
-  (table) => [
-    index("products_tenant_id_idx").on(table.tenantId),
-  ],
+  (table) => [index("products_tenant_id_idx").on(table.tenantId)],
 );
 
 export const productImages = pgTable("product_images", {
@@ -168,9 +146,7 @@ export const accounts = pgTable(
     scope: text("scope"),
     idToken: text("id_token"),
   },
-  (table) => [
-    uniqueIndex("accounts_provider_idx").on(table.provider, table.providerAccountId),
-  ],
+  (table) => [uniqueIndex("accounts_provider_idx").on(table.provider, table.providerAccountId)],
 );
 
 export const sessions = pgTable("sessions", {
@@ -187,9 +163,7 @@ export const verificationTokens = pgTable(
     token: varchar("token", { length: 255 }).notNull(),
     expires: timestamp("expires", { withTimezone: true }).notNull(),
   },
-  (table) => [
-    primaryKey({ columns: [table.identifier, table.token] }),
-  ],
+  (table) => [primaryKey({ columns: [table.identifier, table.token] })],
 );
 
 // ─── CHAT ──────────────────────────────────────────────────────
@@ -210,9 +184,7 @@ export const shoppers = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
-  (table) => [
-    index("shoppers_tenant_id_idx").on(table.tenantId),
-  ],
+  (table) => [index("shoppers_tenant_id_idx").on(table.tenantId)],
 );
 
 export const conversations = pgTable(
@@ -257,9 +229,7 @@ export const messages = pgTable(
     metadata: jsonb("metadata"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
-  (table) => [
-    index("messages_conversation_id_idx").on(table.conversationId),
-  ],
+  (table) => [index("messages_conversation_id_idx").on(table.conversationId)],
 );
 
 // ─── ANALYTICS ─────────────────────────────────────────────────
@@ -328,9 +298,7 @@ export const subscriptions = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
-  (table) => [
-    index("subscriptions_tenant_id_idx").on(table.tenantId),
-  ],
+  (table) => [index("subscriptions_tenant_id_idx").on(table.tenantId)],
 );
 
 export const paymentLogs = pgTable("payment_logs", {
@@ -363,7 +331,5 @@ export const usageLogs = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
-  (table) => [
-    uniqueIndex("usage_logs_tenant_month_idx").on(table.tenantId, table.periodMonth),
-  ],
+  (table) => [uniqueIndex("usage_logs_tenant_month_idx").on(table.tenantId, table.periodMonth)],
 );

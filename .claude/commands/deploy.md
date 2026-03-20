@@ -3,6 +3,7 @@
 Deploy the application to Vercel.
 
 ## Steps
+
 1. Run linter: `npm run lint`
 2. Run type check: `npx tsc --noEmit`
 3. Run tests: `npm run test`
@@ -10,6 +11,7 @@ Deploy the application to Vercel.
 5. Deploy: `vercel --prod`
 
 ## Pre-deploy Checklist
+
 - [ ] All tests passing
 - [ ] No TypeScript errors
 - [ ] Environment variables set in Vercel dashboard
