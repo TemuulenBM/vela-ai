@@ -11,12 +11,15 @@ export interface Message {
   createdAt: Date;
 }
 
+export type Channel = "web" | "messenger" | "email";
+export type ConversationStatus = "active" | "resolved" | "abandoned" | "escalated";
+
 export interface Conversation {
   id: string;
   tenantId: string;
   shopperId: string;
-  channel: string;
-  status: string;
+  channel: Channel;
+  status: ConversationStatus;
   summary: string | null;
   metadata: Record<string, unknown> | null;
   rating: number | null;
