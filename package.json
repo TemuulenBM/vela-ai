@@ -14,12 +14,15 @@
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx server/db/seed.ts",
     "db:studio": "drizzle-kit studio",
+    "db:embed": "tsx server/db/seed-embeddings.ts",
     "prepare": "git config core.hooksPath .githooks"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mjs,json,css,md}": "prettier --write"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.63",
+    "@ai-sdk/react": "^3.0.136",
     "@anthropic-ai/sdk": "^0.80.0",
     "@auth/drizzle-adapter": "^1.11.1",
     "@neondatabase/serverless": "^1.0.2",

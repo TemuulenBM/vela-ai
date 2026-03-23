@@ -55,22 +55,30 @@ async function seed() {
   console.log("Created tenant members");
 
   // ─── API Keys ────────────────────────────────────────────────
+  // Test keys: vela_t1_test_key_goosaikhan / vela_t2_test_key_elektronik
+  const apiKey1 = "vela_t1_test_key_goosaikhan";
+  const apiKey2 = "vela_t2_test_key_elektronik";
+  const apiKeyHash1 = await bcrypt.hash(apiKey1, 10);
+  const apiKeyHash2 = await bcrypt.hash(apiKey2, 10);
+
   await db.insert(apiKeys).values([
     {
       tenantId: tenant1.id,
       name: "Test key",
-      keyHash: "test_hash_placeholder_1",
-      keyPrefix: "sk_test_",
+      keyHash: apiKeyHash1,
+      keyPrefix: apiKey1.slice(0, 8),
     },
     {
       tenantId: tenant2.id,
       name: "Test key",
-      keyHash: "test_hash_placeholder_2",
-      keyPrefix: "sk_test_",
+      keyHash: apiKeyHash2,
+      keyPrefix: apiKey2.slice(0, 8),
     },
   ]);
 
   console.log("Created API keys");
+  console.log(`  Tenant 1 API key: ${apiKey1}`);
+  console.log(`  Tenant 2 API key: ${apiKey2}`);
 
   // ─── Products (Tenant 1 — Гоо сайхан) ───────────────────────
   const t1Products = await db

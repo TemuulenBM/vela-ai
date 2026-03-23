@@ -1,75 +1,37 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { MessageSquare, X, Send, Sparkles } from "lucide-react";
+import { AnimatePresence } from "motion/react";
+import { MessageSquare, X, Send, Sparkles, RotateCcw } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { Avatar } from "@/shared/components/ui/avatar";
+import { useVelaChat } from "../hooks/use-chat";
+import { MessageBubble } from "./message-bubble";
 
-interface ChatMessage {
-  id: number;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: string;
+interface ChatWidgetProps {
+  apiKey: string;
 }
 
-const initialMessages: ChatMessage[] = [
-  {
-    id: 1,
-    role: "assistant",
-    content: "Сайн байна уу! Би Vela AI борлуулалтын туслах. Танд юугаар туслах вэ?",
-    timestamp: "12:00",
-  },
-];
-
-function ChatWidget() {
+function ChatWidget({ apiKey }: ChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
-  const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
+  const { messages, input, handleInputChange, handleSubmit, isLoading, error, reload, resetChat } =
+    useVelaChat({ apiKey });
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
+  }, [messages, isLoading]);
 
   useEffect(() => {
     if (isOpen) inputRef.current?.focus();
   }, [isOpen]);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-
-    const userMessage: ChatMessage = {
-      id: messages.length + 1,
-      role: "user",
-      content: input.trim(),
-      timestamp: new Date().toLocaleTimeString("mn-MN", { hour: "2-digit", minute: "2-digit" }),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-    setIsTyping(true);
-
-    // Simulate AI response
-    setTimeout(() => {
-      const aiMessage: ChatMessage = {
-        id: messages.length + 2,
-        role: "assistant",
-        content:
-          "Баярлалаа! Таны хүсэлтийг хүлээн авлаа. Бид танд тохирох бараа зөвлөхөд бэлэн байна. Ямар төрлийн бүтээгдэхүүн сонирхож байна вэ?",
-        timestamp: new Date().toLocaleTimeString("mn-MN", { hour: "2-digit", minute: "2-digit" }),
-      };
-      setMessages((prev) => [...prev, aiMessage]);
-      setIsTyping(false);
-    }, 1500);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      handleSubmit(e as unknown as React.FormEvent);
     }
   };
 
@@ -96,59 +58,49 @@ function ChatWidget() {
               <p className="text-[11px] text-white/70">Борлуулалтын туслах</p>
             </div>
           </div>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-white/20 transition-colors"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={resetChat}
+              className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-white/20 transition-colors"
+              title="Шинэ яриа"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-white/20 transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+          {/* Welcome message when empty */}
+          {messages.length === 0 && (
+            <div className="flex gap-2.5">
+              <Avatar
+                size="xs"
+                fallback="V"
+                className="shrink-0 mt-0.5 bg-brand-100 text-brand-700"
+              />
+              <div className="max-w-[75%] rounded-[var(--radius-lg)] rounded-bl-sm bg-surface-tertiary text-text-primary px-3.5 py-2.5">
+                <p className="text-[13px] leading-relaxed">
+                  Сайн байна уу! Би Vela AI борлуулалтын туслах. Танд юугаар туслах вэ?
+                </p>
+              </div>
+            </div>
+          )}
+
           <AnimatePresence initial={false}>
             {messages.map((msg) => (
-              <motion.div
-                key={msg.id}
-                initial={{ opacity: 0, x: msg.role === "user" ? 12 : -12 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                className={cn(
-                  "flex gap-2.5",
-                  msg.role === "user" ? "justify-end" : "justify-start",
-                )}
-              >
-                {msg.role === "assistant" && (
-                  <Avatar
-                    size="xs"
-                    fallback="V"
-                    className="shrink-0 mt-0.5 bg-brand-100 text-brand-700"
-                  />
-                )}
-                <div
-                  className={cn(
-                    "max-w-[75%] rounded-[var(--radius-lg)] px-3.5 py-2.5",
-                    msg.role === "user"
-                      ? "bg-brand-600 text-white rounded-br-sm"
-                      : "bg-surface-tertiary text-text-primary rounded-bl-sm",
-                  )}
-                >
-                  <p className="text-[13px] leading-relaxed">{msg.content}</p>
-                  <p
-                    className={cn(
-                      "text-[10px] mt-1",
-                      msg.role === "user" ? "text-white/60" : "text-text-tertiary",
-                    )}
-                  >
-                    {msg.timestamp}
-                  </p>
-                </div>
-              </motion.div>
+              <MessageBubble key={msg.id} message={msg} />
             ))}
           </AnimatePresence>
 
           {/* Typing indicator */}
-          {isTyping && (
+          {isLoading && (
             <div className="flex gap-2.5">
               <Avatar
                 size="xs"
@@ -164,27 +116,44 @@ function ChatWidget() {
               </div>
             </div>
           )}
+
+          {/* Error state */}
+          {error && (
+            <div className="flex justify-center">
+              <div className="rounded-[var(--radius-md)] bg-error-light px-3 py-2 text-[12px] text-red-700">
+                <p>Алдаа гарлаа. {error.message}</p>
+                <button
+                  onClick={() => reload()}
+                  className="mt-1 text-[11px] font-medium underline hover:no-underline"
+                >
+                  Дахин оролдох
+                </button>
+              </div>
+            </div>
+          )}
+
           <div ref={messagesEndRef} />
         </div>
 
         {/* Input */}
-        <div className="shrink-0 border-t border-border-default px-3 py-3">
+        <form onSubmit={handleSubmit} className="shrink-0 border-t border-border-default px-3 py-3">
           <div className="flex items-end gap-2">
             <textarea
               ref={inputRef}
               value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
+              onChange={handleInputChange}
+              onKeyDown={onKeyDown}
               placeholder="Мессеж бичих..."
               rows={1}
-              className="flex-1 resize-none rounded-[var(--radius-md)] border border-border-default bg-surface-secondary px-3 py-2 text-[13px] text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 max-h-[100px]"
+              disabled={isLoading}
+              className="flex-1 resize-none rounded-[var(--radius-md)] border border-border-default bg-surface-secondary px-3 py-2 text-[13px] text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 max-h-[100px] disabled:opacity-50"
             />
             <button
-              onClick={handleSend}
-              disabled={!input.trim()}
+              type="submit"
+              disabled={!input.trim() || isLoading}
               className={cn(
                 "flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] transition-colors",
-                input.trim()
+                input.trim() && !isLoading
                   ? "bg-brand-600 text-white hover:bg-brand-700"
                   : "bg-surface-tertiary text-text-tertiary cursor-not-allowed",
               )}
@@ -193,7 +162,7 @@ function ChatWidget() {
             </button>
           </div>
           <p className="text-[10px] text-text-tertiary text-center mt-2">Powered by Vela AI</p>
-        </div>
+        </form>
       </div>
 
       {/* Launcher Button */}

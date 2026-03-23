@@ -26,3 +26,24 @@ export interface Conversation {
   createdAt: Date;
   endedAt: Date | null;
 }
+
+// Tool result types for chat
+export interface SearchProductsResult {
+  id: string;
+  name: string;
+  description: string | null;
+  price: string;
+  category: string | null;
+  brand: string | null;
+  stockQty: number;
+  isAvailable: boolean;
+  imageUrl: string | null;
+}
+
+export interface OrderStatusResult {
+  orderId: string;
+  status: string;
+  statusText: string;
+  estimatedDelivery: string;
+  message: string;
+}
