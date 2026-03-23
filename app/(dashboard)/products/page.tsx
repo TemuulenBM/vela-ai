@@ -10,6 +10,10 @@ import {
   Copy,
   ChevronLeft,
   ChevronRight,
+  Package,
+  Smartphone,
+  Shirt,
+  Home,
 } from "lucide-react";
 import {
   PageHeader,
@@ -17,7 +21,6 @@ import {
   Input,
   Button,
   Badge,
-  Checkbox,
   Select,
   SelectTrigger,
   SelectContent,
@@ -29,9 +32,15 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   FadeIn,
-  AnimateList,
 } from "@/shared/components/ui";
 import { cn, formatPrice } from "@/shared/lib/utils";
+
+const CATEGORY_ICONS: Record<string, typeof Package> = {
+  Хувцас: Shirt,
+  Электроник: Smartphone,
+  Гутал: Package,
+  "Гэр ахуй": Home,
+};
 
 const products = [
   {
@@ -116,6 +125,9 @@ const products = [
   },
 ];
 
+const activeCount = products.filter((p) => p.status === "active").length;
+const outOfStockCount = products.filter((p) => p.stock === 0).length;
+
 export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -134,7 +146,26 @@ export default function ProductsPage() {
         />
       </FadeIn>
 
+      {/* Summary strip + filters */}
       <FadeIn delay={0.05}>
+        <div className="mb-1 flex items-center gap-4 text-xs text-text-tertiary">
+          <span>
+            Нийт <span className="font-medium text-text-secondary">{products.length}</span> бараа
+          </span>
+          <span className="h-3 w-px bg-border-default" />
+          <span>
+            <span className="font-medium text-text-secondary">{activeCount}</span> идэвхтэй
+          </span>
+          {outOfStockCount > 0 && (
+            <>
+              <span className="h-3 w-px bg-border-default" />
+              <span className="text-[var(--color-warning)]">
+                <span className="font-medium">{outOfStockCount}</span> нөөцгүй
+              </span>
+            </>
+          )}
+        </div>
+
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <div className="flex-1">
             <Input
@@ -177,92 +208,95 @@ export default function ProductsPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border-default">
-                  <th className="w-10 px-4 py-3">
-                    <Checkbox />
+                  <th className="w-12 px-4 py-3" />
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
+                    Бараа
                   </th>
-                  <th className="w-12 px-2 py-3" />
-                  <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase tracking-wider">
-                    Нэр
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase tracking-wider">
-                    Ангилал
-                  </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-text-tertiary uppercase tracking-wider">
+                  <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-text-tertiary">
                     Үнэ
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-text-tertiary uppercase tracking-wider">
+                  <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-text-tertiary">
                     Нөөц
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
                     Төлөв
                   </th>
                   <th className="w-12 px-4 py-3" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-default">
-                {products.map((product) => (
-                  <tr key={product.id} className="hover:bg-surface-secondary transition-colors">
-                    <td className="px-4 py-3">
-                      <Checkbox />
-                    </td>
-                    <td className="px-2 py-3">
-                      <div className="h-9 w-9 rounded-[var(--radius-sm)] bg-surface-tertiary" />
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-sm font-medium text-text-primary">{product.name}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-sm text-text-secondary">{product.category}</span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <span className="text-sm text-text-primary">
-                        {formatPrice(product.price)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <span
-                        className={cn(
-                          "text-sm",
-                          product.stock === 0 ? "text-red-500 font-medium" : "text-text-secondary",
-                        )}
-                      >
-                        {product.stock}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge
-                        variant={product.status === "active" ? "success" : "default"}
-                        size="sm"
-                      >
-                        {product.status === "active" ? "Идэвхтэй" : "Идэвхгүй"}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Pencil className="h-4 w-4" />
-                            Засах
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Copy className="h-4 w-4" />
-                            Хуулах
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-red-500">
-                            <Trash2 className="h-4 w-4" />
-                            Устгах
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </td>
-                  </tr>
-                ))}
+                {products.map((product) => {
+                  const CategoryIcon = CATEGORY_ICONS[product.category] || Package;
+                  const isLowStock = product.stock > 0 && product.stock < 10;
+
+                  return (
+                    <tr key={product.id} className="transition-colors hover:bg-surface-secondary">
+                      <td className="px-4 py-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-surface-tertiary">
+                          <CategoryIcon className="h-4 w-4 text-text-tertiary" />
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="text-sm font-medium text-text-primary">
+                          {product.name}
+                        </span>
+                        <p className="mt-0.5 text-xs text-text-tertiary">{product.category}</p>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <span className="text-sm tabular-nums text-text-primary">
+                          {formatPrice(product.price)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <span
+                          className={cn(
+                            "text-sm tabular-nums",
+                            product.stock === 0
+                              ? "font-medium text-red-500"
+                              : isLowStock
+                                ? "font-medium text-amber-600"
+                                : "text-text-secondary",
+                          )}
+                        >
+                          {product.stock}
+                        </span>
+                        {isLowStock && <p className="text-[10px] text-amber-500">Бага нөөц</p>}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge
+                          variant={product.status === "active" ? "success" : "default"}
+                          size="sm"
+                        >
+                          {product.status === "active" ? "Идэвхтэй" : "Идэвхгүй"}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>
+                              <Pencil className="h-4 w-4" />
+                              Засах
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Copy className="h-4 w-4" />
+                              Хуулах
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-red-500">
+                              <Trash2 className="h-4 w-4" />
+                              Устгах
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

@@ -52,3 +52,5 @@ export {
 export { Switch } from "./switch";
 export { Checkbox } from "./checkbox";
 export { FadeIn, SlideIn, AnimateList, CountUp, StaggerGroup } from "./animate";
+export { Sparkline, type SparklineProps } from "./sparkline";
+export { ProgressBar, type ProgressBarProps } from "./progress-bar";

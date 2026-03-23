@@ -4,24 +4,24 @@ import {
   AreaChart,
   Area,
   XAxis,
-  YAxis,
   CartesianGrid,
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
 } from "recharts";
-import { MessageSquare, MessagesSquare, Package, TrendingUp, Eye } from "lucide-react";
+import { TrendingUp, Eye } from "lucide-react";
 import {
   PageHeader,
-  StatCard,
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
   Avatar,
   Badge,
+  Sparkline,
+  ProgressBar,
+  CountUp,
   FadeIn,
+  AnimateList,
 } from "@/shared/components/ui";
-import { formatPrice } from "@/shared/lib/utils";
+import { cn, formatPrice } from "@/shared/lib/utils";
+
+/* ─── Demo data ─── */
 
 const chartData = [
   { day: "Дав", conversations: 156 },
@@ -79,73 +79,130 @@ const topProducts = [
   { id: 5, name: "Арьсан цүнх (Монгол)", views: 543, revenue: 1250000 },
 ];
 
+const sparklineData = chartData.map((d) => d.conversations);
+const maxRevenue = Math.max(...topProducts.map((p) => p.revenue));
+
 export default function DashboardPage() {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <FadeIn>
         <PageHeader title="Хянах самбар" description="Таны дэлгүүрийн ерөнхий мэдээлэл" />
       </FadeIn>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <FadeIn delay={0.05}>
-          <StatCard
-            label="Нийт яриа"
-            value="1,247"
-            trend={{ value: 12.5, isPositive: true }}
-            icon={<MessageSquare className="h-4 w-4" />}
-          />
-        </FadeIn>
-        <FadeIn delay={0.1}>
-          <StatCard
-            label="Өнөөдрийн мессеж"
-            value="342"
-            trend={{ value: 8.2, isPositive: true }}
-            icon={<MessagesSquare className="h-4 w-4" />}
-          />
-        </FadeIn>
-        <FadeIn delay={0.15}>
-          <StatCard label="Бараа" value="186" icon={<Package className="h-4 w-4" />} />
-        </FadeIn>
-        <FadeIn delay={0.2}>
-          <StatCard
-            label="Хөрвүүлэлт"
-            value="3.2%"
-            trend={{ value: 0.4, isPositive: true }}
-            icon={<TrendingUp className="h-4 w-4" />}
-          />
-        </FadeIn>
-      </div>
+      {/* Top section: Bento grid — Hero metrics + Chart */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1.4fr]">
+        {/* Left: Hero metric + metric pair */}
+        <div className="flex flex-col">
+          {/* Hero metric — Нийт яриа */}
+          <FadeIn delay={0.05}>
+            <div className="border-t border-border-default pt-5">
+              <p className="text-[11px] font-medium uppercase tracking-wider text-text-tertiary">
+                Нийт яриа
+              </p>
+              <div className="mt-2 flex items-end gap-3">
+                <p className="text-[42px] font-semibold leading-none tracking-tighter text-text-primary tabular-nums font-[family-name:var(--font-geist)]">
+                  <CountUp to={1247} format={(n) => Math.round(n).toLocaleString()} />
+                </p>
+                <div className="mb-1.5 flex items-center gap-0.5 rounded-[var(--radius-sm)] bg-green-50 px-1.5 py-0.5 text-xs font-medium text-green-700">
+                  <TrendingUp className="h-3 w-3" />
+                  <span className="tabular-nums">12.5%</span>
+                </div>
+              </div>
+              <div className="mt-4">
+                <Sparkline data={sparklineData} width={200} height={60} />
+              </div>
+            </div>
+          </FadeIn>
 
-      <FadeIn delay={0.25}>
-        <Card padding="md">
-          <CardHeader>
-            <CardTitle>Ярианы тоо</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px] w-full">
+          {/* Secondary metrics */}
+          <FadeIn delay={0.1}>
+            <div className="divide-y divide-border-default border-t border-border-default">
+              {/* Мессеж */}
+              <div className="flex items-center justify-between py-4">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-medium uppercase tracking-wider text-text-tertiary">
+                    Өнөөдрийн мессеж
+                  </p>
+                  <div className="mt-1 flex items-end gap-2">
+                    <p className="text-2xl font-semibold leading-none tracking-tight text-text-primary tabular-nums font-[family-name:var(--font-geist)]">
+                      <CountUp to={342} format={(n) => Math.round(n).toLocaleString()} />
+                    </p>
+                    <div className="mb-0.5 flex items-center gap-0.5 rounded-[var(--radius-sm)] bg-green-50 px-1.5 py-0.5 text-[10px] font-medium text-green-700">
+                      <TrendingUp className="h-2.5 w-2.5" />
+                      <span className="tabular-nums">8.2%</span>
+                    </div>
+                  </div>
+                </div>
+                <Sparkline
+                  data={[120, 135, 110, 145, 160, 138, 155]}
+                  width={64}
+                  height={28}
+                  className="opacity-60"
+                />
+              </div>
+
+              {/* Хөрвүүлэлт */}
+              <div className="flex items-center justify-between py-4">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-medium uppercase tracking-wider text-text-tertiary">
+                    Хөрвүүлэлт
+                  </p>
+                  <div className="mt-1 flex items-end gap-2">
+                    <p className="text-2xl font-semibold leading-none tracking-tight text-text-primary tabular-nums font-[family-name:var(--font-geist)]">
+                      3.2%
+                    </p>
+                    <div className="mb-0.5 flex items-center gap-0.5 rounded-[var(--radius-sm)] bg-green-50 px-1.5 py-0.5 text-[10px] font-medium text-green-700">
+                      <TrendingUp className="h-2.5 w-2.5" />
+                      <span className="tabular-nums">0.4%</span>
+                    </div>
+                  </div>
+                </div>
+                <Sparkline
+                  data={[2.1, 2.4, 2.8, 3.0, 2.9, 3.1, 3.2]}
+                  width={64}
+                  height={28}
+                  color="var(--color-success)"
+                  className="opacity-60"
+                />
+              </div>
+
+              {/* Бараа */}
+              <div className="py-4">
+                <p className="text-[11px] font-medium uppercase tracking-wider text-text-tertiary">
+                  Бараа
+                </p>
+                <p className="mt-1 text-2xl font-semibold leading-none tracking-tight text-text-primary tabular-nums font-[family-name:var(--font-geist)]">
+                  <CountUp to={186} format={(n) => Math.round(n).toLocaleString()} />
+                </p>
+              </div>
+            </div>
+          </FadeIn>
+        </div>
+
+        {/* Right: Conversation trend chart */}
+        <FadeIn delay={0.15}>
+          <div className="border-t border-border-default pt-5">
+            <h3 className="mb-4 text-sm font-semibold text-text-primary">Ярианы тоо</h3>
+            <div className="h-[340px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData}>
                   <defs>
-                    <linearGradient id="colorConversations" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="var(--color-brand-500)" stopOpacity={0.15} />
-                      <stop offset="95%" stopColor="var(--color-brand-500)" stopOpacity={0} />
+                    <linearGradient id="colorConvOverview" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--color-brand-500)" stopOpacity={0.2} />
+                      <stop offset="100%" stopColor="var(--color-brand-500)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke="var(--color-border-default)"
+                    stroke="var(--color-border-subtle)"
                     vertical={false}
                   />
                   <XAxis
                     dataKey="day"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fontSize: 12, fill: "var(--color-text-tertiary)" }}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12, fill: "var(--color-text-tertiary)" }}
+                    tick={{ fontSize: 11, fill: "var(--color-text-tertiary)" }}
+                    dy={8}
                   />
                   <RechartsTooltip
                     contentStyle={{
@@ -160,78 +217,119 @@ export default function DashboardPage() {
                     dataKey="conversations"
                     stroke="var(--color-brand-500)"
                     strokeWidth={2}
-                    fill="url(#colorConversations)"
+                    fill="url(#colorConvOverview)"
+                    fillOpacity={1}
+                    dot={false}
+                    activeDot={{
+                      r: 4,
+                      strokeWidth: 2,
+                      fill: "var(--color-surface-primary)",
+                    }}
                     name="Яриа"
                   />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-          </CardContent>
-        </Card>
-      </FadeIn>
+          </div>
+        </FadeIn>
+      </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <FadeIn delay={0.3}>
-          <Card padding="md">
-            <CardHeader>
-              <CardTitle>Сүүлийн яриа</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col divide-y divide-border-default">
-                {recentConversations.map((conv) => (
-                  <div key={conv.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-                    <Avatar size="sm" fallback={conv.name.charAt(0)} alt={conv.name} />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-text-primary">{conv.name}</span>
-                        <Badge variant={conv.status === "active" ? "success" : "default"} size="sm">
-                          {conv.status === "active" ? "Идэвхтэй" : "Хаагдсан"}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-text-secondary truncate">{conv.message}</p>
+      {/* Bottom section: Conversations + Products asymmetric */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.6fr_1fr]">
+        {/* Recent conversations */}
+        <FadeIn delay={0.2}>
+          <div className="border-t border-border-default pt-5">
+            <h3 className="mb-4 text-sm font-semibold text-text-primary">Сүүлийн яриа</h3>
+            <AnimateList stagger={0.04}>
+              {recentConversations.map((conv) => (
+                <div
+                  key={conv.id}
+                  className={cn(
+                    "flex items-center gap-3 border-b border-border-subtle py-3 last:border-0",
+                    "transition-colors hover:bg-surface-secondary rounded-[var(--radius-sm)] px-2 -mx-2",
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "h-8 w-0.5 shrink-0 rounded-full",
+                      conv.status === "active" ? "bg-brand-500" : "bg-gray-200",
+                    )}
+                  />
+                  <Avatar size="sm" fallback={conv.name.charAt(0)} alt={conv.name} />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-text-primary">{conv.name}</span>
+                      <Badge variant={conv.status === "active" ? "success" : "default"} size="sm">
+                        {conv.status === "active" ? "Идэвхтэй" : "Хаагдсан"}
+                      </Badge>
                     </div>
-                    <span className="text-xs text-text-tertiary shrink-0">{conv.time}</span>
+                    <p className="mt-0.5 truncate text-[13px] text-text-secondary">
+                      {conv.message}
+                    </p>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  <span className="shrink-0 text-xs text-text-tertiary">{conv.time}</span>
+                </div>
+              ))}
+            </AnimateList>
+          </div>
         </FadeIn>
 
-        <FadeIn delay={0.35}>
-          <Card padding="md">
-            <CardHeader>
-              <CardTitle>Шилдэг бараа</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col divide-y divide-border-default">
-                {topProducts.map((product, index) => (
+        {/* Top products — ranked with inline bars */}
+        <FadeIn delay={0.25}>
+          <div className="border-t border-border-default pt-5">
+            <h3 className="mb-4 text-sm font-semibold text-text-primary">Шилдэг бараа</h3>
+            <AnimateList stagger={0.04}>
+              {topProducts.map((product, index) => {
+                const revenuePercent = (product.revenue / maxRevenue) * 100;
+                const isTop = index === 0;
+
+                return (
                   <div
                     key={product.id}
-                    className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
+                    className={cn(
+                      "border-b border-border-subtle py-3 last:border-0",
+                      isTop && "rounded-[var(--radius-md)] bg-brand-50/30 px-3 -mx-3",
+                    )}
                   >
-                    <span className="flex h-6 w-6 items-center justify-center rounded-[var(--radius-sm)] bg-surface-tertiary text-xs font-medium text-text-secondary">
-                      {index + 1}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-text-primary truncate">
-                        {product.name}
-                      </p>
-                      <div className="flex items-center gap-3 mt-0.5">
-                        <span className="flex items-center gap-1 text-xs text-text-tertiary">
-                          <Eye className="h-3 w-3" />
-                          {product.views.toLocaleString()}
-                        </span>
-                        <span className="text-xs text-text-tertiary">
-                          {formatPrice(product.revenue)}
-                        </span>
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={cn(
+                          "shrink-0 tabular-nums font-[family-name:var(--font-geist)]",
+                          isTop
+                            ? "text-lg font-bold text-brand-500"
+                            : "w-5 text-center text-[13px] font-medium text-text-tertiary",
+                        )}
+                      >
+                        {index + 1}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[13px] font-medium text-text-primary">
+                          {product.name}
+                        </p>
+                        <div className="mt-0.5 flex items-center gap-3">
+                          <span className="flex items-center gap-1 text-xs text-text-tertiary">
+                            <Eye className="h-3 w-3" />
+                            {product.views.toLocaleString()}
+                          </span>
+                          <span className="text-xs font-medium text-text-secondary">
+                            {formatPrice(product.revenue)}
+                          </span>
+                        </div>
+                        <div className="mt-1.5">
+                          <ProgressBar
+                            value={revenuePercent}
+                            height={3}
+                            delay={index * 0.04}
+                            color="var(--color-brand-400)"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                );
+              })}
+            </AnimateList>
+          </div>
         </FadeIn>
       </div>
     </div>

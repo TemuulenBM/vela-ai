@@ -18,9 +18,10 @@ import {
   TabsList,
   TabsTrigger,
   TabsContent,
+  ProgressBar,
+  CountUp,
   FadeIn,
 } from "@/shared/components/ui";
-import { cn } from "@/shared/lib/utils";
 
 const apiKeys = [
   {
@@ -47,30 +48,10 @@ const apiKeys = [
 ];
 
 const teamMembers = [
-  {
-    id: 1,
-    name: "Ганбаатар Эрдэнэ",
-    email: "ganbaatar@velashop.mn",
-    role: "owner" as const,
-  },
-  {
-    id: 2,
-    name: "Анхбаяр Мөнхбат",
-    email: "ankhbayar@velashop.mn",
-    role: "admin" as const,
-  },
-  {
-    id: 3,
-    name: "Солонго Батболд",
-    email: "solongo@velashop.mn",
-    role: "member" as const,
-  },
-  {
-    id: 4,
-    name: "Тэмүүлэн Ганзориг",
-    email: "temuulen@velashop.mn",
-    role: "member" as const,
-  },
+  { id: 1, name: "Ганбаатар Эрдэнэ", email: "ganbaatar@velashop.mn", role: "owner" as const },
+  { id: 2, name: "Анхбаяр Мөнхбат", email: "ankhbayar@velashop.mn", role: "admin" as const },
+  { id: 3, name: "Солонго Батболд", email: "solongo@velashop.mn", role: "member" as const },
+  { id: 4, name: "Тэмүүлэн Ганзориг", email: "temuulen@velashop.mn", role: "member" as const },
 ];
 
 const roleLabels: Record<string, string> = {
@@ -109,7 +90,7 @@ export default function SettingsPage() {
                 <CardDescription>Дэлгүүрийн ерөнхий мэдээллийг засварлах</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-col gap-4 max-w-lg">
+                <div className="flex max-w-lg flex-col gap-4">
                   <Input
                     label="Дэлгүүрийн нэр"
                     defaultValue="Vela Shop"
@@ -133,7 +114,7 @@ export default function SettingsPage() {
           {/* API Keys tab */}
           <TabsContent value="api-keys">
             <Card padding="none">
-              <div className="flex items-center justify-between px-5 pt-5 pb-0">
+              <div className="flex items-center justify-between px-5 pb-0 pt-5">
                 <div className="flex flex-col gap-1.5">
                   <CardTitle>API түлхүүрүүд</CardTitle>
                   <CardDescription>
@@ -150,16 +131,16 @@ export default function SettingsPage() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-border-default">
-                        <th className="px-5 py-2.5 text-left text-xs font-medium text-text-tertiary uppercase tracking-wider">
+                        <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
                           Нэр
                         </th>
-                        <th className="px-5 py-2.5 text-left text-xs font-medium text-text-tertiary uppercase tracking-wider">
+                        <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
                           Түлхүүр
                         </th>
-                        <th className="px-5 py-2.5 text-left text-xs font-medium text-text-tertiary uppercase tracking-wider">
+                        <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
                           Үүсгэсэн
                         </th>
-                        <th className="px-5 py-2.5 text-left text-xs font-medium text-text-tertiary uppercase tracking-wider">
+                        <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
                           Сүүлд ашигласан
                         </th>
                         <th className="w-20 px-5 py-2.5" />
@@ -205,7 +186,7 @@ export default function SettingsPage() {
           {/* Team tab */}
           <TabsContent value="team">
             <Card padding="none">
-              <div className="flex items-center justify-between px-5 pt-5 pb-0">
+              <div className="flex items-center justify-between px-5 pb-0 pt-5">
                 <div className="flex flex-col gap-1.5">
                   <CardTitle>Багийн гишүүд</CardTitle>
                   <CardDescription>Дэлгүүрийн удирдлагын багийг удирдах</CardDescription>
@@ -220,13 +201,13 @@ export default function SettingsPage() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-border-default">
-                        <th className="px-5 py-2.5 text-left text-xs font-medium text-text-tertiary uppercase tracking-wider">
+                        <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
                           Гишүүн
                         </th>
-                        <th className="px-5 py-2.5 text-left text-xs font-medium text-text-tertiary uppercase tracking-wider">
+                        <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
                           Имэйл
                         </th>
-                        <th className="px-5 py-2.5 text-left text-xs font-medium text-text-tertiary uppercase tracking-wider">
+                        <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
                           Үүрэг
                         </th>
                         <th className="w-20 px-5 py-2.5" />
@@ -276,7 +257,7 @@ export default function SettingsPage() {
           {/* Billing tab */}
           <TabsContent value="billing">
             <div className="flex flex-col gap-6">
-              <Card padding="md">
+              <Card padding="md" className="border-l-2 border-l-brand-500">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col gap-1.5">
@@ -291,8 +272,8 @@ export default function SettingsPage() {
                 <CardContent>
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-text-primary font-semibold">Pro багц</span>
-                      <span className="text-sm text-text-primary font-semibold">99,000₮/сар</span>
+                      <span className="text-sm font-semibold text-text-primary">Pro багц</span>
+                      <span className="text-sm font-semibold text-text-primary">99,000₮/сар</span>
                     </div>
                     <ul className="flex flex-col gap-1.5">
                       <li className="text-sm text-text-secondary">1,000 яриа / сар</li>
@@ -318,40 +299,42 @@ export default function SettingsPage() {
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-text-primary">Яриа ашигласан</span>
-                        <span className="text-sm text-text-secondary">847 / 1,000</span>
+                        <span className="text-sm text-text-secondary tabular-nums">
+                          <CountUp to={847} format={(n) => Math.round(n).toLocaleString()} /> /
+                          1,000
+                        </span>
                       </div>
-                      <div className="h-2 w-full rounded-full bg-surface-tertiary overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-brand-500 transition-all"
-                          style={{ width: "84.7%" }}
-                        />
-                      </div>
+                      <ProgressBar value={84.7} height={8} color="var(--color-brand-500)" />
                     </div>
 
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-text-primary">Бараа</span>
-                        <span className="text-sm text-text-secondary">156 / 500</span>
+                        <span className="text-sm text-text-secondary tabular-nums">
+                          <CountUp to={156} format={(n) => Math.round(n).toLocaleString()} /> / 500
+                        </span>
                       </div>
-                      <div className="h-2 w-full rounded-full bg-surface-tertiary overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-brand-500 transition-all"
-                          style={{ width: "31.2%" }}
-                        />
-                      </div>
+                      <ProgressBar
+                        value={31.2}
+                        height={8}
+                        delay={0.1}
+                        color="var(--color-brand-500)"
+                      />
                     </div>
 
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-text-primary">Багийн гишүүн</span>
-                        <span className="text-sm text-text-secondary">4 / 5</span>
+                        <span className="text-sm text-text-secondary tabular-nums">
+                          <CountUp to={4} format={(n) => Math.round(n).toLocaleString()} /> / 5
+                        </span>
                       </div>
-                      <div className="h-2 w-full rounded-full bg-surface-tertiary overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-brand-500 transition-all"
-                          style={{ width: "80%" }}
-                        />
-                      </div>
+                      <ProgressBar
+                        value={80}
+                        height={8}
+                        delay={0.2}
+                        color="var(--color-brand-500)"
+                      />
                     </div>
                   </div>
                 </CardContent>

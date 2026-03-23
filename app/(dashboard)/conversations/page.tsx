@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Globe, Smartphone } from "lucide-react";
+import { Search, Globe, Smartphone, Sparkles } from "lucide-react";
 import { Input, Avatar, Badge, AnimateList, FadeIn } from "@/shared/components/ui";
 import { cn } from "@/shared/lib/utils";
 
@@ -215,12 +215,23 @@ export default function ConversationsPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const selected = conversations.find((c) => c.id === selectedId)!;
+  const activeCount = conversations.filter((c) => c.status === "active").length;
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex h-[calc(100vh-theme(spacing.32))] overflow-hidden rounded-[var(--radius-lg)] border border-border-default bg-surface-primary shadow-xs">
         {/* Left panel - conversation list */}
         <div className="flex w-80 shrink-0 flex-col border-r border-border-default">
+          {/* List header */}
+          <div className="flex items-center justify-between border-b border-border-default px-4 py-3">
+            <div>
+              <h2 className="text-sm font-semibold text-text-primary">Яриа</h2>
+              <p className="text-[11px] text-text-tertiary">
+                {activeCount} идэвхтэй / {conversations.length} нийт
+              </p>
+            </div>
+          </div>
+
           <div className="p-3">
             <Input
               placeholder="Яриа хайх..."
@@ -239,25 +250,32 @@ export default function ConversationsPage() {
                   className={cn(
                     "flex w-full items-start gap-3 px-3 py-3 text-left transition-colors",
                     "hover:bg-surface-secondary",
-                    conv.id === selectedId && "bg-surface-secondary",
+                    conv.id === selectedId
+                      ? "border-l-2 border-brand-500 bg-surface-secondary"
+                      : "border-l-2 border-transparent",
                   )}
                 >
                   <Avatar size="sm" fallback={conv.name.charAt(0)} alt={conv.name} />
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-medium text-text-primary truncate">
-                        {conv.name}
-                      </span>
-                      <span className="text-[11px] text-text-tertiary shrink-0">{conv.time}</span>
+                      <div className="flex items-center gap-1.5 truncate">
+                        <span className="truncate text-sm font-medium text-text-primary">
+                          {conv.name}
+                        </span>
+                        {conv.channel === "mobile" ? (
+                          <Smartphone className="h-3 w-3 shrink-0 text-text-tertiary" />
+                        ) : (
+                          <Globe className="h-3 w-3 shrink-0 text-text-tertiary" />
+                        )}
+                        <Badge variant={conv.status === "active" ? "success" : "default"} size="sm">
+                          {conv.status === "active" ? "Идэвхтэй" : "Хаагдсан"}
+                        </Badge>
+                      </div>
+                      <span className="shrink-0 text-[11px] text-text-tertiary">{conv.time}</span>
                     </div>
-                    <p className="mt-0.5 text-xs text-text-secondary truncate">
+                    <p className="mt-0.5 truncate text-xs text-text-secondary">
                       {conv.lastMessage}
                     </p>
-                    <div className="mt-1">
-                      <Badge variant={conv.status === "active" ? "success" : "default"} size="sm">
-                        {conv.status === "active" ? "Идэвхтэй" : "Хаагдсан"}
-                      </Badge>
-                    </div>
                   </div>
                 </button>
               ))}
@@ -267,32 +285,15 @@ export default function ConversationsPage() {
 
         {/* Right panel - conversation detail */}
         <div className="flex flex-1 flex-col">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-border-default px-5 py-3">
-            <div className="flex items-center gap-3">
-              <Avatar size="sm" fallback={selected.name.charAt(0)} alt={selected.name} />
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-text-primary">{selected.name}</span>
-                  <Badge variant={selected.status === "active" ? "success" : "default"} size="sm">
-                    {selected.status === "active" ? "Идэвхтэй" : "Хаагдсан"}
-                  </Badge>
-                </div>
-              </div>
+          {/* Header — simplified */}
+          <div className="flex items-center gap-3 border-b border-border-default px-5 py-3">
+            <Avatar size="sm" fallback={selected.name.charAt(0)} alt={selected.name} />
+            <div>
+              <span className="text-sm font-semibold text-text-primary">{selected.name}</span>
+              <p className="text-[11px] text-text-tertiary">
+                {selected.channel === "web" ? "Вэб" : "Мобайл"} / {selected.messages.length} мессеж
+              </p>
             </div>
-            <Badge variant="outline" size="md">
-              {selected.channel === "web" ? (
-                <span className="flex items-center gap-1">
-                  <Globe className="h-3 w-3" />
-                  Вэб
-                </span>
-              ) : (
-                <span className="flex items-center gap-1">
-                  <Smartphone className="h-3 w-3" />
-                  Мобайл
-                </span>
-              )}
-            </Badge>
           </div>
 
           {/* Messages */}
@@ -301,21 +302,31 @@ export default function ConversationsPage() {
               {selected.messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={cn("flex", msg.role === "user" ? "justify-end" : "justify-start")}
+                  className={cn(
+                    "flex gap-2",
+                    msg.role === "user" ? "justify-end" : "justify-start",
+                  )}
                 >
+                  {/* Bot avatar for assistant messages */}
+                  {msg.role === "assistant" && (
+                    <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-600">
+                      <Sparkles className="h-3 w-3 text-white" />
+                    </div>
+                  )}
+
                   <div
                     className={cn(
                       "max-w-[70%] rounded-[var(--radius-lg)] px-4 py-2.5",
                       msg.role === "user"
-                        ? "bg-brand-50 text-text-primary"
-                        : "bg-surface-tertiary text-text-primary",
+                        ? "rounded-br-[var(--radius-sm)] border border-brand-100 bg-brand-50 text-text-primary"
+                        : "rounded-bl-[var(--radius-sm)] bg-surface-tertiary text-text-primary",
                     )}
                   >
                     <p className="text-sm leading-relaxed">{msg.text}</p>
                     <p
                       className={cn(
                         "mt-1 text-[11px]",
-                        msg.role === "user" ? "text-brand-600/60 text-right" : "text-text-tertiary",
+                        msg.role === "user" ? "text-right text-brand-600/60" : "text-text-tertiary",
                       )}
                     >
                       {msg.time}
