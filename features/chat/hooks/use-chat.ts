@@ -5,7 +5,7 @@ import { DefaultChatTransport } from "ai";
 import { useState, useCallback, useRef, useMemo } from "react";
 
 interface UseVelaChatOptions {
-  apiKey: string;
+  apiKey?: string;
 }
 
 function getAnonymousId(): string {
@@ -32,9 +32,7 @@ export function useVelaChat({ apiKey }: UseVelaChatOptions) {
     () =>
       new DefaultChatTransport({
         api: "/api/chat",
-        headers: {
-          "x-api-key": apiKey,
-        },
+        headers: apiKey ? { "x-api-key": apiKey } : {},
         body: () => ({
           anonymousId: typeof window !== "undefined" ? getAnonymousId() : "ssr",
           conversationId: conversationIdRef.current,

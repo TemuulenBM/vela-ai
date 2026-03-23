@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/server/db/db";
 import { tenants, products, events } from "@/server/db/schema";
 import { authenticateChatRequest } from "@/server/lib/chat-auth";
-import { executeChatPipeline } from "@/features/chat/lib/pipeline";
+import { executeChatPipeline, executeDemoPipeline } from "@/features/chat/lib/pipeline";
 import {
   createOrGetShopper,
   createOrGetConversation,
@@ -47,15 +47,7 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "Хэт олон хүсэлт. Түр хүлээнэ үү." }, { status: 429 });
     }
 
-    // 2. API key authentication
-    const authResult = await authenticateChatRequest(request);
-    if (!authResult) {
-      return Response.json({ error: "API key буруу эсвэл дутуу байна." }, { status: 401 });
-    }
-
-    const { tenantId } = authResult;
-
-    // 3. Parse request body
+    // 2. Parse request body
     const body = await request.json();
     const {
       messages,
@@ -71,6 +63,21 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "Messages шаардлагатай." }, { status: 400 });
     }
 
+    // 3. Check API key — if absent, run demo mode
+    const authResult = await authenticateChatRequest(request);
+
+    if (!authResult) {
+      // Demo mode: platform intro bot, no tools, no persistence
+      const hasApiKeyHeader = request.headers.has("x-api-key");
+      if (hasApiKeyHeader) {
+        return Response.json({ error: "API key буруу эсвэл дутуу байна." }, { status: 401 });
+      }
+
+      const demoResult = await executeDemoPipeline(messages);
+      return demoResult.toUIMessageStreamResponse();
+    }
+
+    const { tenantId } = authResult;
     const anonId = anonymousId || "anonymous";
 
     // 4. Get or create shopper + conversation

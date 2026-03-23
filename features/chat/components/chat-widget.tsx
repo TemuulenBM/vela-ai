@@ -9,7 +9,7 @@ import { useVelaChat } from "../hooks/use-chat";
 import { MessageBubble } from "./message-bubble";
 
 interface ChatWidgetProps {
-  apiKey: string;
+  apiKey?: string;
 }
 
 function ChatWidget({ apiKey }: ChatWidgetProps) {
