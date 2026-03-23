@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
@@ -7,6 +10,32 @@ import { Separator } from "@/shared/components/ui/separator";
 import { Mail, Lock, Sparkles } from "lucide-react";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+
+    const result = await signIn("credentials", {
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
+      redirect: false,
+    });
+
+    setLoading(false);
+
+    if (result?.error) {
+      setError("Имэйл эсвэл нууц үг буруу байна");
+    } else {
+      router.push("/analytics");
+    }
+  }
+
   return (
     <div className="relative flex min-h-dvh items-center justify-center px-4 py-12">
       {/* Background — clean surface, no blobs or dots */}
@@ -26,21 +55,31 @@ export default function LoginPage() {
 
         {/* Card */}
         <div className="rounded-[var(--radius-lg)] border border-border-default bg-surface-primary p-6 shadow-sm">
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            {error && (
+              <div className="rounded-[var(--radius-md)] bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-600">
+                {error}
+              </div>
+            )}
+
             <Input
               label="Имэйл"
+              name="email"
               type="email"
               placeholder="та@жишээ.mn"
               icon={<Mail className="h-4 w-4" />}
               autoComplete="email"
+              required
             />
 
             <Input
               label="Нууц үг"
+              name="password"
               type="password"
               placeholder="Нууц үгээ оруулна уу"
               icon={<Lock className="h-4 w-4" />}
               autoComplete="current-password"
+              required
             />
 
             <div className="flex items-center justify-end">
@@ -52,8 +91,8 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            <Button size="lg" className="w-full">
-              Нэвтрэх
+            <Button size="lg" className="w-full" disabled={loading}>
+              {loading ? "Нэвтэрж байна..." : "Нэвтрэх"}
             </Button>
           </form>
 

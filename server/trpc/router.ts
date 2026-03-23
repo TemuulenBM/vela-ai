@@ -1,8 +1,8 @@
 import { router } from "./trpc";
+import { analyticsRouter } from "./routers/analytics";
 
 export const appRouter = router({
-  // Feature routers дараа нэмнэ:
-  // analytics: analyticsRouter,
+  analytics: analyticsRouter,
   // products: productsRouter,
   // conversations: conversationsRouter,
   // tenants: tenantsRouter,

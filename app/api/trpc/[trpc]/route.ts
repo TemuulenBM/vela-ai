@@ -1,8 +1,13 @@
-// tRPC HTTP handler — router setup дараа нэмнэ
-export async function GET() {
-  return new Response("tRPC endpoint", { status: 200 });
-}
+import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
+import { appRouter } from "@/server/trpc/router";
+import { createContext } from "@/server/trpc/trpc";
 
-export async function POST() {
-  return new Response("tRPC endpoint", { status: 200 });
-}
+const handler = (req: Request) =>
+  fetchRequestHandler({
+    endpoint: "/api/trpc",
+    req,
+    router: appRouter,
+    createContext,
+  });
+
+export { handler as GET, handler as POST };

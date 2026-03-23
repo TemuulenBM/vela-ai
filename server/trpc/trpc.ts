@@ -24,9 +24,18 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
+  const tenantId = ctx.session.user.tenantId;
+  if (!tenantId) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Tenant not found for user",
+    });
+  }
+
   return next({
     ctx: {
       session: ctx.session,
+      tenantId,
     },
   });
 });

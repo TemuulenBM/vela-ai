@@ -1,5 +1,8 @@
+"use client";
+
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
+import { CountUp } from "./animate";
 
 interface StatCardProps {
   label: string;
@@ -13,25 +16,38 @@ interface StatCardProps {
 }
 
 function StatCard({ label, value, trend, icon, className }: StatCardProps) {
+  const numericValue =
+    typeof value === "string" ? parseFloat(value.replace(/[^0-9.-]/g, "")) : value;
+  const isNumeric = !isNaN(numericValue) && typeof value !== "string";
+  const hasPercentSign = typeof value === "string" && value.includes("%");
+  const displayPrefix = typeof value === "string" ? value.replace(/[0-9,.%]/g, "").trim() : "";
+
   return (
     <div
       className={cn(
-        "relative rounded-[var(--radius-md)] border border-border-default bg-surface-primary p-5 shadow-xs overflow-hidden",
+        "group relative rounded-[var(--radius-lg)] border border-border-default bg-surface-primary p-5 transition-all duration-200",
+        "hover:border-border-strong hover:shadow-sm hover:-translate-y-px",
         className,
       )}
     >
-      {/* Subtle left accent */}
-      <div className="absolute left-0 top-3 bottom-3 w-[2px] rounded-full bg-brand-500/30" />
       <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-text-tertiary uppercase tracking-wider">{label}</p>
+        <p className="text-[13px] font-medium text-text-tertiary">{label}</p>
         {icon && (
-          <div className="flex h-7 w-7 items-center justify-center rounded-[var(--radius-sm)] bg-surface-tertiary text-text-tertiary">
+          <div className="flex h-8 w-8 items-center justify-center rounded-[var(--radius-md)] bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-100">
             {icon}
           </div>
         )}
       </div>
-      <div className="mt-2 flex items-end gap-2">
-        <p className="text-2xl font-semibold text-text-primary tracking-tight">{value}</p>
+      <div className="mt-3 flex items-end gap-2.5">
+        <p className="text-[28px] font-semibold text-text-primary tracking-tight leading-none font-[family-name:var(--font-geist)]">
+          {displayPrefix}
+          {isNumeric ? (
+            <CountUp to={numericValue} format={(n) => Math.round(n).toLocaleString()} />
+          ) : (
+            value
+          )}
+          {hasPercentSign && "%"}
+        </p>
         {trend && (
           <div
             className={cn(

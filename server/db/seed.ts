@@ -1,8 +1,10 @@
 import "dotenv/config";
+import bcrypt from "bcryptjs";
 import { db } from "./db";
 import {
   tenants,
   tenantMembers,
+  users,
   apiKeys,
   products,
   productImages,
@@ -27,12 +29,27 @@ async function seed() {
 
   console.log(`Created ${2} tenants`);
 
+  // ─── Users ─────────────────────────────────────────────────
+  const passwordHash = await bcrypt.hash("password123", 10);
+
+  const [user1, user2, user3, user4] = await db
+    .insert(users)
+    .values([
+      { name: "Владелец Гоо Сайхан", email: "owner@goosaikhan.mn", passwordHash },
+      { name: "Админ Гоо Сайхан", email: "admin@goosaikhan.mn", passwordHash },
+      { name: "Владелец Электроник", email: "owner@elektronik.mn", passwordHash },
+      { name: "Ажилтан Электроник", email: "staff@elektronik.mn", passwordHash },
+    ])
+    .returning();
+
+  console.log("Created users");
+
   // ─── Tenant Members ──────────────────────────────────────────
   await db.insert(tenantMembers).values([
-    { tenantId: tenant1.id, email: "owner@goosaikhan.mn", role: "owner" },
-    { tenantId: tenant1.id, email: "admin@goosaikhan.mn", role: "admin" },
-    { tenantId: tenant2.id, email: "owner@elektronik.mn", role: "owner" },
-    { tenantId: tenant2.id, email: "staff@elektronik.mn", role: "member" },
+    { tenantId: tenant1.id, email: "owner@goosaikhan.mn", userId: user1.id, role: "owner" },
+    { tenantId: tenant1.id, email: "admin@goosaikhan.mn", userId: user2.id, role: "admin" },
+    { tenantId: tenant2.id, email: "owner@elektronik.mn", userId: user3.id, role: "owner" },
+    { tenantId: tenant2.id, email: "staff@elektronik.mn", userId: user4.id, role: "member" },
   ]);
 
   console.log("Created tenant members");
