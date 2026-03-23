@@ -39,7 +39,7 @@ function StatCard({ label, value, trend, icon, className }: StatCardProps) {
         )}
       </div>
       <div className="mt-3 flex items-end gap-2.5">
-        <p className="text-[28px] font-semibold text-text-primary tracking-tight leading-none font-[family-name:var(--font-geist)]">
+        <p className="text-[28px] font-semibold text-text-primary tracking-tight leading-none tabular-nums font-[family-name:var(--font-geist)]">
           {displayPrefix}
           {isNumeric ? (
             <CountUp to={numericValue} format={(n) => Math.round(n).toLocaleString()} />
@@ -60,7 +60,7 @@ function StatCard({ label, value, trend, icon, className }: StatCardProps) {
             ) : (
               <TrendingDown className="h-3 w-3" />
             )}
-            <span>{Math.abs(trend.value)}%</span>
+            <span className="tabular-nums">{Math.abs(trend.value)}%</span>
           </div>
         )}
       </div>

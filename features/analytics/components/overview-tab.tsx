@@ -35,6 +35,27 @@ export function OverviewTab({ days }: { days: number }) {
     day: formatDay(d.day),
   }));
 
+  const hasError = stats.isError || eventsOverTime.isError || eventTypeCounts.isError;
+
+  if (hasError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <p className="text-sm font-medium text-text-secondary">Өгөгдөл ачаалахад алдаа гарлаа</p>
+        <p className="mt-1 text-xs text-text-tertiary">Дахин оролдоно уу</p>
+        <button
+          onClick={() => {
+            stats.refetch();
+            eventsOverTime.refetch();
+            eventTypeCounts.refetch();
+          }}
+          className="mt-4 rounded-[var(--radius-md)] bg-brand-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-600"
+        >
+          Дахин оролдох
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6">
       {/* Stat cards */}
@@ -114,6 +135,10 @@ export function OverviewTab({ days }: { days: number }) {
               {eventsOverTime.isLoading ? (
                 <div className="px-3">
                   <Skeleton className="h-[300px] w-full" />
+                </div>
+              ) : !chartData?.length ? (
+                <div className="flex h-[300px] items-center justify-center">
+                  <p className="text-sm text-text-tertiary">Энэ хугацаанд өгөгдөл байхгүй</p>
                 </div>
               ) : (
                 <ChartContainer height={300}>

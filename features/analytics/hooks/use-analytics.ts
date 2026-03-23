@@ -1,22 +1,25 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { createTracker, noopTracker, type Tracker } from "../lib/tracker";
 
 export function useAnalytics(tenantId: string | undefined): Tracker {
+  const [tracker, setTracker] = useState<Tracker>(noopTracker);
   const trackerRef = useRef<Tracker>(noopTracker);
 
   useEffect(() => {
     if (!tenantId) return;
 
-    const tracker = createTracker({ tenantId });
-    trackerRef.current = tracker;
+    const instance = createTracker({ tenantId });
+    trackerRef.current = instance;
+    setTracker(instance);
 
     return () => {
-      tracker.destroy();
+      instance.destroy();
       trackerRef.current = noopTracker;
+      setTracker(noopTracker);
     };
   }, [tenantId]);
 
-  return trackerRef.current;
+  return tracker;
 }

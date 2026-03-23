@@ -6,10 +6,45 @@ import {
   trackEventSchema,
   trackEventBatchSchema,
   type TrackEventPayload,
-} from "@/features/analytics/lib/events";
+} from "@/shared/lib/event-schemas";
+
+// In-memory rate limiter: max 100 requests per minute per IP
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_WINDOW = 60_000;
+const RATE_LIMIT_MAX = 100;
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+    return false;
+  }
+
+  entry.count++;
+  return entry.count > RATE_LIMIT_MAX;
+}
+
+// Cleanup stale entries every 5 minutes
+if (typeof globalThis !== "undefined") {
+  const cleanup = () => {
+    const now = Date.now();
+    for (const [key, entry] of rateLimitMap) {
+      if (now > entry.resetAt) rateLimitMap.delete(key);
+    }
+  };
+  setInterval(cleanup, 5 * 60_000).unref?.();
+}
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+    if (isRateLimited(ip)) {
+      return new Response(null, { status: 429 });
+    }
+
     const contentType = request.headers.get("content-type") ?? "";
     let raw: unknown;
 
@@ -42,7 +77,6 @@ export async function POST(request: NextRequest) {
       return new Response(null, { status: 204 });
     }
 
-    // C1 fix: Batch доторх бүх event ижил tenantId-тай байх ёстой
     const tenantId = eventPayloads[0].tenantId;
     const allSameTenant = eventPayloads.every((e) => e.tenantId === tenantId);
     if (!allSameTenant) {

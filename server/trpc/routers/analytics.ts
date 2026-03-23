@@ -229,6 +229,7 @@ export const analyticsRouter = router({
           and(
             eq(events.tenantId, ctx.tenantId),
             gte(events.createdAt, start),
+            inArray(events.eventType, ["product_view", "add_to_cart", "checkout_completed"]),
             sql`${events.metadata}->>'productId' IS NOT NULL`,
           ),
         )
