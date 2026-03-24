@@ -242,17 +242,20 @@ export default function ProductsPage() {
                       const isLowStock = product.stockQty > 0 && product.stockQty < 10;
 
                       return (
-                        <tr key={product.id} className="transition-colors hover:bg-white/[0.03]">
+                        <tr
+                          key={product.id}
+                          className="group transition-colors hover:bg-white/[0.03]"
+                        >
                           <td className="px-6 py-4">
                             {product.imageUrl ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img
                                 src={product.imageUrl}
                                 alt={product.name}
-                                className="h-12 w-12 rounded-2xl object-cover"
+                                className="h-12 w-12 rounded-2xl object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
                               />
                             ) : (
-                              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/[0.05]">
+                              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/[0.05] group-hover:scale-105 transition-transform duration-500">
                                 <CategoryIcon className="h-5 w-5 text-white/40" />
                               </div>
                             )}

@@ -84,9 +84,9 @@ export default function DashboardPage() {
       <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
         {/* Total Sales / Conversations */}
         <FadeIn delay={0.05}>
-          <div className="glass-card rounded-3xl p-8">
+          <div className="glass-card glass-glint rounded-3xl p-8 group">
             <div className="flex items-center gap-3 mb-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/[0.05]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/[0.05] group-hover:scale-110 transition-transform duration-300">
                 <span className="material-symbols-outlined text-[20px] text-white/60">
                   payments
                 </span>
@@ -114,9 +114,9 @@ export default function DashboardPage() {
 
         {/* Active Chats */}
         <FadeIn delay={0.1}>
-          <div className="glass-card rounded-3xl p-8">
+          <div className="glass-card glass-glint rounded-3xl p-8 group">
             <div className="flex items-center gap-3 mb-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/[0.05]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/[0.05] group-hover:scale-110 transition-transform duration-300">
                 <span className="material-symbols-outlined text-[20px] text-white/60">forum</span>
               </div>
               <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
@@ -139,9 +139,9 @@ export default function DashboardPage() {
 
         {/* Resolution Rate */}
         <FadeIn delay={0.15}>
-          <div className="glass-card rounded-3xl p-8">
+          <div className="glass-card glass-glint rounded-3xl p-8 group">
             <div className="flex items-center gap-3 mb-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/[0.05]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/[0.05] group-hover:scale-110 transition-transform duration-300">
                 <span className="material-symbols-outlined text-[20px] text-white/60">
                   check_circle
                 </span>

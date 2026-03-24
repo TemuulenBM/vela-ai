@@ -145,12 +145,12 @@
   @keyframes modal-in {
     from {
       opacity: 0;
-      transform: scale(0.85);
-      filter: blur(10px);
+      transform: scale(0.8) translateZ(-100px);
+      filter: blur(20px);
     }
     to {
       opacity: 1;
-      transform: scale(1);
+      transform: scale(1) translateZ(0);
       filter: blur(0);
     }
   }
@@ -413,4 +413,115 @@ body {
 /* ─── Ghost border (accessibility fallback) ─── */
 .ghost-border {
   border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* ─── Glass Glint Sweep — light sweep on hover ─── */
+.glass-glint {
+  position: relative;
+  overflow: hidden;
+}
+.glass-glint::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 45%,
+    rgba(255, 255, 255, 0.08) 48%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.08) 52%,
+    transparent 55%
+  );
+  transform: translate(-100%, -100%) rotate(45deg);
+  transition: transform 0.8s ease-in-out;
+  pointer-events: none;
+  z-index: 10;
+  border-radius: inherit;
+}
+.glass-glint:hover::after {
+  transform: translate(50%, 50%) rotate(45deg);
+}
+
+/* ─── Hero Ambient Gradient — animated background ─── */
+@keyframes hero-gradient-drift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 100% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  75% {
+    background-position: 0% 100%;
+  }
+}
+.hero-ambient {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(255, 255, 255, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(255, 255, 255, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(255, 255, 255, 0.03) 0%, transparent 60%);
+  background-size: 200% 200%;
+  animation: hero-gradient-drift 20s ease-in-out infinite;
+}
+
+/* ─── Tilt 3D — base transition for tilt hook ─── */
+.tilt-3d {
+  transform-style: preserve-3d;
+  transition:
+    transform 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 0.5s ease;
+  will-change: transform;
+}
+.tilt-3d:hover {
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.15),
+    0 30px 60px -15px rgba(0, 0, 0, 0.5);
+}
+
+/* ─── Bar grow animation ─── */
+@keyframes grow-up {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+.grow-bar {
+  transform-origin: bottom;
+  animation: grow-up 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transform: scaleY(0);
+}
+
+/* ─── Floating pulse glow — for decorative orbs ─── */
+@keyframes float-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-20px) scale(1.05);
+  }
+}
+
+/* ─── Reduce motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .glass-glint::after,
+  .hero-ambient,
+  .tilt-3d,
+  .grow-bar {
+    animation: none !important;
+    transition: none !important;
+  }
+  .glass-glint:hover::after {
+    transform: none;
+  }
 }

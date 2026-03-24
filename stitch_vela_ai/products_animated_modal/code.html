@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Products Management | Vela AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Barlow:wght@300;400;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-background": "#e2e2e2",
+              "surface": "#131313",
+              "on-secondary-container": "#e2e2e2",
+              "surface-container": "#1f1f1f",
+              "secondary-fixed": "#c6c6c7",
+              "on-secondary-fixed-variant": "#3a3c3c",
+              "on-primary": "#1a1c1c",
+              "on-error-container": "#ffdad6",
+              "surface-bright": "#393939",
+              "outline": "#919191",
+              "on-tertiary-fixed": "#ffffff",
+              "surface-container-high": "#2a2a2a",
+              "tertiary-fixed": "#5d5f5f",
+              "primary": "#ffffff",
+              "on-surface": "#e2e2e2",
+              "on-secondary": "#1a1c1c",
+              "inverse-primary": "#5d5f5f",
+              "primary-fixed-dim": "#454747",
+              "on-tertiary-container": "#000000",
+              "secondary-fixed-dim": "#aaabab",
+              "inverse-on-surface": "#303030",
+              "secondary-container": "#454747",
+              "on-tertiary": "#1a1c1c",
+              "surface-container-highest": "#353535",
+              "error-container": "#93000a",
+              "surface-tint": "#c6c6c7",
+              "secondary": "#c6c6c7",
+              "tertiary-container": "#909191",
+              "primary-container": "#d4d4d4",
+              "on-primary-fixed": "#ffffff",
+              "tertiary-fixed-dim": "#454747",
+              "surface-container-lowest": "#0e0e0e",
+              "on-secondary-fixed": "#1a1c1c",
+              "tertiary": "#e2e2e2",
+              "primary-fixed": "#5d5f5f",
+              "on-primary-container": "#000000",
+              "inverse-surface": "#e2e2e2",
+              "on-tertiary-fixed-variant": "#e2e2e2",
+              "surface-variant": "#353535",
+              "surface-dim": "#131313",
+              "background": "#000000",
+              "outline-variant": "#474747",
+              "on-surface-variant": "#c6c6c6",
+              "on-error": "#690005",
+              "surface-container-low": "#1b1b1b",
+              "error": "#ffb4ab",
+              "on-primary-fixed-variant": "#e2e2e2"
+            },
+            fontFamily: {
+              "headline": ["Instrument Serif", "serif"],
+              "body": ["Barlow", "sans-serif"],
+              "label": ["Barlow", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+            keyframes: {
+              'modal-entry': {
+                '0%': { transform: 'scale(0.8) translateZ(-100px)', opacity: '0', filter: 'blur(20px)' },
+                '100%': { transform: 'scale(1) translateZ(0)', opacity: '1', filter: 'blur(0)' }
+              },
+              'stagger-fade': {
+                '0%': { transform: 'translateY(10px)', opacity: '0' },
+                '100%': { transform: 'translateY(0)', opacity: '1' }
+              },
+              'pulse-glow': {
+                '0%, 100%': { opacity: '1', borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.1)' },
+                '50%': { opacity: '0.8', borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.3)' }
+              }
+            },
+            animation: {
+              'modal-entry': 'modal-entry 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+              'stagger-fade': 'stagger-fade 0.5s ease-out forwards',
+              'pulse-glow': 'pulse-glow 3s infinite ease-in-out'
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(40px);
+            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        .input-glow-focus:focus {
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2) !important;
+        }
+        
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+        .stagger-5 { animation-delay: 0.5s; }
+
+        .modal-perspective {
+            perspective: 2000px;
+        }
+    </style>
+</head>
+<body class="bg-black text-on-surface font-body font-light selection:bg-white selection:text-black">
+<div class="flex min-h-screen">
+<!-- SideNavBar Component -->
+<aside class="h-screen w-72 rounded-r-[3rem] sticky left-0 top-0 bg-black flex flex-col py-10 px-6 gap-8 bg-gradient-to-b from-white/5 to-transparent shadow-[40px_0_60px_rgba(255,255,255,0.02)] z-40">
+<div class="flex items-center gap-3 px-2">
+<div class="w-10 h-10 rounded-full bg-white flex items-center justify-center">
+<span class="material-symbols-outlined text-black text-xl">temp_preferences_custom</span>
+</div>
+<div>
+<h1 class="text-2xl font-['Instrument_Serif'] italic text-white leading-none">Vela AI</h1>
+<p class="text-[10px] uppercase tracking-[0.2em] text-white/40 font-semibold mt-1">E-commerce Assistant</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2 mt-8">
+<a class="flex items-center gap-4 text-white/40 hover:text-white/80 px-6 py-3 transition-all duration-300 hover:bg-white/5" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-sm font-medium">Overview</span>
+</a>
+<a class="flex items-center gap-4 bg-white/10 backdrop-blur-xl text-white rounded-full px-6 py-3 font-semibold scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="text-sm font-medium">Products</span>
+</a>
+<a class="flex items-center gap-4 text-white/40 hover:text-white/80 px-6 py-3 transition-all duration-300 hover:bg-white/5" href="#">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+<span class="text-sm font-medium">Conversations</span>
+</a>
+<a class="flex items-center gap-4 text-white/40 hover:text-white/80 px-6 py-3 transition-all duration-300 hover:bg-white/5" href="#">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
+<span class="text-sm font-medium">Analytics</span>
+</a>
+<a class="flex items-center gap-4 text-white/40 hover:text-white/80 px-6 py-3 transition-all duration-300 hover:bg-white/5 mt-auto" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-2">
+<button class="w-full py-4 bg-white text-black rounded-full font-semibold text-sm hover:scale-[1.02] active:scale-95 transition-all">
+                New Campaign
+            </button>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="flex-1 min-h-screen relative overflow-x-hidden">
+<!-- TopAppBar Component -->
+<header class="w-full h-24 sticky top-0 z-50 bg-black/20 backdrop-blur-[40px] border-b border-white/5 flex items-center justify-between px-12">
+<div class="flex items-center gap-12">
+<div class="relative w-80">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/30 text-xl" data-icon="search">search</span>
+<input class="w-full bg-white/5 border-none rounded-full py-2.5 pl-12 pr-6 text-sm text-white focus:ring-1 focus:ring-white/20 placeholder:text-white/20 transition-all" placeholder="Search products..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="flex gap-8">
+<a class="text-white/50 hover:text-white transition-opacity font-['Barlow'] font-medium text-xs tracking-widest uppercase" href="#">Dashboard</a>
+<a class="text-white font-bold border-b border-white pb-1 font-['Barlow'] font-medium text-xs tracking-widest uppercase" href="#">Store Settings</a>
+</div>
+<div class="flex items-center gap-4 border-l border-white/10 pl-8">
+<button class="hover:bg-white/10 rounded-full p-2 transition-all text-white/60">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="hover:bg-white/10 rounded-full p-2 transition-all text-white/60">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container border border-white/10">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="Close-up portrait of a stylish creative professional in minimalist dark studio lighting with soft highlights" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAe1xCaDde1pVjVHvXzRabfIvgl3sd-rMqieaD1bFXGZ7cSuE2okumtz5p97bijsaJb8m9KYK5s9eBUsSqhrvl9coMfnV4k8YODKOL3QX67qHG2IZqTiMSa4negB2U2FWCt6ToR5tKofaLDzNaVoD1NMegBcH2uZZKq9tW-vrStflm_ZXUjqUKc3cMZW0irjQz0r_oWG7JdXcgkIH3Ya3CbN_Pnhd5ERuT-1Lp_SoVmha07DbcGkzRxnCGb6SkkbN9IoWgIwvbgZrg"/>
+</div>
+</div>
+</div>
+</header>
+<div class="p-12 max-w-[1400px] mx-auto">
+<!-- Page Title -->
+<div class="flex items-end justify-between mb-16">
+<div>
+<h2 class="text-7xl font-['Instrument_Serif'] italic text-white tracking-tighter leading-tight">Catalogue</h2>
+<p class="text-white/40 mt-4 max-w-md font-light">Manage your inventory synchronized with Vela AI's recommendation engine. Maintain real-time stock and status precision.</p>
+</div>
+<div class="flex gap-4">
+<button class="px-8 py-4 glass-panel rounded-full text-white text-sm font-semibold hover:bg-white/10 transition-all">
+                        Export CSV
+                    </button>
+<button class="px-8 py-4 bg-white text-black rounded-full text-sm font-semibold hover:scale-105 active:scale-95 transition-all">
+                        Add Product
+                    </button>
+</div>
+</div>
+<!-- Product Grid/Table -->
+<div class="glass-panel rounded-[3rem] overflow-hidden border border-white/[0.02]">
+<div class="grid grid-cols-12 px-10 py-6 text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold border-b border-white/5 bg-white/[0.02]">
+<div class="col-span-5">Product Details</div>
+<div class="col-span-2">Category</div>
+<div class="col-span-2">Price</div>
+<div class="col-span-2">Status</div>
+<div class="col-span-1 text-right">Actions</div>
+</div>
+<div class="divide-y divide-white/[0.05]">
+<!-- Product Item 1 -->
+<div class="grid grid-cols-12 px-10 py-8 items-center hover:bg-white/[0.02] transition-colors group">
+<div class="col-span-5 flex items-center gap-6">
+<div class="w-20 h-24 rounded-2xl overflow-hidden bg-surface-container-low border border-white/5">
+<img alt="Product 1" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="minimalist white wristwatch on a clean dark surface with soft ambient lighting and sharp focus" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzXv1ZDdIHM2VejVN88GKclPsMhlJJjAI157JCxGhQcd6VFC9L8u8ZNrAyOM-LUnY9OXXRmr30xZ3IY5sIPlgJVIGaZG9gLV6cH4HrN4akGpyzQl7JQHmSgqy-NWxJG2ve88BGjYxxDW7rDy81IZa_pvJUh0w3_ZqegQxr9sLougKlnB9xZiK0CSZtRq42UGb3Ol-CkUzzmnlnClVBejvYwV4vWMAB-yn4-fcxF5MzB0025gHZKt5WvHL_AWDzgWz1KHlnv6NDU4I"/>
+</div>
+<div>
+<h4 class="text-white text-lg font-medium">Lunar Horizon Chrono</h4>
+<p class="text-white/30 text-xs mt-1">SKU: LH-2024-WHT</p>
+</div>
+</div>
+<div class="col-span-2">
+<span class="px-3 py-1 rounded-full bg-white/5 text-white/60 text-xs border border-white/5">Accessories</span>
+</div>
+<div class="col-span-2 text-white/80 font-medium">$420.00</div>
+<div class="col-span-2">
+<div class="flex items-center gap-2 text-emerald-400">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]"></span>
+<span class="text-xs font-semibold uppercase tracking-wider">Synced</span>
+</div>
+</div>
+<div class="col-span-1 text-right">
+<button class="w-10 h-10 rounded-full hover:bg-white/10 flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-white/40" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Product Item 2 -->
+<div class="grid grid-cols-12 px-10 py-8 items-center hover:bg-white/[0.02] transition-colors group">
+<div class="col-span-5 flex items-center gap-6">
+<div class="w-20 h-24 rounded-2xl overflow-hidden bg-surface-container-low border border-white/5">
+<img alt="Product 2" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="premium high-fidelity headphones in matte black finish with elegant design lines and soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMhhVdETh3YJPWECuTHocz007LJFm6fZ8z-719zEjF9tsu5rAS33rfjWK2VGX4VghTE1-RI3FjtxCvoFEvvCakEsBs7Sc3Qs8DBM7vw4JdQUSkl3rbxyrY4s_k9qFIpdW9D4OQ8CfkVdAfhAtMNZr_nn4woPcRcjJJc78mvAQu-TBsjVAcO9t4tuAtRCu-A1EH4Gm7qR6qiDBQ5iQvdbmFoPWUGGCdpW1cnO3Q0mE1LNaKfYzTYkDuneEwMIGAvlA3a1Ex7GDUX9E"/>
+</div>
+<div>
+<h4 class="text-white text-lg font-medium">Obsidian Soundstage Pro</h4>
+<p class="text-white/30 text-xs mt-1">SKU: OSP-99-BLK</p>
+</div>
+</div>
+<div class="col-span-2">
+<span class="px-3 py-1 rounded-full bg-white/5 text-white/60 text-xs border border-white/5">Electronics</span>
+</div>
+<div class="col-span-2 text-white/80 font-medium">$899.00</div>
+<div class="col-span-2">
+<div class="flex items-center gap-2 text-amber-400">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]"></span>
+<span class="text-xs font-semibold uppercase tracking-wider">Pending</span>
+</div>
+</div>
+<div class="col-span-1 text-right">
+<button class="w-10 h-10 rounded-full hover:bg-white/10 flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-white/40" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Product Item 3 -->
+<div class="grid grid-cols-12 px-10 py-8 items-center hover:bg-white/[0.02] transition-colors group">
+<div class="col-span-5 flex items-center gap-6">
+<div class="w-20 h-24 rounded-2xl overflow-hidden bg-surface-container-low border border-white/5">
+<img alt="Product 3" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="vibrant red athletic sneaker with sleek design isolated on a dark reflective surface with cinematic highlights" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDD2v5qbUA3WuV10Tu9yDNufdPFXxl-XpuKqLV8v8iR-xG-IKuM1GdSo3_FoFmGZu4X1DtxNaqOJ5JRFOTehqiv-_Ia1DLb0qP8W-fBGdXQMzD0o4XlmX1RWgEOp9oyNwfR9AL2ZbpUwl9k5GYhMubb5J7_wgkrUH0ysmARCPRGpfR9YBOX08V5-GPrTEoZxrwIOqswwwN5NrOlfBN7Xr3ftIIjmOA1GsP9QxG4mm6VKbAT-lWy_MyLzW9GWKCFX5wXyg1h3uAufWE"/>
+</div>
+<div>
+<h4 class="text-white text-lg font-medium">Crimson Kinetic V2</h4>
+<p class="text-white/30 text-xs mt-1">SKU: CK-V2-RED</p>
+</div>
+</div>
+<div class="col-span-2">
+<span class="px-3 py-1 rounded-full bg-white/5 text-white/60 text-xs border border-white/5">Footwear</span>
+</div>
+<div class="col-span-2 text-white/80 font-medium">$180.00</div>
+<div class="col-span-2">
+<div class="flex items-center gap-2 text-emerald-400">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]"></span>
+<span class="text-xs font-semibold uppercase tracking-wider">Synced</span>
+</div>
+</div>
+<div class="col-span-1 text-right">
+<button class="w-10 h-10 rounded-full hover:bg-white/10 flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-white/40" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Table Footer -->
+<div class="px-10 py-6 border-t border-white/5 flex items-center justify-between">
+<p class="text-white/30 text-xs">Showing 3 of 124 products</p>
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/40 hover:text-white transition-all">
+<span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
+</button>
+<span class="px-4 text-white text-xs font-bold">1</span>
+<button class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/40 hover:text-white transition-all">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Modal: Add Product (Visible State) -->
+<div class="fixed inset-0 z-[100] flex items-center justify-center px-6 modal-perspective">
+<!-- Backdrop -->
+<div class="absolute inset-0 bg-black/80 backdrop-blur-md"></div>
+<!-- Modal Content -->
+<div class="relative w-full max-w-4xl glass-panel rounded-[3rem] p-12 overflow-hidden animate-modal-entry">
+<!-- Glass Accents -->
+<div class="absolute -top-24 -right-24 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
+<div class="relative z-10">
+<div class="flex justify-between items-start mb-12 animate-stagger-fade opacity-0">
+<div>
+<h3 class="text-5xl font-['Instrument_Serif'] italic text-white tracking-tighter">New Product</h3>
+<p class="text-white/40 mt-2">Initialize a new item in the Vela AI inventory.</p>
+</div>
+<button class="w-12 h-12 rounded-full glass-panel flex items-center justify-center hover:bg-white/10 transition-all">
+<span class="material-symbols-outlined text-white" data-icon="close">close</span>
+</button>
+</div>
+<form class="space-y-10">
+<div class="grid grid-cols-2 gap-10">
+<div class="space-y-6">
+<div class="space-y-2 animate-stagger-fade stagger-1 opacity-0">
+<label class="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold ml-4">Product Name</label>
+<input class="w-full bg-white/[0.03] border border-white/5 rounded-full py-4 px-8 text-white focus:ring-1 focus:ring-white/20 transition-all outline-none input-glow-focus" placeholder="e.g. Minimalist Desk Lamp" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-6">
+<div class="space-y-2 animate-stagger-fade stagger-2 opacity-0">
+<label class="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold ml-4">Price (USD)</label>
+<input class="w-full bg-white/[0.03] border border-white/5 rounded-full py-4 px-8 text-white focus:ring-1 focus:ring-white/20 transition-all outline-none input-glow-focus" placeholder="0.00" type="number"/>
+</div>
+<div class="space-y-2 animate-stagger-fade stagger-2 opacity-0">
+<label class="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold ml-4">Category</label>
+<select class="w-full bg-white/[0.03] border border-white/5 rounded-full py-4 px-8 text-white focus:ring-1 focus:ring-white/20 transition-all outline-none appearance-none input-glow-focus">
+<option>Furniture</option>
+<option>Electronics</option>
+<option>Apparel</option>
+</select>
+</div>
+</div>
+<div class="space-y-2 animate-stagger-fade stagger-3 opacity-0">
+<label class="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold ml-4">Description</label>
+<textarea class="w-full bg-white/[0.03] border border-white/5 rounded-[2rem] py-5 px-8 text-white focus:ring-1 focus:ring-white/20 transition-all outline-none resize-none input-glow-focus" placeholder="Brief editorial description..." rows="4"></textarea>
+</div>
+</div>
+<div class="space-y-6 animate-stagger-fade stagger-4 opacity-0">
+<label class="text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold ml-4">Media Assets</label>
+<div class="aspect-[4/3] w-full border-2 border-dashed border-white/10 rounded-[2rem] flex flex-col items-center justify-center gap-4 group cursor-pointer hover:bg-white/5 transition-all animate-pulse-glow">
+<div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-white/40 text-3xl" data-icon="cloud_upload">cloud_upload</span>
+</div>
+<div class="text-center px-10">
+<p class="text-white text-sm font-medium">Drop high-res images here</p>
+<p class="text-white/30 text-xs mt-1">Preferably 4:5 ratio, minimalist background</p>
+</div>
+</div>
+<div class="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+<span class="material-symbols-outlined text-emerald-400" data-icon="auto_awesome">auto_awesome</span>
+<p class="text-white/60 text-xs leading-relaxed">Vela AI will automatically generate optimized alternative text and SEO tags for these assets.</p>
+</div>
+</div>
+</div>
+<div class="flex justify-end gap-6 pt-6 animate-stagger-fade stagger-5 opacity-0">
+<button class="px-10 py-4 text-white/40 hover:text-white transition-colors font-semibold" type="button">Discard Draft</button>
+<button class="px-12 py-4 bg-white text-black rounded-full font-bold hover:scale-105 active:scale-95 transition-all" type="submit">
+                        Publish to Inventory
+                    </button>
+</div>
+</form>
+</div>
+</div>
+</div>
+</body></html>

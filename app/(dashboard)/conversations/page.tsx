@@ -236,10 +236,10 @@ export default function ConversationsPage() {
                     )}
                     <div
                       className={cn(
-                        "max-w-[65%] px-5 py-3.5",
+                        "max-w-[65%] px-5 py-3.5 hover:scale-[1.01] transition-transform duration-200",
                         msg.role === "user"
                           ? "rounded-t-3xl rounded-bl-3xl bg-white text-black"
-                          : "rounded-t-3xl rounded-br-3xl bg-white/[0.05]",
+                          : "rounded-t-3xl rounded-br-3xl bg-white/[0.05] glass-glint",
                       )}
                     >
                       <p

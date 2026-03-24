@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Barlow:wght@300;400;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-background": "#e2e2e2",
+              "surface": "#131313",
+              "on-secondary-container": "#e2e2e2",
+              "surface-container": "#1f1f1f",
+              "secondary-fixed": "#c6c6c7",
+              "on-secondary-fixed-variant": "#3a3c3c",
+              "on-primary": "#1a1c1c",
+              "on-error-container": "#ffdad6",
+              "surface-bright": "#393939",
+              "outline": "#919191",
+              "on-tertiary-fixed": "#ffffff",
+              "surface-container-high": "#2a2a2a",
+              "tertiary-fixed": "#5d5f5f",
+              "primary": "#ffffff",
+              "on-surface": "#e2e2e2",
+              "on-secondary": "#1a1c1c",
+              "inverse-primary": "#5d5f5f",
+              "primary-fixed-dim": "#454747",
+              "on-tertiary-container": "#000000",
+              "secondary-fixed-dim": "#aaabab",
+              "inverse-on-surface": "#303030",
+              "secondary-container": "#454747",
+              "on-tertiary": "#1a1c1c",
+              "surface-container-highest": "#353535",
+              "error-container": "#93000a",
+              "surface-tint": "#c6c6c7",
+              "secondary": "#c6c6c7",
+              "tertiary-container": "#909191",
+              "primary-container": "#d4d4d4",
+              "on-primary-fixed": "#ffffff",
+              "tertiary-fixed-dim": "#454747",
+              "surface-container-lowest": "#0e0e0e",
+              "on-secondary-fixed": "#1a1c1c",
+              "tertiary": "#e2e2e2",
+              "primary-fixed": "#5d5f5f",
+              "on-primary-container": "#000000",
+              "inverse-surface": "#e2e2e2",
+              "on-tertiary-fixed-variant": "#e2e2e2",
+              "surface-variant": "#353535",
+              "surface-dim": "#131313",
+              "background": "#000000",
+              "outline-variant": "#474747",
+              "on-surface-variant": "#c6c6c6",
+              "on-error": "#690005",
+              "surface-container-low": "#1b1b1b",
+              "error": "#ffb4ab",
+              "on-primary-fixed-variant": "#e2e2e2"
+            },
+            fontFamily: {
+              "headline": ["Instrument Serif", "serif"],
+              "body": ["Barlow", "sans-serif"],
+              "label": ["Barlow", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .liquid-glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(50px);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 40px 100px rgba(0, 0, 0, 0.5);
+        }
+        .bg-void {
+            background-color: #000000;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.03) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(255, 255, 255, 0.02) 0px, transparent 50%);
+        }
+    </style>
+</head>
+<body class="bg-void min-h-screen flex items-center justify-center font-body text-on-surface overflow-hidden">
+<!-- Supressed Nav Shell for focused task -->
+<main class="relative z-10 w-full max-w-md px-6">
+<!-- Floating Brand Anchor -->
+<div class="flex flex-col items-center mb-12">
+<h1 class="font-headline italic text-6xl text-white tracking-tighter mb-2">Vela AI</h1>
+<p class="font-body font-light text-white/40 tracking-[0.2em] uppercase text-[10px]">E-commerce Assistant</p>
+</div>
+<!-- The Liquid Glass Card -->
+<div class="liquid-glass rounded-xl p-10 md:p-12 border border-white/5 relative overflow-hidden">
+<!-- Subtle internal glow -->
+<div class="absolute -top-24 -left-24 w-48 h-48 bg-white/5 rounded-full blur-3xl"></div>
+<div class="relative z-20">
+<div class="mb-10">
+<h2 class="font-headline italic text-4xl text-white mb-2">Welcome back</h2>
+<p class="font-body font-light text-white/50 text-sm tracking-tight">Access your editorial e-commerce suite.</p>
+</div>
+<form class="space-y-6">
+<!-- Email Input Group -->
+<div class="space-y-2">
+<label class="font-label font-semibold text-xs text-white/60 uppercase tracking-widest px-1">Email Address</label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border-none rounded-full px-6 py-4 text-white font-body font-light placeholder:text-white/20 focus:ring-1 focus:ring-white/20 transition-all outline-none" placeholder="curator@vela.ai" type="email"/>
+<span class="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-white/20 text-xl" data-icon="alternate_email">alternate_email</span>
+</div>
+</div>
+<!-- Password Input Group -->
+<div class="space-y-2">
+<div class="flex justify-between items-center px-1">
+<label class="font-label font-semibold text-xs text-white/60 uppercase tracking-widest">Password</label>
+<a class="text-[10px] text-white/40 hover:text-white transition-colors uppercase tracking-widest" href="#">Forgot?</a>
+</div>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border-none rounded-full px-6 py-4 text-white font-body font-light placeholder:text-white/20 focus:ring-1 focus:ring-white/20 transition-all outline-none" placeholder="••••••••" type="password"/>
+<span class="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-white/20 text-xl" data-icon="lock">lock</span>
+</div>
+</div>
+<!-- Action Button -->
+<button class="w-full bg-white text-black font-label font-semibold rounded-full py-4 mt-4 hover:bg-white/90 active:scale-[0.98] transition-all duration-200" type="submit">
+                        Sign In
+                    </button>
+</form>
+<!-- Footer Link -->
+<div class="mt-10 text-center">
+<p class="text-sm font-body font-light text-white/40">
+                        New to the assistant? 
+                        <a class="text-white font-semibold hover:underline decoration-white/20 underline-offset-4 ml-1" href="#">Create Account</a>
+</p>
+</div>
+</div>
+</div>
+<!-- Ambient Refraction Elements -->
+<div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-white/5 blur-[120px] rounded-[100%] pointer-events-none -z-10 opacity-30"></div>
+</main>
+<!-- Decorative Image Reference (Background Ambient Texture) -->
+<div class="fixed inset-0 -z-20 opacity-20 grayscale mix-blend-overlay">
+<img alt="" class="w-full h-full object-cover" data-alt="Abstract smooth liquid 3D waves with soft reflections and dark obsidian textures with dramatic high-contrast lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYJW89yrtRobiiSHJQL3re78PPliRsqphpZv4rypls7DcVwNLVUv0eK4SJKjQz4sLS00uLjx9MK7jp6GUvktYAd4LrvX5ltq-L363Vr1qlidyg_B8zJwhZzB6z6BqbKvx-NKWKFFsnq7rLgl4yZzog7arfP9WYCC9Jb3UbdZJycMIltcFrlLIxes1pvP1oWl6gcFK5_RdGPeZdUp1ivUwuYVhYjOkuv7uqWZTfa4NSNgbx0Xl8NaMiArCf2aiklhcPlE3iRyTg5-g"/>
+</div>
+</body></html>

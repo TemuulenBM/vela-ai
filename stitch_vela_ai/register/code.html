@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Register | Vela AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Barlow:wght@300;400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-background": "#e2e2e2",
+              "surface": "#131313",
+              "on-secondary-container": "#e2e2e2",
+              "surface-container": "#1f1f1f",
+              "secondary-fixed": "#c6c6c7",
+              "on-secondary-fixed-variant": "#3a3c3c",
+              "primary": "#ffffff",
+              "on-surface": "#e2e2e2",
+              "on-secondary": "#1a1c1c",
+              "inverse-primary": "#5d5f5f",
+              "primary-fixed-dim": "#454747",
+              "on-tertiary-container": "#000000",
+              "secondary-fixed-dim": "#aaabab",
+              "inverse-on-surface": "#303030",
+              "secondary-container": "#454747",
+              "on-tertiary": "#1a1c1c",
+              "surface-container-highest": "#353535",
+              "error-container": "#93000a",
+              "surface-tint": "#c6c6c7",
+              "secondary": "#c6c6c7",
+              "tertiary-container": "#909191",
+              "primary-container": "#d4d4d4",
+              "on-primary-fixed": "#ffffff",
+              "tertiary-fixed-dim": "#454747",
+              "surface-container-lowest": "#0e0e0e",
+              "on-secondary-fixed": "#1a1c1c",
+              "tertiary": "#e2e2e2",
+              "primary-fixed": "#5d5f5f",
+              "on-primary-container": "#000000",
+              "inverse-surface": "#e2e2e2",
+              "on-tertiary-fixed-variant": "#e2e2e2",
+              "surface-variant": "#353535",
+              "surface-dim": "#131313",
+              "background": "#000000",
+              "outline-variant": "#474747",
+              "on-surface-variant": "#c6c6c6",
+              "on-error": "#690005",
+              "surface-container-low": "#1b1b1b",
+              "error": "#ffb4ab",
+              "on-primary-fixed-variant": "#e2e2e2"
+            },
+            fontFamily: {
+              "headline": ["Instrument Serif", "serif"],
+              "body": ["Barlow", "sans-serif"],
+              "label": ["Barlow", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Barlow', sans-serif;
+        }
+        .liquid-glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(50px);
+            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+        }
+        .serif-italic {
+            font-family: 'Instrument Serif', serif;
+            font-style: italic;
+        }
+        .ambient-glow {
+            box-shadow: 0 0 80px rgba(255, 255, 255, 0.03);
+        }
+        .input-glass {
+            background: #0e0e0e;
+            transition: all 0.3s ease;
+        }
+        .input-glass:focus {
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15);
+            outline: none;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen selection:bg-white selection:text-black">
+<!-- Background Decoration -->
+<div class="fixed inset-0 overflow-hidden pointer-events-none">
+<div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/5 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-[-5%] right-[-5%] w-[30%] h-[30%] bg-white/5 rounded-full blur-[100px]"></div>
+</div>
+<!-- Register Shell -->
+<main class="relative z-10 w-full max-w-[540px] px-6">
+<!-- Brand Identity -->
+<div class="text-center mb-10">
+<h1 class="serif-italic text-5xl tracking-tighter text-white mb-2">Vela AI</h1>
+<p class="font-body text-white/40 tracking-[0.2em] uppercase text-xs">The E-commerce Curator</p>
+</div>
+<!-- Centered Liquid Glass Card -->
+<div class="liquid-glass rounded-xl p-10 md:p-14 ambient-glow">
+<div class="mb-10">
+<h2 class="serif-italic text-3xl text-white mb-3">Begin your journey.</h2>
+<p class="font-body font-light text-white/60 text-lg tracking-tight">Set up your store assistant and scale with precision.</p>
+</div>
+<form action="#" class="space-y-6">
+<!-- Store Name -->
+<div class="space-y-2">
+<label class="block text-[10px] uppercase tracking-widest text-white/40 font-semibold ml-4" for="store_name">Store Name</label>
+<div class="relative">
+<input class="w-full h-14 px-6 rounded-full input-glass border-none text-white placeholder:text-white/20 font-body" id="store_name" placeholder="E.g. Obsidian Collective" type="text"/>
+</div>
+</div>
+<!-- Email -->
+<div class="space-y-2">
+<label class="block text-[10px] uppercase tracking-widest text-white/40 font-semibold ml-4" for="email">Corporate Email</label>
+<div class="relative">
+<input class="w-full h-14 px-6 rounded-full input-glass border-none text-white placeholder:text-white/20 font-body" id="email" placeholder="name@company.com" type="email"/>
+</div>
+</div>
+<!-- Password -->
+<div class="space-y-2">
+<label class="block text-[10px] uppercase tracking-widest text-white/40 font-semibold ml-4" for="password">Secure Password</label>
+<div class="relative">
+<input class="w-full h-14 px-6 rounded-full input-glass border-none text-white placeholder:text-white/20 font-body" id="password" placeholder="••••••••" type="password"/>
+</div>
+</div>
+<!-- Terms -->
+<div class="flex items-start gap-3 px-2 pt-2">
+<input class="mt-1 w-4 h-4 rounded border-white/10 bg-white/5 text-white focus:ring-offset-black focus:ring-white/20" id="terms" type="checkbox"/>
+<label class="text-xs text-white/40 leading-relaxed font-body" for="terms">
+                        I agree to the <a class="text-white hover:underline underline-offset-4" href="#">Terms of Service</a> and <a class="text-white hover:underline underline-offset-4" href="#">Privacy Protocol</a>.
+                    </label>
+</div>
+<!-- Action -->
+<div class="pt-6">
+<button class="w-full h-14 bg-white text-black rounded-full font-semibold text-sm uppercase tracking-widest hover:bg-white/90 active:scale-[0.98] transition-all" type="submit">
+                        Create Account
+                    </button>
+</div>
+</form>
+<!-- Secondary Action -->
+<div class="mt-10 pt-8 border-t border-white/5 text-center">
+<p class="text-sm text-white/40 font-body">
+                    Already a member? 
+                    <a class="text-white font-semibold hover:text-white/80 transition-colors ml-1" href="#">Sign In</a>
+</p>
+</div>
+</div>
+<!-- Footer Meta -->
+<div class="mt-8 flex justify-center gap-8 text-[10px] uppercase tracking-[0.2em] text-white/20 font-semibold">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-xs">verified_user</span> 
+                AES-256 Encryption
+            </span>
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-xs">language</span> 
+                Global Infrastructure
+            </span>
+</div>
+</main>
+<!-- Asymmetric Decorative Element -->
+<div class="fixed top-20 right-20 hidden lg:block opacity-20 pointer-events-none">
+<div class="serif-italic text-[120px] leading-none text-white select-none rotate-12">
+            Elevate.
+        </div>
+</div>
+</body></html>

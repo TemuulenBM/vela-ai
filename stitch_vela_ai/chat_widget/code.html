@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Barlow:wght@300;400;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-background": "#e2e2e2",
+                        "surface": "#131313",
+                        "on-secondary-container": "#e2e2e2",
+                        "surface-container": "#1f1f1f",
+                        "secondary-fixed": "#c6c6c7",
+                        "on-secondary-fixed-variant": "#3a3c3c",
+                        "primary": "#ffffff",
+                        "on-primary": "#1a1c1c",
+                        "on-error-container": "#ffdad6",
+                        "surface-bright": "#393939",
+                        "outline": "#919191",
+                        "on-tertiary-fixed": "#ffffff",
+                        "surface-container-high": "#2a2a2a",
+                        "tertiary-fixed": "#5d5f5f",
+                        "on-surface": "#e2e2e2",
+                        "on-secondary": "#1a1c1c",
+                        "inverse-primary": "#5d5f5f",
+                        "primary-fixed-dim": "#454747",
+                        "on-tertiary-container": "#000000",
+                        "secondary-fixed-dim": "#aaabab",
+                        "inverse-on-surface": "#303030",
+                        "secondary-container": "#454747",
+                        "on-tertiary": "#1a1c1c",
+                        "surface-container-highest": "#353535",
+                        "error-container": "#93000a",
+                        "surface-tint": "#c6c6c7",
+                        "secondary": "#c6c6c7",
+                        "tertiary-container": "#909191",
+                        "primary-container": "#d4d4d4",
+                        "on-primary-fixed": "#ffffff",
+                        "tertiary-fixed-dim": "#454747",
+                        "surface-container-lowest": "#0e0e0e",
+                        "on-secondary-fixed": "#1a1c1c",
+                        "tertiary": "#e2e2e2",
+                        "primary-fixed": "#5d5f5f",
+                        "on-primary-container": "#000000",
+                        "inverse-surface": "#e2e2e2",
+                        "on-tertiary-fixed-variant": "#e2e2e2",
+                        "surface-variant": "#353535",
+                        "surface-dim": "#131313",
+                        "background": "#000000",
+                        "outline-variant": "#474747",
+                        "on-surface-variant": "#c6c6c6",
+                        "on-error": "#690005",
+                        "surface-container-low": "#1b1b1b",
+                        "error": "#ffb4ab",
+                        "on-primary-fixed-variant": "#e2e2e2"
+                    },
+                    fontFamily: {
+                        "headline": ["Instrument Serif", "serif"],
+                        "body": ["Barlow", "sans-serif"],
+                        "label": ["Barlow", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(40px);
+            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+        }
+        .liquid-bubble-left {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+            border-radius: 2rem 2rem 2rem 0.5rem;
+        }
+        .liquid-bubble-right {
+            background: #ffffff;
+            color: #000000;
+            border-radius: 2rem 2rem 0.5rem 2rem;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-black text-on-surface font-body selection:bg-white selection:text-black min-h-screen flex items-center justify-center p-0 md:p-8">
+<!-- Mobile-first Chat Shell -->
+<main class="relative w-full max-w-md h-[884px] md:h-[850px] bg-black md:rounded-xl overflow-hidden flex flex-col shadow-[0_0_100px_rgba(255,255,255,0.02)]">
+<!-- Header: Managed via Shared Components Logic -->
+<header class="w-full h-24 glass-panel sticky top-0 z-50 flex items-center justify-between px-8 border-b border-white/5">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
+<img alt="Vela AI Logo" class="w-8 h-8" data-alt="Abstract geometric white shape on a dark background representing artificial intelligence logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDn1wOtuL_u34zfCYtjXqwqYfFO3OUZCQLF1zJ6DCTkJ1e3epCpuGvScXicOQYrxzdyJlLfMSeQcNYcb2UXKrHJMbBo0N1eoKSbsjfMvR6TeJV1PObdc2MDs4JUCJHQgwifKkn14GhaRJyVbGlVeBjU91nKSKHwFxWjAJ2xW0lxCzUmcFbQCIsQvQmKBtAQEhFlldlKHELkvzYuuhHE4CMNeMPQkvzzJQ-QR0ezbMW9KrjYExh27zeOX8U9HPGsu3o-ZgPHNVqwAo0"/>
+</div>
+<div class="flex flex-col">
+<h1 class="font-headline italic text-2xl text-white tracking-tighter leading-tight">Vela AI</h1>
+<span class="font-body font-light text-[10px] uppercase tracking-[0.2em] text-white/40">E-commerce Assistant</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/5 transition-all">
+<span class="material-symbols-outlined text-white/60">search</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/5 transition-all">
+<span class="material-symbols-outlined text-white/60">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Chat History Area -->
+<section class="flex-1 overflow-y-auto p-6 space-y-8 hide-scrollbar">
+<!-- Timestamp Decorator -->
+<div class="flex justify-center">
+<span class="text-[10px] font-medium uppercase tracking-widest text-white/20 py-2 px-4 rounded-full border border-white/5">Today • 10:24 AM</span>
+</div>
+<!-- AI Message Bundle -->
+<div class="flex flex-col gap-3 max-w-[85%]">
+<div class="liquid-bubble-left p-5">
+<p class="font-body font-light text-white/90 leading-relaxed text-sm">
+                        Hello! I'm <span class="font-headline italic text-lg text-white mx-1">Vela</span>. I can help you track orders, browse new arrivals, or adjust your store settings. How's your day going?
+                    </p>
+</div>
+<div class="flex items-center gap-2 px-1">
+<span class="text-[10px] text-white/30 font-light">Vela AI</span>
+<span class="w-1 h-1 rounded-full bg-white/10"></span>
+<span class="text-[10px] text-white/30 font-light">Delivered</span>
+</div>
+</div>
+<!-- User Message Bundle -->
+<div class="flex flex-col gap-3 max-w-[85%] ml-auto">
+<div class="liquid-bubble-right p-5">
+<p class="font-body font-semibold leading-relaxed text-sm">
+                        I'm looking for the status of my last campaign "Autumn Luxe". Can you show me the analytics?
+                    </p>
+</div>
+<div class="flex items-center justify-end gap-2 px-1">
+<span class="text-[10px] text-white/30 font-light">10:26 AM</span>
+<span class="material-symbols-outlined text-[12px] text-white/40" style="font-variation-settings: 'FILL' 1;">done_all</span>
+</div>
+</div>
+<!-- AI Response Card (Bento Style Item) -->
+<div class="flex flex-col gap-4 max-w-[95%]">
+<div class="liquid-bubble-left p-1 overflow-hidden">
+<div class="p-5 space-y-4">
+<p class="font-body font-light text-white/90 text-sm">Of course. Here is the real-time performance for <span class="text-white font-semibold">Autumn Luxe</span>:</p>
+<!-- Rich UI Widget within Chat -->
+<div class="grid grid-cols-2 gap-2">
+<div class="bg-white/5 rounded-2xl p-4 flex flex-col gap-1">
+<span class="text-[10px] uppercase tracking-tighter text-white/40">Conversions</span>
+<span class="text-xl font-headline italic text-white">12.4%</span>
+</div>
+<div class="bg-white/5 rounded-2xl p-4 flex flex-col gap-1">
+<span class="text-[10px] uppercase tracking-tighter text-white/40">Avg. Order</span>
+<span class="text-xl font-headline italic text-white">$142</span>
+</div>
+</div>
+</div>
+<div class="relative w-full h-32 mt-2">
+<img class="w-full h-full object-cover opacity-50" data-alt="Abstract dark financial data visualization with glowing soft lines and deep black background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQj9yNGoIwrB_GvmKD8u6K_cuBQDd6Q9Z4vho2S5DDzXhBV55iGTY7uurqIjEnAal_ZToQM1osMxR7PXg23HdOcVMsouLptQ0EcH53V_JB8N_gPLaMbtENaGOw7TnTKcoron3KKXnwwN-lanQYdBPZQJFw38vomsk9MtFxMNZLTSYny09litlgVi2YeX_iHQ11fHKin3lMkQHJ8pi0J_9R5WpGdlnwwwDLRAvbOvO98Vp6Tl-VAPzA4EPzi2JP_wB8dQI90yce9QI"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-4">
+<span class="text-[10px] text-white/60 font-medium">View detailed report</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Suggestions Pills -->
+<div class="flex gap-2 overflow-x-auto hide-scrollbar pb-4 pt-2">
+<button class="flex-none px-6 py-2 rounded-full border border-white/10 bg-white/5 text-white/70 text-xs font-medium hover:bg-white/10 transition-colors">
+                    Export PDF
+                </button>
+<button class="flex-none px-6 py-2 rounded-full border border-white/10 bg-white/5 text-white/70 text-xs font-medium hover:bg-white/10 transition-colors">
+                    Start New Campaign
+                </button>
+<button class="flex-none px-6 py-2 rounded-full border border-white/10 bg-white/5 text-white/70 text-xs font-medium hover:bg-white/10 transition-colors">
+                    Compare with Summer
+                </button>
+</div>
+</section>
+<!-- Input Bar: Liquid Design -->
+<footer class="p-6 bg-black/40 backdrop-blur-3xl">
+<div class="relative flex items-center">
+<div class="absolute left-4 flex gap-2">
+<button class="w-8 h-8 flex items-center justify-center rounded-full text-white/40 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-xl">add_circle</span>
+</button>
+</div>
+<input class="w-full bg-surface-container-lowest border-none rounded-full py-4 pl-14 pr-16 text-sm text-white placeholder:text-white/20 focus:ring-1 focus:ring-white/20 transition-all outline-none" placeholder="Ask Vela anything..." type="text"/>
+<div class="absolute right-2 flex gap-1">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-white text-black hover:scale-105 transition-transform active:scale-95">
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">arrow_upward</span>
+</button>
+</div>
+</div>
+<div class="mt-4 flex justify-center gap-6">
+<button class="flex items-center gap-2 text-[10px] text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">
+<span class="material-symbols-outlined text-sm">mic</span>
+                    Voice
+                </button>
+<button class="flex items-center gap-2 text-[10px] text-white/30 uppercase tracking-widest hover:text-white/60 transition-colors">
+<span class="material-symbols-outlined text-sm">image</span>
+                    Vision
+                </button>
+</div>
+</footer>
+<!-- Decorative Ambient Light -->
+<div class="absolute -top-24 -left-24 w-64 h-64 bg-white/5 rounded-full blur-[100px] pointer-events-none"></div>
+<div class="absolute top-1/2 -right-32 w-80 h-80 bg-white/[0.02] rounded-full blur-[120px] pointer-events-none"></div>
+</main>
+</body></html>
