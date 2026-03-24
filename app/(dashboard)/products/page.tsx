@@ -32,9 +32,16 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   FadeIn,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalDescription,
+  ModalFooter,
 } from "@/shared/components/ui";
 import { cn, formatPrice } from "@/shared/lib/utils";
 import { trpc } from "@/shared/lib/trpc";
+import { ProductEditModal } from "./_components/product-edit-modal";
 
 const CATEGORY_ICONS: Record<string, typeof Package> = {
   Хувцас: Shirt,
@@ -48,6 +55,7 @@ export default function ProductsPage() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [page, setPage] = useState(1);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -79,6 +87,53 @@ export default function ProductsPage() {
   const activeCount = items.filter((p) => p.isAvailable).length;
   const outOfStockCount = items.filter((p) => p.stockQty === 0).length;
 
+  // ─── Edit / Delete / Duplicate ───────────────────────────────
+  const [editingProduct, setEditingProduct] = useState<(typeof items)[number] | null>(null);
+  const [deletingProduct, setDeletingProduct] = useState<(typeof items)[number] | null>(null);
+
+  const utils = trpc.useUtils();
+
+  const deleteMutation = trpc.products.delete.useMutation({
+    onSuccess: () => {
+      utils.products.list.invalidate();
+      setDeletingProduct(null);
+    },
+    onError: (err) => {
+      setError(`Устгах үед алдаа: ${err.message}`);
+    },
+  });
+
+  const updateMutation = trpc.products.update.useMutation({
+    onSuccess: () => {
+      utils.products.list.invalidate();
+      setEditingProduct(null);
+    },
+    onError: (err) => {
+      setError(`Хадгалах үед алдаа: ${err.message}`);
+    },
+  });
+
+  const createMutation = trpc.products.create.useMutation({
+    onSuccess: () => {
+      utils.products.list.invalidate();
+    },
+    onError: (err) => {
+      setError(`Хуулах үед алдаа: ${err.message}`);
+    },
+  });
+
+  const handleDuplicate = (product: (typeof items)[number]) => {
+    createMutation.mutate({
+      name: `${product.name} (хуулбар)`,
+      description: product.description ?? undefined,
+      price: product.price,
+      category: product.category ?? undefined,
+      brand: product.brand ?? undefined,
+      stockQty: product.stockQty,
+      isAvailable: product.isAvailable,
+    });
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <FadeIn>
@@ -93,6 +148,16 @@ export default function ProductsPage() {
           }
         />
       </FadeIn>
+
+      {/* Error banner */}
+      {error && (
+        <div className="flex items-center justify-between rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+          <span>{error}</span>
+          <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700">
+            &times;
+          </button>
+        </div>
+      )}
 
       {/* Summary strip + filters */}
       <FadeIn delay={0.05}>
@@ -259,16 +324,22 @@ export default function ProductsPage() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setEditingProduct(product)}>
                                   <Pencil className="h-4 w-4" />
                                   Засах
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
+                                <DropdownMenuItem
+                                  disabled={createMutation.isPending}
+                                  onClick={() => handleDuplicate(product)}
+                                >
                                   <Copy className="h-4 w-4" />
-                                  Хуулах
+                                  {createMutation.isPending ? "Хуулж байна..." : "Хуулах"}
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-red-500">
+                                <DropdownMenuItem
+                                  className="text-red-500"
+                                  onClick={() => setDeletingProduct(product)}
+                                >
                                   <Trash2 className="h-4 w-4" />
                                   Устгах
                                 </DropdownMenuItem>
@@ -317,6 +388,38 @@ export default function ProductsPage() {
           )}
         </Card>
       </FadeIn>
+
+      {/* Delete confirmation modal */}
+      <Modal open={!!deletingProduct} onOpenChange={(open) => !open && setDeletingProduct(null)}>
+        <ModalContent>
+          <ModalHeader>
+            <ModalTitle>Бараа устгах</ModalTitle>
+            <ModalDescription>
+              &ldquo;{deletingProduct?.name}&rdquo; барааг устгахдаа итгэлтэй байна уу?
+            </ModalDescription>
+          </ModalHeader>
+          <ModalFooter>
+            <Button variant="secondary" onClick={() => setDeletingProduct(null)}>
+              Болих
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={deleteMutation.isPending}
+              onClick={() => deletingProduct && deleteMutation.mutate({ id: deletingProduct.id })}
+            >
+              {deleteMutation.isPending ? "Устгаж байна..." : "Устгах"}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Edit modal */}
+      <ProductEditModal
+        product={editingProduct}
+        isPending={updateMutation.isPending}
+        onClose={() => setEditingProduct(null)}
+        onSubmit={(data) => updateMutation.mutate(data)}
+      />
     </div>
   );
 }

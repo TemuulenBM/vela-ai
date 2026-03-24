@@ -1,28 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const PUBLIC_PATHS = ["/", "/login", "/register", "/api/events", "/api/chat", "/api/widget"];
+const DASHBOARD_PATHS = ["/overview", "/analytics", "/products", "/conversations", "/settings"];
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public routes — auth шаардлагагүй
-  const publicPaths = ["/", "/login", "/register", "/api/events", "/api/chat"];
-  if (publicPaths.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+  if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
     return NextResponse.next();
   }
 
-  // API routes — session шалгах
-  // TODO: NextAuth session check нэмэх
-  // const session = await auth();
+  // Dashboard routes — session cookie шалгах
+  if (DASHBOARD_PATHS.some((p) => pathname.startsWith(p))) {
+    const sessionToken =
+      request.cookies.get("authjs.session-token")?.value ||
+      request.cookies.get("__Secure-authjs.session-token")?.value;
 
-  // Dashboard routes хамгаалах
-  if (
-    pathname.startsWith("/analytics") ||
-    pathname.startsWith("/products") ||
-    pathname.startsWith("/conversations") ||
-    pathname.startsWith("/settings")
-  ) {
-    // TODO: auth check + tenant_id inject
-    const response = NextResponse.next();
-    return response;
+    if (!sessionToken) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    return NextResponse.next();
   }
 
   return NextResponse.next();
