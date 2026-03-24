@@ -27,7 +27,8 @@ export const productsRouter = router({
         conditions.push(eq(products.category, category));
       }
       if (search) {
-        conditions.push(ilike(products.name, `%${search}%`));
+        const escaped = search.replace(/[%_\\]/g, "\\$&");
+        conditions.push(ilike(products.name, `%${escaped}%`));
       }
 
       const [items, [{ total }]] = await Promise.all([

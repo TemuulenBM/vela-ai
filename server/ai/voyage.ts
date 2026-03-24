@@ -32,8 +32,7 @@ async function callVoyageAPI(texts: string[]): Promise<number[][]> {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Voyage API error ${response.status}: ${errorText}`);
+        throw new Error(`Voyage API error: ${response.status}`);
       }
 
       const result: VoyageResponse = await response.json();

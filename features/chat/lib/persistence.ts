@@ -15,16 +15,23 @@ export async function createOrGetShopper(tenantId: string, anonymousId: string):
 
   if (existing) return existing.id;
 
-  // Create new shopper
-  const [created] = await db
-    .insert(shoppers)
-    .values({
-      tenantId,
-      anonymousId,
-    })
-    .returning({ id: shoppers.id });
-
-  return created.id;
+  // Create new shopper (with retry on race condition)
+  try {
+    const [created] = await db
+      .insert(shoppers)
+      .values({ tenantId, anonymousId })
+      .returning({ id: shoppers.id });
+    return created.id;
+  } catch {
+    // Race condition: another request created the same shopper — re-fetch
+    const [raced] = await db
+      .select({ id: shoppers.id })
+      .from(shoppers)
+      .where(and(eq(shoppers.tenantId, tenantId), eq(shoppers.anonymousId, anonymousId)))
+      .limit(1);
+    if (raced) return raced.id;
+    throw new Error("Failed to create or find shopper");
+  }
 }
 
 /**

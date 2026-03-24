@@ -35,7 +35,9 @@ export async function searchProducts(params: SearchParams): Promise<SearchResult
   const { tenantId, query, category, brand, minPrice, maxPrice, limit = 5 } = params;
 
   const queryEmbedding = await generateEmbedding(query);
-  const embeddingStr = `[${queryEmbedding.join(",")}]`;
+  const validated = queryEmbedding.map(Number);
+  if (validated.some(isNaN)) throw new Error("Invalid embedding vector");
+  const embeddingStr = `[${validated.join(",")}]`;
 
   const conditions = [
     eq(products.tenantId, tenantId),

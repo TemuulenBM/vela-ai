@@ -11,12 +11,13 @@ import {
   saveMessage,
 } from "@/features/chat/lib/persistence";
 
-// In-memory rate limiter: max 20 chat requests per minute per IP
+// In-memory rate limiter
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_WINDOW = 60_000;
-const RATE_LIMIT_MAX = 20;
+const RATE_LIMIT_MAX_TENANT = 20; // Authenticated tenant: 20 req/min
+const RATE_LIMIT_MAX_DEMO = 5; // Demo mode: 5 req/min (cost protection)
 
-function isRateLimited(ip: string): boolean {
+function isRateLimited(ip: string, maxRequests: number): boolean {
   const now = Date.now();
   const entry = rateLimitMap.get(ip);
 
@@ -26,7 +27,7 @@ function isRateLimited(ip: string): boolean {
   }
 
   entry.count++;
-  return entry.count > RATE_LIMIT_MAX;
+  return entry.count > maxRequests;
 }
 
 if (typeof globalThis !== "undefined") {
@@ -41,11 +42,11 @@ if (typeof globalThis !== "undefined") {
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Rate limiting
-    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-    if (isRateLimited(ip)) {
-      return Response.json({ error: "Хэт олон хүсэлт. Түр хүлээнэ үү." }, { status: 429 });
-    }
+    // 1. Get client IP (x-real-ip is more reliable on Vercel)
+    const ip =
+      request.headers.get("x-real-ip") ??
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      "unknown";
 
     // 2. Parse request body
     const body = await request.json();
@@ -73,8 +74,17 @@ export async function POST(request: NextRequest) {
         return Response.json({ error: "API key буруу эсвэл дутуу байна." }, { status: 401 });
       }
 
+      if (isRateLimited(ip, RATE_LIMIT_MAX_DEMO)) {
+        return Response.json({ error: "Хэт олон хүсэлт. Түр хүлээнэ үү." }, { status: 429 });
+      }
+
       const demoResult = await executeDemoPipeline(messages);
       return demoResult.toUIMessageStreamResponse();
+    }
+
+    // Tenant mode rate limit
+    if (isRateLimited(ip, RATE_LIMIT_MAX_TENANT)) {
+      return Response.json({ error: "Хэт олон хүсэлт. Түр хүлээнэ үү." }, { status: 429 });
     }
 
     const { tenantId } = authResult;

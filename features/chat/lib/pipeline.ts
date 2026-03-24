@@ -11,11 +11,6 @@ interface PipelineParams {
 }
 
 /**
- * Execute the RAG chat pipeline.
- * Builds system prompt, configures tools, and streams Claude's response.
- * Returns the streamText result — caller handles SSE response.
- */
-/**
  * Execute the demo pipeline for landing page bot.
  * No tool calling, uses cheap model, platform intro only.
  */
