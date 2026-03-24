@@ -11,15 +11,22 @@ export const chatRouter = router({
         page: z.number().int().min(1).default(1),
         perPage: z.number().int().min(1).max(50).default(20),
         status: z.enum(["active", "resolved", "abandoned", "escalated"]).optional(),
+        search: z.string().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { page, perPage, status } = input;
+      const { page, perPage, status, search } = input;
       const offset = (page - 1) * perPage;
 
       const conditions = [eq(conversations.tenantId, ctx.tenantId)];
       if (status) {
         conditions.push(eq(conversations.status, status));
+      }
+      const escapedSearch = search?.replace(/[%_\\]/g, "\\$&");
+      if (escapedSearch) {
+        conditions.push(
+          sql`(${shoppers.name} ILIKE ${"%" + escapedSearch + "%"} OR ${shoppers.email} ILIKE ${"%" + escapedSearch + "%"})`,
+        );
       }
 
       const [items, [{ total }]] = await Promise.all([
@@ -39,6 +46,21 @@ export const chatRouter = router({
               FROM ${messages}
               WHERE ${messages.conversationId} = ${conversations.id}
             )`,
+            lastMessage: sql<string | null>`(
+              SELECT ${messages.content}
+              FROM ${messages}
+              WHERE ${messages.conversationId} = ${conversations.id}
+                AND ${messages.role} IN ('user', 'assistant')
+              ORDER BY ${messages.createdAt} DESC
+              LIMIT 1
+            )`,
+            lastMessageAt: sql<Date | null>`(
+              SELECT ${messages.createdAt}
+              FROM ${messages}
+              WHERE ${messages.conversationId} = ${conversations.id}
+              ORDER BY ${messages.createdAt} DESC
+              LIMIT 1
+            )`,
           })
           .from(conversations)
           .leftJoin(shoppers, eq(conversations.shopperId, shoppers.id))
@@ -50,6 +72,7 @@ export const chatRouter = router({
         db
           .select({ total: count() })
           .from(conversations)
+          .leftJoin(shoppers, eq(conversations.shopperId, shoppers.id))
           .where(and(...conditions)),
       ]);
 
