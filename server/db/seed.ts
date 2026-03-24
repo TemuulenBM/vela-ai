@@ -1,8 +1,10 @@
 import "dotenv/config";
+import bcrypt from "bcryptjs";
 import { db } from "./db";
 import {
   tenants,
   tenantMembers,
+  users,
   apiKeys,
   products,
   productImages,
@@ -27,33 +29,56 @@ async function seed() {
 
   console.log(`Created ${2} tenants`);
 
+  // ─── Users ─────────────────────────────────────────────────
+  const passwordHash = await bcrypt.hash("password123", 10);
+
+  const [user1, user2, user3, user4] = await db
+    .insert(users)
+    .values([
+      { name: "Владелец Гоо Сайхан", email: "owner@goosaikhan.mn", passwordHash },
+      { name: "Админ Гоо Сайхан", email: "admin@goosaikhan.mn", passwordHash },
+      { name: "Владелец Электроник", email: "owner@elektronik.mn", passwordHash },
+      { name: "Ажилтан Электроник", email: "staff@elektronik.mn", passwordHash },
+    ])
+    .returning();
+
+  console.log("Created users");
+
   // ─── Tenant Members ──────────────────────────────────────────
   await db.insert(tenantMembers).values([
-    { tenantId: tenant1.id, email: "owner@goosaikhan.mn", role: "owner" },
-    { tenantId: tenant1.id, email: "admin@goosaikhan.mn", role: "admin" },
-    { tenantId: tenant2.id, email: "owner@elektronik.mn", role: "owner" },
-    { tenantId: tenant2.id, email: "staff@elektronik.mn", role: "member" },
+    { tenantId: tenant1.id, email: "owner@goosaikhan.mn", userId: user1.id, role: "owner" },
+    { tenantId: tenant1.id, email: "admin@goosaikhan.mn", userId: user2.id, role: "admin" },
+    { tenantId: tenant2.id, email: "owner@elektronik.mn", userId: user3.id, role: "owner" },
+    { tenantId: tenant2.id, email: "staff@elektronik.mn", userId: user4.id, role: "member" },
   ]);
 
   console.log("Created tenant members");
 
   // ─── API Keys ────────────────────────────────────────────────
+  // Test keys: vela_t1_test_key_goosaikhan / vela_t2_test_key_elektronik
+  const apiKey1 = "vela_t1_test_key_goosaikhan";
+  const apiKey2 = "vela_t2_test_key_elektronik";
+  const apiKeyHash1 = await bcrypt.hash(apiKey1, 10);
+  const apiKeyHash2 = await bcrypt.hash(apiKey2, 10);
+
   await db.insert(apiKeys).values([
     {
       tenantId: tenant1.id,
       name: "Test key",
-      keyHash: "test_hash_placeholder_1",
-      keyPrefix: "sk_test_",
+      keyHash: apiKeyHash1,
+      keyPrefix: apiKey1.slice(0, 8),
     },
     {
       tenantId: tenant2.id,
       name: "Test key",
-      keyHash: "test_hash_placeholder_2",
-      keyPrefix: "sk_test_",
+      keyHash: apiKeyHash2,
+      keyPrefix: apiKey2.slice(0, 8),
     },
   ]);
 
   console.log("Created API keys");
+  console.log(`  Tenant 1 API key: ${apiKey1}`);
+  console.log(`  Tenant 2 API key: ${apiKey2}`);
 
   // ─── Products (Tenant 1 — Гоо сайхан) ───────────────────────
   const t1Products = await db

@@ -157,6 +157,16 @@ export const productImages = pgTable("product_images", {
 });
 
 // ─── AUTH (NextAuth v5) ────────────────────────────────────────
+export const users = pgTable("users", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: varchar("name", { length: 255 }),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  emailVerified: timestamp("email_verified", { withTimezone: true }),
+  image: text("image"),
+  passwordHash: text("password_hash"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 export const accounts = pgTable(
   "accounts",
   {
