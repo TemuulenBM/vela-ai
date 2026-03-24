@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Card,
   CardHeader,
@@ -14,8 +15,11 @@ import {
 } from "@/shared/components/ui";
 import { trpc } from "@/shared/lib/trpc";
 import { PLAN_LIMITS, PLAN_LABELS, PLAN_PRICES } from "./constants";
+import { UpgradeModal } from "./upgrade-modal";
+import { PaymentHistory } from "./payment-history";
 
 export function BillingTab() {
+  const [showUpgrade, setShowUpgrade] = useState(false);
   const storeQuery = trpc.tenants.getStore.useQuery();
   const usageQuery = trpc.tenants.getUsage.useQuery();
 
@@ -60,11 +64,13 @@ export function BillingTab() {
           </div>
         </CardContent>
         <CardFooter>
-          <Button variant="secondary" disabled>
+          <Button variant="secondary" onClick={() => setShowUpgrade(true)}>
             Шинэчлэх
           </Button>
         </CardFooter>
       </Card>
+
+      <UpgradeModal open={showUpgrade} onOpenChange={setShowUpgrade} currentPlan={plan} />
 
       <Card padding="md">
         <CardHeader>
@@ -133,6 +139,16 @@ export function BillingTab() {
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      <Card padding="md">
+        <CardHeader>
+          <CardTitle>Төлбөрийн түүх</CardTitle>
+          <CardDescription>Өмнөх төлбөрүүдийн жагсаалт</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <PaymentHistory />
         </CardContent>
       </Card>
     </div>

@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const PUBLIC_PATHS = ["/", "/login", "/register", "/api/events", "/api/chat", "/api/widget"];
+const PUBLIC_PATHS = [
+  "/",
+  "/login",
+  "/register",
+  "/api/events",
+  "/api/chat",
+  "/api/widget",
+  "/api/webhooks",
+];
 const DASHBOARD_PATHS = ["/overview", "/analytics", "/products", "/conversations", "/settings"];
 
 export function proxy(request: NextRequest) {
