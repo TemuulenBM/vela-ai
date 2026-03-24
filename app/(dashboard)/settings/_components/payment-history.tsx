@@ -1,60 +1,110 @@
 "use client";
 
-import { Badge } from "@/shared/components/ui";
 import { trpc } from "@/shared/lib/trpc";
 import { PLAN_LABELS } from "@/shared/lib/plan-config";
 
-const STATUS_MAP: Record<string, { label: string; variant: "brand" | "info" | "default" }> = {
-  pending: { label: "Хүлээгдэж байна", variant: "default" },
-  success: { label: "Амжилттай", variant: "brand" },
-  failed: { label: "Амжилтгүй", variant: "default" },
-  refunded: { label: "Буцаалт", variant: "info" },
+const STATUS_MAP: Record<string, { label: string; color: string }> = {
+  pending: { label: "PENDING", color: "text-yellow-400" },
+  success: { label: "COMPLETED", color: "text-emerald-400" },
+  failed: { label: "FAILED", color: "text-red-400" },
+  refunded: { label: "REFUNDED", color: "text-blue-400" },
 };
 
 export function PaymentHistory() {
   const { data: history, isLoading } = trpc.payments.getPaymentHistory.useQuery();
 
   if (isLoading) {
-    return <div className="h-24 animate-pulse rounded-[var(--radius-md)] bg-surface-secondary" />;
-  }
-
-  if (!history || history.length === 0) {
-    return <p className="py-6 text-center text-sm text-text-tertiary">Төлбөрийн түүх алга</p>;
+    return (
+      <div className="glass-card rounded-3xl p-8">
+        <div className="h-24 animate-pulse rounded-2xl bg-white/[0.04]" />
+      </div>
+    );
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-border-default">
-            <th className="py-2 text-left font-medium text-text-secondary">Огноо</th>
-            <th className="py-2 text-left font-medium text-text-secondary">Багц</th>
-            <th className="py-2 text-right font-medium text-text-secondary">Дүн</th>
-            <th className="py-2 text-right font-medium text-text-secondary">Төлөв</th>
-          </tr>
-        </thead>
-        <tbody>
-          {history.map((log) => {
-            const statusInfo = STATUS_MAP[log.status] ?? STATUS_MAP.pending;
-            return (
-              <tr key={log.id} className="border-b border-border-default last:border-0">
-                <td className="py-2.5 text-text-primary">
-                  {new Date(log.createdAt).toLocaleDateString("mn-MN")}
-                </td>
-                <td className="py-2.5 text-text-primary">{PLAN_LABELS[log.plan] ?? log.plan}</td>
-                <td className="py-2.5 text-right tabular-nums text-text-primary">
-                  {Number(log.amount).toLocaleString()}₮
-                </td>
-                <td className="py-2.5 text-right">
-                  <Badge variant={statusInfo.variant} size="sm">
-                    {statusInfo.label}
-                  </Badge>
-                </td>
+    <div className="glass-card rounded-3xl overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-8 pt-8 pb-6">
+        <h2 className="font-serif text-2xl italic text-white">Payment History</h2>
+        <button className="text-[10px] font-semibold uppercase tracking-widest text-white/40 transition-colors hover:text-white/60">
+          EXPORT CSV
+        </button>
+      </div>
+
+      {!history || history.length === 0 ? (
+        <div className="flex flex-col items-center justify-center pb-12 pt-4">
+          <span className="material-symbols-outlined mb-3 text-[32px] text-white/20">
+            receipt_long
+          </span>
+          <p className="text-sm text-white/40">Төлбөрийн түүх алга</p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-white/[0.06]">
+                <th className="px-8 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-white/40">
+                  Date
+                </th>
+                <th className="px-8 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-white/40">
+                  Transaction ID
+                </th>
+                <th className="px-8 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-white/40">
+                  Processor
+                </th>
+                <th className="px-8 py-3 text-right text-[10px] font-semibold uppercase tracking-widest text-white/40">
+                  Amount
+                </th>
+                <th className="px-8 py-3 text-right text-[10px] font-semibold uppercase tracking-widest text-white/40">
+                  Status
+                </th>
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
+            </thead>
+            <tbody>
+              {history.map((log) => {
+                const statusInfo = STATUS_MAP[log.status] ?? STATUS_MAP.pending;
+                return (
+                  <tr
+                    key={log.id}
+                    className="border-b border-white/[0.03] transition-colors hover:bg-white/[0.02]"
+                  >
+                    <td className="px-8 py-4 text-sm text-white">
+                      {new Date(log.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </td>
+                    <td className="px-8 py-4">
+                      <code className="text-xs font-mono text-white/50">
+                        VLA-{log.id.slice(0, 5).toUpperCase()}-QP
+                      </code>
+                    </td>
+                    <td className="px-8 py-4">
+                      <div className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                        <span className="text-sm text-white/60">QPay</span>
+                      </div>
+                    </td>
+                    <td className="px-8 py-4 text-right">
+                      <span className="text-sm font-semibold tabular-nums text-white">
+                        {Number(log.amount).toLocaleString()}₮
+                      </span>
+                    </td>
+                    <td className="px-8 py-4 text-right">
+                      <span
+                        className={`text-[10px] font-semibold uppercase tracking-widest ${statusInfo.color}`}
+                      >
+                        {statusInfo.label}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

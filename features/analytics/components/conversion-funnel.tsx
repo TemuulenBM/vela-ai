@@ -1,9 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { ArrowDown } from "lucide-react";
-import { Card, CountUp, FadeIn, Skeleton } from "@/shared/components/ui";
-import { cn } from "@/shared/lib/utils";
+import { CountUp, FadeIn, Skeleton } from "@/shared/components/ui";
 
 interface FunnelStage {
   label: string;
@@ -19,16 +17,16 @@ interface ConversionFunnelProps {
 export function ConversionFunnel({ stages, isLoading }: ConversionFunnelProps) {
   if (isLoading) {
     return (
-      <Card padding="none" className="overflow-hidden">
-        <div className="p-6">
+      <div className="glass-card rounded-3xl overflow-hidden">
+        <div className="p-10">
           <Skeleton className="mb-6 h-4 w-32" />
           <div className="flex flex-col gap-4">
             {[100, 60, 30, 15].map((w, i) => (
-              <Skeleton key={i} className="h-12" style={{ width: `${w}%` }} />
+              <Skeleton key={i} className="h-14" style={{ width: `${w}%` }} />
             ))}
           </div>
         </div>
-      </Card>
+      </div>
     );
   }
 
@@ -37,16 +35,21 @@ export function ConversionFunnel({ stages, isLoading }: ConversionFunnelProps) {
 
   return (
     <FadeIn delay={0.15}>
-      <Card padding="none" className="overflow-hidden">
-        <div className="px-6 pt-6 pb-2">
-          <h3 className="text-sm font-semibold text-text-primary">Хөрвүүлэлтийн шүүлтүүр</h3>
-          <p className="mt-0.5 text-[11px] text-text-tertiary">Хэрэглэгчийн аялалын шат дамжлага</p>
-        </div>
+      <div className="glass-card rounded-3xl overflow-hidden">
+        <div className="p-10">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold uppercase tracking-widest text-white/80">
+              Conversion Pipeline
+            </h3>
+            <span className="material-symbols-outlined text-white/40 text-[20px]">filter_alt</span>
+          </div>
+          <p className="text-xs text-white/30 font-light mb-8">
+            Customer journey stage progression
+          </p>
 
-        <div className="px-6 pb-6">
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-3">
             {stages.map((stage, index) => {
-              const widthPercent = Math.max((stage.value / maxValue) * 100, 8);
+              const widthPercent = Math.max((stage.value / maxValue) * 100, 12);
               const nextStage = stages[index + 1];
               const dropRate =
                 nextStage && stage.value > 0
@@ -59,12 +62,9 @@ export function ConversionFunnel({ stages, isLoading }: ConversionFunnelProps) {
                   <div className="flex items-center gap-3">
                     <div className="min-w-0 flex-1">
                       <motion.div
-                        className={cn(
-                          "flex items-center justify-between rounded-[var(--radius-md)] px-3 py-2.5",
-                        )}
+                        className="flex items-center justify-between rounded-2xl px-5 py-3.5"
                         style={{
-                          backgroundColor: `var(--color-brand-500)`,
-                          opacity: opacities[index] ?? 0.35,
+                          backgroundColor: `rgba(255,255,255,${(opacities[index] ?? 0.35) * 0.12})`,
                         }}
                         initial={{ width: 0 }}
                         animate={{ width: `${widthPercent}%` }}
@@ -75,10 +75,10 @@ export function ConversionFunnel({ stages, isLoading }: ConversionFunnelProps) {
                           delay: index * 0.12,
                         }}
                       >
-                        <span className="truncate text-[12px] font-medium text-white">
+                        <span className="truncate text-[12px] font-medium text-white/80">
                           {stage.label}
                         </span>
-                        <span className="ml-2 shrink-0 text-[13px] font-semibold text-white tabular-nums">
+                        <span className="ml-2 shrink-0 text-lg font-serif italic text-white tabular-nums">
                           <CountUp
                             to={stage.value}
                             format={(n) => Math.round(n).toLocaleString()}
@@ -90,17 +90,13 @@ export function ConversionFunnel({ stages, isLoading }: ConversionFunnelProps) {
 
                   {/* Drop-off indicator */}
                   {dropRate && (
-                    <div className="flex items-center gap-1.5 py-1 pl-3">
-                      <ArrowDown className="h-3 w-3 text-text-tertiary" />
-                      <span className="text-[10px] font-medium text-text-tertiary tabular-nums">
-                        {dropRate}% алдагдал
+                    <div className="flex items-center gap-2 py-1.5 pl-5">
+                      <span className="material-symbols-outlined text-white/30 text-[16px]">
+                        south
                       </span>
-                      {stage.rate !== undefined && (
-                        <span className="text-[10px] text-text-tertiary">
-                          {" "}
-                          ({nextStage.value.toLocaleString()} үлдсэн)
-                        </span>
-                      )}
+                      <span className="text-[10px] font-semibold uppercase tracking-widest text-white/30 tabular-nums">
+                        {dropRate}% drop-off
+                      </span>
                     </div>
                   )}
                 </div>
@@ -108,7 +104,7 @@ export function ConversionFunnel({ stages, isLoading }: ConversionFunnelProps) {
             })}
           </div>
         </div>
-      </Card>
+      </div>
     </FadeIn>
   );
 }

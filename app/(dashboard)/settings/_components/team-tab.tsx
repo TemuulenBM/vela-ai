@@ -1,15 +1,6 @@
 "use client";
 
-import { UserPlus } from "lucide-react";
-import {
-  Card,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  Button,
-  Badge,
-  Avatar,
-} from "@/shared/components/ui";
+import { Avatar, Badge } from "@/shared/components/ui";
 import { trpc } from "@/shared/lib/trpc";
 import { roleLabels, roleBadgeVariant } from "./constants";
 
@@ -18,64 +9,73 @@ export function TeamTab() {
   const members = membersQuery.data ?? [];
 
   return (
-    <Card padding="none">
-      <div className="flex items-center justify-between px-5 pb-0 pt-5">
-        <div className="flex flex-col gap-1.5">
-          <CardTitle>Багийн гишүүд</CardTitle>
-          <CardDescription>Дэлгүүрийн удирдлагын багийг удирдах</CardDescription>
+    <div className="flex flex-col gap-6">
+      {/* Header card */}
+      <div className="glass-card rounded-3xl p-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="font-serif text-2xl italic text-white">Team Members</h2>
+            <p className="mt-1 text-sm text-white/40">Дэлгүүрийн удирдлагын багийг удирдах</p>
+          </div>
+          <button
+            disabled
+            className="flex items-center gap-2 rounded-full bg-white/[0.06] px-5 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-white/40 transition-all hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <span className="material-symbols-outlined text-[18px]">person_add</span>
+            Гишүүн урих
+          </button>
         </div>
-        <Button size="sm" disabled>
-          <UserPlus className="h-4 w-4" />
-          Гишүүн урих
-        </Button>
       </div>
-      <CardContent className="px-0">
+
+      {/* Members list */}
+      <div className="glass-card rounded-3xl overflow-hidden">
         {membersQuery.isLoading ? (
-          <div className="space-y-2 p-5">
+          <div className="space-y-2 p-8">
             {Array.from({ length: 2 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-12 animate-pulse rounded-[var(--radius-md)] bg-surface-secondary"
-              />
+              <div key={i} className="h-12 animate-pulse rounded-2xl bg-white/[0.04]" />
             ))}
           </div>
         ) : members.length === 0 ? (
-          <div className="py-8 text-center">
-            <p className="text-sm text-text-secondary">Гишүүн байхгүй байна</p>
+          <div className="flex flex-col items-center justify-center py-16">
+            <span className="material-symbols-outlined mb-3 text-[32px] text-white/20">group</span>
+            <p className="text-sm text-white/40">Гишүүн байхгүй байна</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-border-default">
-                  <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
-                    Гишүүн
+                <tr className="border-b border-white/[0.06]">
+                  <th className="px-8 py-4 text-left text-[10px] font-semibold uppercase tracking-widest text-white/40">
+                    Member
                   </th>
-                  <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
-                    Имэйл
+                  <th className="px-8 py-4 text-left text-[10px] font-semibold uppercase tracking-widest text-white/40">
+                    Email
                   </th>
-                  <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
-                    Үүрэг
+                  <th className="px-8 py-4 text-left text-[10px] font-semibold uppercase tracking-widest text-white/40">
+                    Role
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border-default">
+              <tbody>
                 {members.map((member) => (
-                  <tr key={member.id}>
-                    <td className="px-5 py-3">
+                  <tr
+                    key={member.id}
+                    className="border-b border-white/[0.03] transition-colors hover:bg-white/[0.02]"
+                  >
+                    <td className="px-8 py-4">
                       <div className="flex items-center gap-3">
                         <Avatar
                           size="sm"
                           fallback={member.email.charAt(0).toUpperCase()}
                           alt={member.email}
                         />
-                        <span className="text-sm font-medium text-text-primary">
+                        <span className="text-sm font-medium text-white">
                           {member.email.split("@")[0]}
                         </span>
                       </div>
                     </td>
-                    <td className="px-5 py-3 text-sm text-text-secondary">{member.email}</td>
-                    <td className="px-5 py-3">
+                    <td className="px-8 py-4 text-sm text-white/50">{member.email}</td>
+                    <td className="px-8 py-4">
                       <Badge variant={roleBadgeVariant[member.role] ?? "default"} size="md">
                         {roleLabels[member.role] ?? member.role}
                       </Badge>
@@ -86,7 +86,7 @@ export function TeamTab() {
             </table>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

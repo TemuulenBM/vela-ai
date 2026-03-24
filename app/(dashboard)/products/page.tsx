@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from "react";
 import {
-  Search,
-  Plus,
   MoreHorizontal,
   Pencil,
   Trash2,
@@ -16,7 +14,6 @@ import {
   Home,
 } from "lucide-react";
 import {
-  PageHeader,
   Card,
   Input,
   Button,
@@ -84,10 +81,7 @@ export default function ProductsPage() {
   const items = listQuery.data?.items ?? [];
   const total = listQuery.data?.total ?? 0;
   const totalPages = listQuery.data?.totalPages ?? 1;
-  const activeCount = items.filter((p) => p.isAvailable).length;
-  const outOfStockCount = items.filter((p) => p.stockQty === 0).length;
 
-  // ─── Edit / Delete / Duplicate ───────────────────────────────
   const [editingProduct, setEditingProduct] = useState<(typeof items)[number] | null>(null);
   const [deletingProduct, setDeletingProduct] = useState<(typeof items)[number] | null>(null);
 
@@ -99,7 +93,7 @@ export default function ProductsPage() {
       setDeletingProduct(null);
     },
     onError: (err) => {
-      setError(`Устгах үед алдаа: ${err.message}`);
+      setError(`Delete error: ${err.message}`);
     },
   });
 
@@ -109,7 +103,7 @@ export default function ProductsPage() {
       setEditingProduct(null);
     },
     onError: (err) => {
-      setError(`Хадгалах үед алдаа: ${err.message}`);
+      setError(`Save error: ${err.message}`);
     },
   });
 
@@ -118,13 +112,13 @@ export default function ProductsPage() {
       utils.products.list.invalidate();
     },
     onError: (err) => {
-      setError(`Хуулах үед алдаа: ${err.message}`);
+      setError(`Duplicate error: ${err.message}`);
     },
   });
 
   const handleDuplicate = (product: (typeof items)[number]) => {
     createMutation.mutate({
-      name: `${product.name} (хуулбар)`,
+      name: `${product.name} (copy)`,
       description: product.description ?? undefined,
       price: product.price,
       category: product.category ?? undefined,
@@ -135,107 +129,89 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="px-8 py-10 max-w-[1600px] mx-auto">
+      {/* Editorial heading */}
       <FadeIn>
-        <PageHeader
-          title="Бараа бүтээгдэхүүн"
-          description="Бүх бараа бүтээгдэхүүнийг удирдах"
-          actions={
-            <Button>
-              <Plus className="h-4 w-4" />
-              Бараа нэмэх
+        <div className="flex items-end justify-between mb-10">
+          <h1 className="text-7xl font-serif italic tracking-tighter text-white">Catalogue</h1>
+          <div className="flex items-center gap-3">
+            <Button variant="glass" size="md">
+              <span className="material-symbols-outlined text-[18px]">download</span>
+              Export CSV
             </Button>
-          }
-        />
+            <Button size="md">
+              <span className="material-symbols-outlined text-[18px]">add</span>
+              Add Product
+            </Button>
+          </div>
+        </div>
       </FadeIn>
 
       {/* Error banner */}
       {error && (
-        <div className="flex items-center justify-between rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+        <div className="flex items-center justify-between rounded-2xl bg-[#ffb4ab]/10 px-4 py-2 text-sm text-[#ffb4ab] mb-6">
           <span>{error}</span>
-          <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700">
+          <button onClick={() => setError(null)} className="text-[#ffb4ab] hover:text-[#ffb4ab]/80">
             &times;
           </button>
         </div>
       )}
 
-      {/* Summary strip + filters */}
+      {/* Search + Filter */}
       <FadeIn delay={0.05}>
-        <div className="mb-1 flex items-center gap-4 text-xs text-text-tertiary">
-          <span>
-            Нийт{" "}
-            <span className="font-medium text-text-secondary">
-              {listQuery.isLoading ? "..." : total}
-            </span>{" "}
-            бараа
-          </span>
-          <span className="h-3 w-px bg-border-default" />
-          <span>
-            <span className="font-medium text-text-secondary">{activeCount}</span> идэвхтэй
-          </span>
-          {outOfStockCount > 0 && (
-            <>
-              <span className="h-3 w-px bg-border-default" />
-              <span className="text-[var(--color-warning)]">
-                <span className="font-medium">{outOfStockCount}</span> нөөцгүй
-              </span>
-            </>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center mb-6">
           <div className="flex-1">
             <Input
-              placeholder="Бараа хайх..."
-              icon={<Search className="h-4 w-4" />}
+              placeholder="Search products..."
+              icon={<span className="material-symbols-outlined text-[18px]">search</span>}
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
             />
           </div>
-          <div className="flex items-center gap-3">
-            <Select value={category} onValueChange={handleCategoryChange}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Бүгд</SelectItem>
-                <SelectItem value="Электроник">Электроник</SelectItem>
-                <SelectItem value="Хувцас">Хувцас</SelectItem>
-                <SelectItem value="Гэр ахуй">Гэр ахуй</SelectItem>
-                <SelectItem value="Гутал">Гутал</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Select value={category} onValueChange={handleCategoryChange}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="Электроник">Electronics</SelectItem>
+              <SelectItem value="Хувцас">Apparel</SelectItem>
+              <SelectItem value="Гэр ахуй">Home</SelectItem>
+              <SelectItem value="Гутал">Footwear</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </FadeIn>
 
+      {/* Product table */}
       <FadeIn delay={0.1}>
-        <Card padding="none">
+        <div className="glass-panel rounded-[3rem] overflow-hidden">
           {listQuery.isLoading ? (
-            <div className="space-y-2 p-4">
+            <div className="space-y-2 p-6">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="h-14 animate-pulse rounded-[var(--radius-md)] bg-surface-secondary"
-                />
+                <div key={i} className="h-14 animate-pulse rounded-2xl bg-white/[0.05]" />
               ))}
             </div>
           ) : listQuery.isError ? (
-            <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
-              <p className="text-sm text-red-600">Алдаа гарлаа</p>
+            <div className="flex flex-col items-center justify-center gap-2 p-12 text-center">
+              <p className="text-sm text-[#ffb4ab]">Error loading products</p>
               <button
                 onClick={() => listQuery.refetch()}
-                className="text-xs text-brand-600 underline"
+                className="text-xs text-white/70 underline"
               >
-                Дахин оролдох
+                Retry
               </button>
             </div>
           ) : items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
-              <Package className="h-8 w-8 text-text-tertiary" />
-              <p className="text-sm text-text-secondary">Бараа байхгүй байна</p>
-              <p className="text-xs text-text-tertiary">
-                {debouncedSearch ? "Хайлтын үр дүн олдсонгүй" : "Бараа нэмэхэд энд харагдана"}
+            <div className="flex flex-col items-center justify-center gap-3 p-16 text-center">
+              <span className="material-symbols-outlined text-[32px] text-white/30">
+                inventory_2
+              </span>
+              <p className="text-sm text-white/60">No products found</p>
+              <p className="text-xs text-white/40">
+                {debouncedSearch
+                  ? "No results matched your search"
+                  : "Products will appear here once added"}
               </p>
             </div>
           ) : (
@@ -243,81 +219,85 @@ export default function ProductsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-border-default">
-                      <th className="w-12 px-4 py-3" />
-                      <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
-                        Бараа
+                    <tr>
+                      <th className="w-16 px-6 py-4" />
+                      <th className="px-6 py-4 text-left text-[10px] font-semibold uppercase tracking-widest text-white/30">
+                        Product
                       </th>
-                      <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-text-tertiary">
-                        Үнэ
+                      <th className="px-6 py-4 text-right text-[10px] font-semibold uppercase tracking-widest text-white/30">
+                        Price
                       </th>
-                      <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-text-tertiary">
-                        Нөөц
+                      <th className="px-6 py-4 text-right text-[10px] font-semibold uppercase tracking-widest text-white/30">
+                        Stock
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
-                        Төлөв
+                      <th className="px-6 py-4 text-left text-[10px] font-semibold uppercase tracking-widest text-white/30">
+                        Status
                       </th>
-                      <th className="w-12 px-4 py-3" />
+                      <th className="w-12 px-6 py-4" />
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border-default">
+                  <tbody>
                     {items.map((product) => {
                       const CategoryIcon = CATEGORY_ICONS[product.category ?? ""] || Package;
                       const isLowStock = product.stockQty > 0 && product.stockQty < 10;
 
                       return (
-                        <tr
-                          key={product.id}
-                          className="transition-colors hover:bg-surface-secondary"
-                        >
-                          <td className="px-4 py-3">
+                        <tr key={product.id} className="transition-colors hover:bg-white/[0.03]">
+                          <td className="px-6 py-4">
                             {product.imageUrl ? (
-                              // eslint-disable-next-line @next/next/no-img-element -- external user-uploaded URLs
+                              // eslint-disable-next-line @next/next/no-img-element
                               <img
                                 src={product.imageUrl}
                                 alt={product.name}
-                                className="h-10 w-10 rounded-[var(--radius-md)] object-cover"
+                                className="h-12 w-12 rounded-2xl object-cover"
                               />
                             ) : (
-                              <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-surface-tertiary">
-                                <CategoryIcon className="h-4 w-4 text-text-tertiary" />
+                              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/[0.05]">
+                                <CategoryIcon className="h-5 w-5 text-white/40" />
                               </div>
                             )}
                           </td>
-                          <td className="px-4 py-3">
-                            <span className="text-sm font-medium text-text-primary">
-                              {product.name}
-                            </span>
-                            <p className="mt-0.5 text-xs text-text-tertiary">
+                          <td className="px-6 py-4">
+                            <span className="text-sm font-medium text-white">{product.name}</span>
+                            <p className="mt-0.5 text-xs text-white/40">
                               {product.category ?? "—"}
                             </p>
                           </td>
-                          <td className="px-4 py-3 text-right">
-                            <span className="text-sm tabular-nums text-text-primary">
+                          <td className="px-6 py-4 text-right">
+                            <span className="text-sm tabular-nums text-white font-medium">
                               {formatPrice(Number(product.price))}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-right">
+                          <td className="px-6 py-4 text-right">
                             <span
                               className={cn(
                                 "text-sm tabular-nums",
                                 product.stockQty === 0
-                                  ? "font-medium text-red-500"
+                                  ? "font-medium text-[#ffb4ab]"
                                   : isLowStock
-                                    ? "font-medium text-amber-600"
-                                    : "text-text-secondary",
+                                    ? "font-medium text-[#f0c777]"
+                                    : "text-white/60",
                               )}
                             >
                               {product.stockQty}
                             </span>
-                            {isLowStock && <p className="text-[10px] text-amber-500">Бага нөөц</p>}
                           </td>
-                          <td className="px-4 py-3">
-                            <Badge variant={product.isAvailable ? "success" : "default"} size="sm">
-                              {product.isAvailable ? "Идэвхтэй" : "Идэвхгүй"}
-                            </Badge>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              <div
+                                className={cn(
+                                  "h-2 w-2 rounded-full",
+                                  product.isAvailable
+                                    ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]"
+                                    : "bg-white/20",
+                                )}
+                              />
+                              <span className="text-xs text-white/60">
+                                {product.isAvailable ? "Synced" : "Inactive"}
+                              </span>
+                            </div>
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-6 py-4">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon">
@@ -327,22 +307,22 @@ export default function ProductsPage() {
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem onClick={() => setEditingProduct(product)}>
                                   <Pencil className="h-4 w-4" />
-                                  Засах
+                                  Edit
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   disabled={createMutation.isPending}
                                   onClick={() => handleDuplicate(product)}
                                 >
                                   <Copy className="h-4 w-4" />
-                                  {createMutation.isPending ? "Хуулж байна..." : "Хуулах"}
+                                  {createMutation.isPending ? "Duplicating..." : "Duplicate"}
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
-                                  className="text-red-500"
+                                  className="text-[#ffb4ab]"
                                   onClick={() => setDeletingProduct(product)}
                                 >
                                   <Trash2 className="h-4 w-4" />
-                                  Устгах
+                                  Delete
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -355,31 +335,29 @@ export default function ProductsPage() {
               </div>
 
               {/* Pagination */}
-              <div className="flex items-center justify-between border-t border-border-default px-4 py-3">
-                <p className="text-sm text-text-secondary">
-                  Нийт <span className="font-medium text-text-primary">{total}</span> бараа
+              <div className="flex items-center justify-between px-6 py-4">
+                <p className="text-sm text-white/50">
+                  <span className="font-medium text-white">{total}</span> products total
                 </p>
                 {totalPages > 1 && (
                   <div className="flex items-center gap-2">
                     <Button
-                      variant="secondary"
+                      variant="glass"
                       size="sm"
                       disabled={page <= 1}
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                     >
                       <ChevronLeft className="h-4 w-4" />
-                      Өмнөх
                     </Button>
-                    <span className="text-xs text-text-tertiary">
+                    <span className="text-xs text-white/40 tabular-nums">
                       {page} / {totalPages}
                     </span>
                     <Button
-                      variant="secondary"
+                      variant="glass"
                       size="sm"
                       disabled={page >= totalPages}
                       onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     >
-                      Дараах
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </div>
@@ -387,28 +365,29 @@ export default function ProductsPage() {
               </div>
             </>
           )}
-        </Card>
+        </div>
       </FadeIn>
 
       {/* Delete confirmation modal */}
       <Modal open={!!deletingProduct} onOpenChange={(open) => !open && setDeletingProduct(null)}>
         <ModalContent>
           <ModalHeader>
-            <ModalTitle>Бараа устгах</ModalTitle>
+            <ModalTitle>Delete Product</ModalTitle>
             <ModalDescription>
-              &ldquo;{deletingProduct?.name}&rdquo; барааг устгахдаа итгэлтэй байна уу?
+              Are you sure you want to delete &ldquo;{deletingProduct?.name}&rdquo;? This action
+              cannot be undone.
             </ModalDescription>
           </ModalHeader>
           <ModalFooter>
-            <Button variant="secondary" onClick={() => setDeletingProduct(null)}>
-              Болих
+            <Button variant="glass" onClick={() => setDeletingProduct(null)}>
+              Cancel
             </Button>
             <Button
               variant="destructive"
               disabled={deleteMutation.isPending}
               onClick={() => deletingProduct && deleteMutation.mutate({ id: deletingProduct.id })}
             >
-              {deleteMutation.isPending ? "Устгаж байна..." : "Устгах"}
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
             </Button>
           </ModalFooter>
         </ModalContent>

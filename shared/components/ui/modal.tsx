@@ -1,7 +1,6 @@
 "use client";
 
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 
 const Modal = DialogPrimitive.Root;
@@ -16,7 +15,7 @@ function ModalOverlay({
   return (
     <DialogPrimitive.Overlay
       className={cn(
-        "fixed inset-0 z-50 bg-surface-overlay backdrop-blur-sm",
+        "fixed inset-0 z-50 bg-black/70 backdrop-blur-xl",
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
         className,
       )}
@@ -36,19 +35,17 @@ function ModalContent({
       <ModalOverlay />
       <DialogPrimitive.Content
         className={cn(
-          "fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2",
-          "rounded-[var(--radius-lg)] border border-border-default bg-surface-primary p-6 shadow-xl",
-          "data-[state=open]:animate-in data-[state=closed]:animate-out",
-          "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-          "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+          "fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2",
+          "glass-panel rounded-[3rem] p-10",
+          "data-[state=open]:animate-modal-in data-[state=closed]:animate-modal-out",
           className,
         )}
         {...props}
       >
         {children}
         {showClose && (
-          <DialogPrimitive.Close className="absolute right-4 top-4 rounded-[var(--radius-sm)] p-1 text-text-tertiary hover:text-text-primary hover:bg-surface-tertiary transition-colors focus-ring">
-            <X className="h-4 w-4" />
+          <DialogPrimitive.Close className="absolute right-6 top-6 rounded-full p-2 text-white/30 hover:text-white/70 hover:bg-white/[0.05] transition-colors focus-ring">
+            <span className="material-symbols-outlined text-[20px]">close</span>
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Content>
@@ -57,7 +54,7 @@ function ModalContent({
 }
 
 function ModalHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("flex flex-col gap-1.5", className)} {...props} />;
+  return <div className={cn("flex flex-col gap-2", className)} {...props} />;
 }
 
 function ModalTitle({
@@ -66,7 +63,7 @@ function ModalTitle({
 }: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>) {
   return (
     <DialogPrimitive.Title
-      className={cn("text-base font-semibold text-text-primary", className)}
+      className={cn("text-3xl font-headline italic tracking-tight text-white", className)}
       {...props}
     />
   );
@@ -78,14 +75,14 @@ function ModalDescription({
 }: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>) {
   return (
     <DialogPrimitive.Description
-      className={cn("text-sm text-text-secondary", className)}
+      className={cn("text-sm text-white/45 font-light", className)}
       {...props}
     />
   );
 }
 
 function ModalFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("mt-6 flex justify-end gap-2", className)} {...props} />;
+  return <div className={cn("mt-8 flex justify-end gap-4", className)} {...props} />;
 }
 
 export {

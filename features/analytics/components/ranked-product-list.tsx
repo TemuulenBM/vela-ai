@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimateList, Badge, ProgressBar, FadeIn, Skeleton } from "@/shared/components/ui";
+import { AnimateList, ProgressBar, FadeIn, Skeleton } from "@/shared/components/ui";
 import { cn } from "@/shared/lib/utils";
 
 interface Product {
@@ -20,16 +20,18 @@ interface RankedProductListProps {
 export function RankedProductList({ products, isLoading }: RankedProductListProps) {
   if (isLoading) {
     return (
-      <div className="mt-6">
-        <Skeleton className="mb-4 h-4 w-32" />
-        <div className="flex flex-col gap-4">
-          {[0, 1, 2, 3, 4].map((i) => (
-            <div key={i} className="flex items-center gap-4">
-              <Skeleton className="h-6 w-6 shrink-0" />
-              <Skeleton className="h-4 flex-1" />
-              <Skeleton className="h-4 w-16" />
-            </div>
-          ))}
+      <div className="glass-card rounded-3xl overflow-hidden">
+        <div className="p-10">
+          <Skeleton className="mb-6 h-4 w-32" />
+          <div className="flex flex-col gap-5">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex items-center gap-4">
+                <Skeleton className="h-8 w-8 shrink-0 rounded-full" />
+                <Skeleton className="h-4 flex-1" />
+                <Skeleton className="h-4 w-16" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -38,10 +40,13 @@ export function RankedProductList({ products, isLoading }: RankedProductListProp
   if (!products.length) {
     return (
       <FadeIn delay={0.15}>
-        <div className="mt-6 py-12 text-center">
-          <p className="text-sm text-text-tertiary">Өгөгдөл олдсонгүй</p>
-          <p className="mt-1 text-xs text-text-tertiary">
-            Бараа үзэлтийн мэдээлэл хуримтлагдахад хугацаа шаардлагатай
+        <div className="glass-card rounded-3xl p-10 text-center py-16">
+          <span className="material-symbols-outlined text-white/20 text-[32px] mb-4">
+            inventory_2
+          </span>
+          <p className="text-sm text-white/40 font-light">No data found</p>
+          <p className="mt-1 text-xs text-white/30 font-light">
+            Product view data takes time to accumulate
           </p>
         </div>
       </FadeIn>
@@ -52,8 +57,16 @@ export function RankedProductList({ products, isLoading }: RankedProductListProp
 
   return (
     <FadeIn delay={0.15}>
-      <div className="mt-6">
-        <h3 className="mb-4 text-sm font-semibold text-text-primary">Шилдэг бараанууд</h3>
+      <div className="glass-card rounded-3xl overflow-hidden">
+        {/* Header */}
+        <div className="px-10 pt-10 pb-6 flex justify-between items-center">
+          <h3 className="text-sm font-semibold uppercase tracking-widest text-white/80">
+            Inventory Excellence
+          </h3>
+          <button className="text-[10px] font-bold text-white/40 hover:text-white transition-colors uppercase tracking-[0.2em]">
+            View Full Catalog
+          </button>
+        </div>
 
         <AnimateList stagger={0.04}>
           {products.map((product, index) => {
@@ -64,66 +77,80 @@ export function RankedProductList({ products, isLoading }: RankedProductListProp
               <div
                 key={product.productId}
                 className={cn(
-                  "border-b border-border-subtle py-3.5 last:border-0",
-                  isTop && "rounded-[var(--radius-md)] bg-brand-50/30 px-3 -mx-3",
+                  "px-10 py-4 hover:bg-white/[0.03] transition-colors",
+                  !isTop && "border-t border-white/[0.04]",
+                  isTop && "bg-white/[0.03]",
                 )}
               >
-                <div className="flex items-center gap-3">
-                  {/* Rank */}
+                <div className="flex items-center gap-4">
+                  {/* Rank number - serif italic for top positions */}
                   <span
                     className={cn(
-                      "shrink-0 tabular-nums font-[family-name:var(--font-geist)]",
+                      "shrink-0 tabular-nums",
                       isTop
-                        ? "text-lg font-bold text-brand-500"
-                        : "w-5 text-center text-[13px] font-medium text-text-tertiary",
+                        ? "text-2xl font-serif italic text-white w-8"
+                        : "w-8 text-center text-[13px] font-serif italic text-white/40",
                     )}
                   >
                     {index + 1}
                   </span>
 
-                  {/* Name + views bar */}
+                  {/* Name + progress bar */}
                   <div className="min-w-0 flex-1">
                     <p
                       className={cn(
-                        "truncate font-medium text-text-primary",
-                        isTop ? "text-[14px]" : "text-[13px]",
+                        "truncate text-white",
+                        isTop ? "text-lg font-semibold tracking-tight" : "text-[13px] font-medium",
                       )}
                     >
                       {product.name}
                     </p>
-                    <div className="mt-1.5 hidden sm:block">
+                    <div className="mt-2 hidden sm:block">
                       <ProgressBar
                         value={viewPercent}
                         height={3}
                         delay={index * 0.04}
-                        color="var(--color-brand-400)"
+                        color="rgba(255,255,255,0.12)"
                       />
                     </div>
                   </div>
 
                   {/* Stats */}
-                  <div className="flex shrink-0 items-center gap-4">
+                  <div className="flex shrink-0 items-center gap-6">
                     <div className="hidden text-right sm:block">
-                      <p className="text-[10px] text-text-tertiary">Үзэлт</p>
-                      <p className="text-[13px] font-medium text-text-secondary tabular-nums">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
+                        Views
+                      </p>
+                      <p className="text-sm font-serif italic text-white/70 tabular-nums">
                         {product.views.toLocaleString()}
                       </p>
                     </div>
                     <div className="hidden text-right md:block">
-                      <p className="text-[10px] text-text-tertiary">Сагс</p>
-                      <p className="text-[13px] font-medium text-text-secondary tabular-nums">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
+                        Cart
+                      </p>
+                      <p className="text-sm font-serif italic text-white/70 tabular-nums">
                         {product.carts.toLocaleString()}
                       </p>
                     </div>
                     <div className="hidden text-right md:block">
-                      <p className="text-[10px] text-text-tertiary">Захиалга</p>
-                      <p className="text-[13px] font-medium text-text-secondary tabular-nums">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
+                        Orders
+                      </p>
+                      <p className="text-sm font-serif italic text-white/70 tabular-nums">
                         {product.orders.toLocaleString()}
                       </p>
                     </div>
-                    <Badge variant={product.conversionRate > 0 ? "brand" : "default"} size="sm">
+                    <div
+                      className={cn(
+                        "rounded-full px-3 py-1 text-[11px] font-semibold tabular-nums",
+                        product.conversionRate > 0
+                          ? "bg-white/10 text-white"
+                          : "bg-white/5 text-white/40",
+                      )}
+                    >
                       {product.conversionRate}%
-                    </Badge>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -25,21 +25,21 @@ function StatCard({ label, value, trend, icon, className }: StatCardProps) {
   return (
     <div
       className={cn(
-        "group relative rounded-[var(--radius-lg)] border border-border-default bg-surface-primary p-5 transition-all duration-200",
-        "hover:border-border-strong hover:shadow-sm hover:-translate-y-px",
+        "group relative rounded-3xl bg-surface-2 p-6 transition-all duration-300",
+        "hover:bg-surface-3",
         className,
       )}
     >
       <div className="flex items-center justify-between">
-        <p className="text-[13px] font-medium text-text-tertiary">{label}</p>
+        <p className="text-xs font-light text-white/45 uppercase tracking-wider">{label}</p>
         {icon && (
-          <div className="flex h-8 w-8 items-center justify-center rounded-[var(--radius-md)] bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-100">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.05] text-white/70">
             {icon}
           </div>
         )}
       </div>
       <div className="mt-3 flex items-end gap-2.5">
-        <p className="text-[28px] font-semibold text-text-primary tracking-tight leading-none tabular-nums font-[family-name:var(--font-geist)]">
+        <p className="text-3xl font-light text-white tracking-tight leading-none tabular-nums">
           {displayPrefix}
           {isNumeric ? (
             <CountUp to={numericValue} format={(n) => Math.round(n).toLocaleString()} />
@@ -51,8 +51,10 @@ function StatCard({ label, value, trend, icon, className }: StatCardProps) {
         {trend && (
           <div
             className={cn(
-              "flex items-center gap-0.5 text-xs font-medium mb-0.5 px-1.5 py-0.5 rounded-[var(--radius-sm)]",
-              trend.isPositive ? "text-green-700 bg-green-50" : "text-red-600 bg-red-50",
+              "flex items-center gap-0.5 text-xs font-medium mb-0.5 px-1.5 py-0.5 rounded-full",
+              trend.isPositive
+                ? "text-[#a8e6cf] bg-[#a8e6cf]/15"
+                : "text-[#ffb4ab] bg-[#ffb4ab]/15",
             )}
           >
             {trend.isPositive ? (

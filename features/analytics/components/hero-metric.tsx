@@ -1,6 +1,5 @@
 "use client";
 
-import { TrendingUp, TrendingDown } from "lucide-react";
 import { Sparkline, CountUp, FadeIn, Skeleton } from "@/shared/components/ui";
 import { cn } from "@/shared/lib/utils";
 
@@ -15,46 +14,51 @@ interface HeroMetricProps {
 export function HeroMetric({ label, value, trend, sparklineData, isLoading }: HeroMetricProps) {
   if (isLoading) {
     return (
-      <div className="border-t border-border-default pt-5">
+      <div className="glass-card rounded-3xl p-10">
         <Skeleton className="mb-3 h-3 w-24" />
-        <Skeleton className="mb-4 h-12 w-32" />
-        <Skeleton className="h-[60px] w-full" />
+        <Skeleton className="mb-4 h-14 w-48" />
+        <Skeleton className="h-[80px] w-full" />
       </div>
     );
   }
 
   return (
     <FadeIn delay={0.05}>
-      <div className="border-t border-border-default pt-5">
-        <p className="text-[11px] font-medium uppercase tracking-wider text-text-tertiary">
-          {label}
-        </p>
-
-        <div className="mt-2 flex items-end gap-3">
-          <p className="text-[42px] font-semibold leading-none tracking-tighter text-text-primary tabular-nums font-[family-name:var(--font-geist)]">
-            <CountUp to={value} format={(n) => Math.round(n).toLocaleString()} />
-          </p>
-
-          {trend && (
+      <div className="glass-card rounded-3xl p-10 relative overflow-hidden">
+        {/* Top-right growth velocity label */}
+        {trend && (
+          <div className="absolute top-8 right-8 flex items-center gap-2">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-white/20">
+              Growth Velocity
+            </span>
             <div
               className={cn(
-                "mb-1.5 flex items-center gap-0.5 rounded-[var(--radius-sm)] px-1.5 py-0.5 text-xs font-medium",
-                trend.isPositive ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600",
+                "flex items-center gap-1 text-sm font-bold",
+                trend.isPositive ? "text-emerald-400" : "text-[#ffb4ab]",
               )}
             >
-              {trend.isPositive ? (
-                <TrendingUp className="h-3 w-3" />
-              ) : (
-                <TrendingDown className="h-3 w-3" />
-              )}
-              <span className="tabular-nums">{Math.abs(trend.value)}%</span>
+              <span className="material-symbols-outlined text-sm">
+                {trend.isPositive ? "trending_up" : "trending_down"}
+              </span>
+              <span className="tabular-nums">
+                {trend.isPositive ? "+" : "-"}
+                {Math.abs(trend.value)}%
+              </span>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
+          Revenue Flow
+        </p>
+
+        <p className="mt-3 text-5xl font-serif italic leading-none text-white">
+          <CountUp to={value} format={(n) => Math.round(n).toLocaleString()} />
+        </p>
 
         {sparklineData.length > 0 && (
-          <div className="mt-4">
-            <Sparkline data={sparklineData} width={200} height={60} />
+          <div className="mt-8">
+            <Sparkline data={sparklineData} width={280} height={80} />
           </div>
         )}
       </div>

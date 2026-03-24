@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Check } from "lucide-react";
 import {
   Modal,
   ModalContent,
@@ -9,8 +8,6 @@ import {
   ModalTitle,
   ModalDescription,
   ModalFooter,
-  Button,
-  Badge,
   Spinner,
 } from "@/shared/components/ui";
 import { trpc } from "@/shared/lib/trpc";
@@ -68,7 +65,6 @@ export function UpgradeModal({ open, onOpenChange, currentPlan }: UpgradeModalPr
 
   const checkPayment = trpc.payments.checkPayment.useMutation();
 
-  // Stable ref for mutation to avoid re-creating interval on every render
   const checkPaymentRef = useRef(checkPayment.mutateAsync);
   useEffect(() => {
     checkPaymentRef.current = checkPayment.mutateAsync;
@@ -83,7 +79,6 @@ export function UpgradeModal({ open, onOpenChange, currentPlan }: UpgradeModalPr
     utils.payments.getPaymentHistory.invalidate();
   }, [utils]);
 
-  // Start polling when step becomes "paying"
   useEffect(() => {
     if (step !== "paying" || !invoiceData) return;
 
@@ -98,7 +93,6 @@ export function UpgradeModal({ open, onOpenChange, currentPlan }: UpgradeModalPr
       }
     }, 5000);
 
-    // 10 минутын timeout
     timeoutRef.current = setTimeout(
       () => {
         if (pollRef.current) clearInterval(pollRef.current);
@@ -141,11 +135,13 @@ export function UpgradeModal({ open, onOpenChange, currentPlan }: UpgradeModalPr
         {step === "select" && (
           <>
             <ModalHeader>
-              <ModalTitle>Багц шинэчлэх</ModalTitle>
+              <ModalTitle>
+                <span className="font-serif text-2xl italic">Upgrade Plan</span>
+              </ModalTitle>
               <ModalDescription>Өөрийн бизнест тохирох багцаа сонгоно уу</ModalDescription>
             </ModalHeader>
 
-            <div className="mt-4 flex flex-col gap-3">
+            <div className="mt-6 flex flex-col gap-3">
               {PAID_PLANS.map((plan) => {
                 const isCurrent = currentPlan === plan;
                 return (
@@ -153,45 +149,50 @@ export function UpgradeModal({ open, onOpenChange, currentPlan }: UpgradeModalPr
                     key={plan}
                     disabled={isCurrent || createInvoice.isPending}
                     onClick={() => handleUpgrade(plan)}
-                    className={`flex items-start gap-4 rounded-[var(--radius-md)] border p-4 text-left transition-colors ${
+                    className={`group flex items-start gap-4 rounded-3xl p-5 text-left transition-all ${
                       isCurrent
-                        ? "border-brand-500 bg-brand-50 cursor-default"
-                        : "border-border-default hover:border-brand-300 hover:bg-surface-secondary cursor-pointer"
+                        ? "glass-card cursor-default ring-1 ring-white/20"
+                        : "glass-card cursor-pointer hover:bg-white/[0.06]"
                     }`}
                   >
                     <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-text-primary">
+                      <div className="flex items-center gap-3">
+                        <span className="font-serif text-lg italic text-white">
                           {PLAN_LABELS[plan]}
                         </span>
                         {isCurrent && (
-                          <Badge variant="brand" size="sm">
-                            Одоогийн
-                          </Badge>
+                          <span className="rounded-full bg-white/10 px-3 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-white/50">
+                            Current
+                          </span>
                         )}
                       </div>
-                      <span className="text-sm font-medium text-brand-600">
-                        {PLAN_PRICES[plan]}
-                      </span>
-                      <ul className="mt-2 flex flex-col gap-1">
+                      <span className="text-sm text-white/50">{PLAN_PRICES[plan]}</span>
+                      <ul className="mt-3 flex flex-col gap-1.5">
                         {PLAN_FEATURES[plan]?.map((feature) => (
                           <li
                             key={feature}
-                            className="flex items-center gap-1.5 text-xs text-text-secondary"
+                            className="flex items-center gap-2 text-xs text-white/50"
                           >
-                            <Check className="h-3 w-3 text-brand-500 shrink-0" />
+                            <span className="material-symbols-outlined text-[14px] text-emerald-400/60">
+                              check
+                            </span>
                             {feature}
                           </li>
                         ))}
                       </ul>
                     </div>
+                    {!isCurrent && (
+                      <span className="material-symbols-outlined mt-1 text-[20px] text-white/20 transition-colors group-hover:text-white/40">
+                        arrow_forward
+                      </span>
+                    )}
                   </button>
                 );
               })}
             </div>
 
             {createInvoice.error && (
-              <p className="mt-3 text-sm text-status-error">{createInvoice.error.message}</p>
+              <p className="mt-3 text-sm text-red-400">{createInvoice.error.message}</p>
             )}
           </>
         )}
@@ -199,13 +200,15 @@ export function UpgradeModal({ open, onOpenChange, currentPlan }: UpgradeModalPr
         {step === "paying" && invoiceData && (
           <>
             <ModalHeader>
-              <ModalTitle>QR кодоор төлөх</ModalTitle>
+              <ModalTitle>
+                <span className="font-serif text-2xl italic">Scan to Pay</span>
+              </ModalTitle>
               <ModalDescription>Банкны аппликейшнээрээ QR кодыг уншуулна уу</ModalDescription>
             </ModalHeader>
 
-            <div className="mt-4 flex flex-col items-center gap-4">
+            <div className="mt-6 flex flex-col items-center gap-5">
               {/* QR Code */}
-              <div className="rounded-[var(--radius-md)] border border-border-default bg-white p-3">
+              <div className="rounded-3xl bg-white p-4">
                 {/* eslint-disable-next-line @next/next/no-img-element -- base64 QR code from QPay API */}
                 <img
                   src={`data:image/png;base64,${invoiceData.qrImage}`}
@@ -217,7 +220,9 @@ export function UpgradeModal({ open, onOpenChange, currentPlan }: UpgradeModalPr
               {/* Bank deeplinks */}
               {invoiceData.urls.length > 0 && (
                 <div className="w-full">
-                  <p className="mb-2 text-xs text-text-secondary">Эсвэл банкны апп-аар нээх:</p>
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-white/40">
+                    OR OPEN WITH BANK APP
+                  </p>
                   <div className="flex flex-wrap gap-2">
                     {invoiceData.urls.map((url, i) => (
                       <a
@@ -225,7 +230,7 @@ export function UpgradeModal({ open, onOpenChange, currentPlan }: UpgradeModalPr
                         href={url.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="rounded-[var(--radius-sm)] border border-border-default px-3 py-1.5 text-xs font-medium text-text-primary hover:bg-surface-secondary transition-colors"
+                        className="rounded-full bg-white/[0.06] px-4 py-2 text-xs font-medium text-white/60 transition-colors hover:bg-white/10 hover:text-white"
                       >
                         {url.name || url.description || "Банк"}
                       </a>
@@ -234,16 +239,16 @@ export function UpgradeModal({ open, onOpenChange, currentPlan }: UpgradeModalPr
                 </div>
               )}
 
-              <p className="text-xs text-text-tertiary">
+              <p className="text-xs text-white/30">
                 Төлбөр автоматаар шалгагдана. Удаан байвал доорх товчийг дарна уу.
               </p>
             </div>
 
             <ModalFooter>
-              <Button
-                variant="secondary"
+              <button
                 onClick={handleManualCheck}
                 disabled={checkPayment.isPending}
+                className="flex items-center gap-2 rounded-full bg-white/[0.08] px-6 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-white/70 transition-all hover:bg-white/[0.12] disabled:opacity-50"
               >
                 {checkPayment.isPending ? (
                   <>
@@ -251,9 +256,12 @@ export function UpgradeModal({ open, onOpenChange, currentPlan }: UpgradeModalPr
                     Шалгаж байна...
                   </>
                 ) : (
-                  "Төлбөр шалгах"
+                  <>
+                    <span className="material-symbols-outlined text-[16px]">refresh</span>
+                    Төлбөр шалгах
+                  </>
                 )}
-              </Button>
+              </button>
             </ModalFooter>
           </>
         )}
@@ -261,20 +269,29 @@ export function UpgradeModal({ open, onOpenChange, currentPlan }: UpgradeModalPr
         {step === "success" && (
           <>
             <ModalHeader>
-              <ModalTitle>Амжилттай!</ModalTitle>
+              <ModalTitle>
+                <span className="font-serif text-2xl italic">Success!</span>
+              </ModalTitle>
               <ModalDescription>
                 Таны {selectedPlan && PLAN_LABELS[selectedPlan]} багц идэвхжлээ
               </ModalDescription>
             </ModalHeader>
 
-            <div className="mt-4 flex justify-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-status-success/10">
-                <Check className="h-8 w-8 text-status-success" />
+            <div className="mt-6 flex justify-center">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-400/10">
+                <span className="material-symbols-outlined text-[40px] text-emerald-400">
+                  check_circle
+                </span>
               </div>
             </div>
 
             <ModalFooter>
-              <Button onClick={() => handleOpenChange(false)}>Хаах</Button>
+              <button
+                onClick={() => handleOpenChange(false)}
+                className="rounded-full bg-white px-6 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-black transition-all hover:bg-white/90"
+              >
+                Done
+              </button>
             </ModalFooter>
           </>
         )}

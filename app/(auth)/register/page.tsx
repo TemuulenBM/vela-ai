@@ -8,8 +8,6 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { FadeIn } from "@/shared/components/ui";
-import { User, Mail, Lock, Building2, Sparkles } from "lucide-react";
-import { AuthShowcasePanel } from "../components/auth-showcase-panel";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -23,12 +21,6 @@ export default function RegisterPage() {
 
     const formData = new FormData(e.currentTarget);
     const password = formData.get("password") as string;
-    const confirmPassword = formData.get("confirmPassword") as string;
-
-    if (password !== confirmPassword) {
-      setError("Нууц үг таарахгүй байна");
-      return;
-    }
 
     if (password.length < 8) {
       setError("Нууц үг хамгийн багадаа 8 тэмдэгт байх ёстой");
@@ -47,7 +39,7 @@ export default function RegisterPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: formData.get("name") as string,
+          name: formData.get("organizationName") as string,
           email: formData.get("email") as string,
           password,
           organizationName: formData.get("organizationName") as string,
@@ -62,7 +54,6 @@ export default function RegisterPage() {
         return;
       }
 
-      // Auto-login after registration
       const result = await signIn("credentials", {
         email: formData.get("email") as string,
         password,
@@ -84,85 +75,81 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="grid min-h-dvh grid-cols-1 lg:grid-cols-[2fr_3fr]">
-      {/* Left panel — Form */}
-      <div className="flex items-center justify-center px-6 py-12 lg:justify-end lg:pr-16">
-        <div className="w-full max-w-[380px]">
-          {/* Logo & heading — left-aligned */}
-          <FadeIn>
-            <Link href="/" className="mb-8 inline-flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-md)] bg-brand-600">
-                <Sparkles className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-sm font-semibold text-text-primary">Vela AI</span>
+    <div className="relative flex min-h-dvh flex-col items-center justify-center bg-black px-6 py-12">
+      {/* Ambient background */}
+      <div className="pointer-events-none absolute top-1/3 right-1/4 h-[500px] w-[500px] rounded-full bg-white/[0.02] blur-[120px]" />
+      <div className="pointer-events-none absolute bottom-1/3 left-1/3 h-[400px] w-[400px] rounded-full bg-white/[0.015] blur-[100px]" />
+
+      {/* Decorative text */}
+      <div className="pointer-events-none absolute top-16 right-12 select-none hidden lg:block">
+        <span className="text-[120px] font-serif italic text-white/[0.06] leading-none rotate-12 inline-block">
+          Elevate.
+        </span>
+      </div>
+
+      <div className="relative z-10 w-full max-w-[540px]">
+        {/* Logo */}
+        <FadeIn>
+          <div className="mb-10 text-center">
+            <Link href="/" className="inline-block">
+              <h2 className="text-5xl font-serif italic text-white tracking-tighter">Vela AI</h2>
+              <p className="mt-2 text-[10px] uppercase tracking-[0.2em] text-white/30 font-semibold">
+                The e-commerce curator
+              </p>
             </Link>
-          </FadeIn>
+          </div>
+        </FadeIn>
 
-          <FadeIn delay={0.05}>
-            <h1 className="text-2xl font-bold tracking-tight text-text-primary">Бүртгүүлэх</h1>
-            <p className="mt-1 text-sm text-text-secondary">Шинэ бүртгэл үүсгэж эхэлнэ үү</p>
-          </FadeIn>
+        {/* Liquid glass card */}
+        <FadeIn delay={0.1}>
+          <div className="liquid-glass rounded-xl p-10 md:p-14 border border-white/[0.05]">
+            <h1 className="text-3xl font-serif italic text-white tracking-tight">
+              Begin your journey.
+            </h1>
+            <p className="mt-2 text-lg text-white/60 font-light tracking-tight">
+              Set up your store assistant and scale with precision.
+            </p>
 
-          {/* Form — no card border */}
-          <FadeIn delay={0.1}>
-            <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
+            <form className="mt-10 space-y-6" onSubmit={handleSubmit}>
               {error && (
-                <div className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+                <div className="rounded-2xl bg-[#ffb4ab]/10 px-4 py-3 text-sm text-[#ffb4ab]">
                   {error}
                 </div>
               )}
 
               <Input
-                label="Нэр"
-                name="name"
-                type="text"
-                placeholder="Таны нэр"
-                icon={<User className="h-4 w-4" />}
-                autoComplete="name"
-                required
-              />
-
-              <Input
-                label="Имэйл"
-                name="email"
-                type="email"
-                placeholder="та@жишээ.mn"
-                icon={<Mail className="h-4 w-4" />}
-                autoComplete="email"
-                required
-              />
-
-              <Input
-                label="Нууц үг"
-                name="password"
-                type="password"
-                placeholder="Хамгийн багадаа 8 тэмдэгт"
-                icon={<Lock className="h-4 w-4" />}
-                autoComplete="new-password"
-                required
-              />
-
-              <Input
-                label="Нууц үг давтах"
-                name="confirmPassword"
-                type="password"
-                placeholder="Нууц үгээ давтана уу"
-                icon={<Lock className="h-4 w-4" />}
-                autoComplete="new-password"
-                required
-              />
-
-              <Input
-                label="Байгууллагын нэр"
+                label="STORE NAME"
                 name="organizationName"
                 type="text"
-                placeholder="Таны байгууллагын нэр"
-                icon={<Building2 className="h-4 w-4" />}
+                placeholder=""
                 required
+                className="bg-white text-black placeholder:text-black/30 h-14 rounded-full"
               />
 
+              <Input
+                label="CORPORATE EMAIL"
+                name="email"
+                type="email"
+                placeholder=""
+                autoComplete="email"
+                required
+                className="bg-white text-black placeholder:text-black/30 h-14 rounded-full"
+              />
+
+              <Input
+                label="SECURE PASSWORD"
+                name="password"
+                type="password"
+                placeholder=""
+                autoComplete="new-password"
+                required
+                className="bg-white text-black placeholder:text-black/30 h-14 rounded-full"
+              />
+
+              <input type="hidden" name="name" value="" />
+
               {/* Terms checkbox */}
-              <div className="flex items-start gap-2.5 pt-1">
+              <div className="flex items-start gap-3 pt-2">
                 <Checkbox
                   id="terms"
                   className="mt-0.5"
@@ -171,38 +158,60 @@ export default function RegisterPage() {
                 />
                 <label
                   htmlFor="terms"
-                  className="cursor-pointer select-none text-sm leading-snug text-text-secondary"
+                  className="cursor-pointer select-none text-sm leading-snug text-white/45"
                 >
-                  <Link href="#" className="text-brand-600 transition-colors hover:text-brand-700">
-                    Үйлчилгээний нөхцөл
+                  I agree to the{" "}
+                  <Link
+                    href="#"
+                    className="text-white/70 transition-colors hover:text-white font-semibold"
+                  >
+                    Terms of Service
+                  </Link>{" "}
+                  and{" "}
+                  <Link
+                    href="#"
+                    className="text-white/70 transition-colors hover:text-white font-semibold"
+                  >
+                    Privacy Protocol
                   </Link>
-                  -ийг зөвшөөрч байна
+                  .
                 </label>
               </div>
 
-              <Button size="lg" className="w-full" disabled={loading}>
-                {loading ? "Бүртгүүлж байна..." : "Бүртгүүлэх"}
+              <Button size="xl" className="w-full mt-2" disabled={loading}>
+                {loading ? "Creating..." : "CREATE ACCOUNT"}
               </Button>
             </form>
-          </FadeIn>
 
-          {/* Login link */}
-          <FadeIn delay={0.15}>
-            <p className="mt-8 text-sm text-text-secondary">
-              Бүртгэлтэй юу?{" "}
-              <Link
-                href="/login"
-                className="font-medium text-brand-600 transition-colors hover:text-brand-700"
-              >
-                Нэвтрэх
-              </Link>
-            </p>
-          </FadeIn>
-        </div>
+            {/* Separator + Login link */}
+            <div className="mt-8 pt-6 border-t border-white/[0.05] text-center">
+              <p className="text-sm text-white/40 font-light">
+                Already a member?{" "}
+                <Link
+                  href="/login"
+                  className="font-semibold text-white transition-colors hover:text-white/80"
+                >
+                  Sign In
+                </Link>
+              </p>
+            </div>
+          </div>
+        </FadeIn>
+
+        {/* Security badges */}
+        <FadeIn delay={0.2}>
+          <div className="mt-8 flex items-center justify-center gap-8 text-[10px] text-white/20 uppercase tracking-[0.2em] font-semibold">
+            <span className="flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[14px]">shield</span>
+              AES-256 Encryption
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[14px]">public</span>
+              Global Infrastructure
+            </span>
+          </div>
+        </FadeIn>
       </div>
-
-      {/* Right panel — Showcase */}
-      <AuthShowcasePanel />
     </div>
   );
 }

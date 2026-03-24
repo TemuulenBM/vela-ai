@@ -1,16 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Instrument_Serif, Barlow } from "next/font/google";
 import "./globals.css";
 
-const geist = Geist({
-  variable: "--font-geist",
-  subsets: ["latin", "cyrillic"],
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
+  subsets: ["latin"],
+  style: ["italic"],
+  weight: ["400"],
   display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const barlow = Barlow({
+  variable: "--font-barlow",
+  subsets: ["latin", "latin-ext"],
+  weight: ["300", "400", "600"],
   display: "swap",
 });
 
@@ -27,28 +30,16 @@ export default function RootLayout({
   return (
     <html
       lang="mn"
-      className={`${geist.variable} ${geistMono.variable} h-full`}
+      className={`${instrumentSerif.variable} ${barlow.variable} h-full`}
       suppressHydrationWarning
     >
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var theme = localStorage.getItem('theme');
-                  if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                    document.documentElement.classList.add('dark');
-                  }
-                } catch(e) {}
-              })();
-            `,
-          }}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+          rel="stylesheet"
         />
       </head>
-      <body className="min-h-full flex flex-col bg-surface-primary text-text-primary antialiased">
-        {children}
-      </body>
+      <body className="min-h-full flex flex-col bg-black text-white antialiased">{children}</body>
     </html>
   );
 }

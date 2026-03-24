@@ -16,7 +16,7 @@ function Sparkline({
   data,
   width = 80,
   height = 32,
-  color = "var(--color-brand-500)",
+  color = "rgba(255, 255, 255, 0.7)",
   className,
 }: SparklineProps) {
   const chartData = useMemo(() => data.map((value, index) => ({ index, value })), [data]);
