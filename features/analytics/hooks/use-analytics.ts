@@ -1,25 +1,32 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import { createTracker, noopTracker, type Tracker } from "../lib/tracker";
 
 export function useAnalytics(tenantId: string | undefined): Tracker {
-  const [tracker, setTracker] = useState<Tracker>(noopTracker);
   const trackerRef = useRef<Tracker>(noopTracker);
+  const subscribersRef = useRef(new Set<() => void>());
 
   useEffect(() => {
     if (!tenantId) return;
 
     const instance = createTracker({ tenantId });
     trackerRef.current = instance;
-    setTracker(instance);
+    subscribersRef.current.forEach((cb) => cb());
 
     return () => {
       instance.destroy();
       trackerRef.current = noopTracker;
-      setTracker(noopTracker);
+      subscribersRef.current.forEach((cb) => cb());
     };
   }, [tenantId]);
 
-  return tracker;
+  return useSyncExternalStore(
+    (cb) => {
+      subscribersRef.current.add(cb);
+      return () => subscribersRef.current.delete(cb);
+    },
+    () => trackerRef.current,
+    () => noopTracker,
+  );
 }

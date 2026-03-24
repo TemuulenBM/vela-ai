@@ -2,7 +2,7 @@
 
 import { useChat as useAIChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { useState, useCallback, useRef, useMemo } from "react";
+import { useState, useCallback, useRef } from "react";
 
 interface UseVelaChatOptions {
   apiKey?: string;
@@ -28,7 +28,8 @@ export function useVelaChat({ apiKey }: UseVelaChatOptions) {
   const conversationIdRef = useRef<string | null>(null);
   const [input, setInput] = useState("");
 
-  const transport = useMemo(
+  /* eslint-disable react-hooks/refs -- refs read inside body callback at request time, not during render */
+  const [transport] = useState(
     () =>
       new DefaultChatTransport({
         api: "/api/chat",
@@ -38,8 +39,8 @@ export function useVelaChat({ apiKey }: UseVelaChatOptions) {
           conversationId: conversationIdRef.current,
         }),
       }),
-    [apiKey],
   );
+  /* eslint-enable react-hooks/refs */
 
   const chat = useAIChat({
     transport,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useId, useMemo } from "react";
 import { AreaChart, Area, YAxis } from "recharts";
 import { cn } from "@/shared/lib/utils";
 
@@ -21,7 +21,8 @@ function Sparkline({
 }: SparklineProps) {
   const chartData = useMemo(() => data.map((value, index) => ({ index, value })), [data]);
 
-  const gradientId = useMemo(() => `spark-${Math.random().toString(36).slice(2, 8)}`, []);
+  const reactId = useId();
+  const gradientId = `spark-${reactId.replace(/:/g, "")}`;
 
   if (!data.length) return null;
 
