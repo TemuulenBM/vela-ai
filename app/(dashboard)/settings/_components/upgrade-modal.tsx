@@ -70,7 +70,9 @@ export function UpgradeModal({ open, onOpenChange, currentPlan }: UpgradeModalPr
 
   // Stable ref for mutation to avoid re-creating interval on every render
   const checkPaymentRef = useRef(checkPayment.mutateAsync);
-  checkPaymentRef.current = checkPayment.mutateAsync;
+  useEffect(() => {
+    checkPaymentRef.current = checkPayment.mutateAsync;
+  });
 
   const onPaymentSuccess = useCallback(() => {
     if (pollRef.current) clearInterval(pollRef.current);
@@ -110,15 +112,15 @@ export function UpgradeModal({ open, onOpenChange, currentPlan }: UpgradeModalPr
     };
   }, [step, invoiceData, onPaymentSuccess]);
 
-  // Reset on close
-  useEffect(() => {
-    if (!open) {
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
       setStep("select");
       setSelectedPlan(null);
       setInvoiceData(null);
       if (pollRef.current) clearInterval(pollRef.current);
     }
-  }, [open]);
+    onOpenChange(nextOpen);
+  };
 
   const handleUpgrade = (plan: PaidPlan) => {
     setSelectedPlan(plan);
@@ -134,7 +136,7 @@ export function UpgradeModal({ open, onOpenChange, currentPlan }: UpgradeModalPr
   };
 
   return (
-    <Modal open={open} onOpenChange={onOpenChange}>
+    <Modal open={open} onOpenChange={handleOpenChange}>
       <ModalContent className="max-w-lg">
         {step === "select" && (
           <>
@@ -204,6 +206,7 @@ export function UpgradeModal({ open, onOpenChange, currentPlan }: UpgradeModalPr
             <div className="mt-4 flex flex-col items-center gap-4">
               {/* QR Code */}
               <div className="rounded-[var(--radius-md)] border border-border-default bg-white p-3">
+                {/* eslint-disable-next-line @next/next/no-img-element -- base64 QR code from QPay API */}
                 <img
                   src={`data:image/png;base64,${invoiceData.qrImage}`}
                   alt="QPay QR Code"
@@ -271,7 +274,7 @@ export function UpgradeModal({ open, onOpenChange, currentPlan }: UpgradeModalPr
             </div>
 
             <ModalFooter>
-              <Button onClick={() => onOpenChange(false)}>Хаах</Button>
+              <Button onClick={() => handleOpenChange(false)}>Хаах</Button>
             </ModalFooter>
           </>
         )}

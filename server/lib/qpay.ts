@@ -14,6 +14,7 @@ let instance: ReturnType<typeof useQpay> | null = null;
 
 function getQPay() {
   if (!instance) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks -- useQpay is a QPay SDK factory, not a React hook
     instance = useQpay({
       username: process.env.QPAY_USERNAME!,
       password: process.env.QPAY_PASSWORD!,

@@ -272,6 +272,7 @@ export default function ProductsPage() {
                         >
                           <td className="px-4 py-3">
                             {product.imageUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element -- external user-uploaded URLs
                               <img
                                 src={product.imageUrl}
                                 alt={product.name}
@@ -415,6 +416,7 @@ export default function ProductsPage() {
 
       {/* Edit modal */}
       <ProductEditModal
+        key={editingProduct?.id}
         product={editingProduct}
         isPending={updateMutation.isPending}
         onClose={() => setEditingProduct(null)}

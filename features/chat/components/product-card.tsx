@@ -27,6 +27,7 @@ export function ProductCard({
       {/* Thumbnail */}
       <div className="h-14 w-14 shrink-0 rounded-[var(--radius-sm)] bg-surface-tertiary overflow-hidden">
         {imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element -- external product image URL
           <img src={imageUrl} alt={name} className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-text-tertiary text-xs">

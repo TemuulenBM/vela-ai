@@ -12,12 +12,13 @@ export function useAnalytics(tenantId: string | undefined): Tracker {
 
     const instance = createTracker({ tenantId });
     trackerRef.current = instance;
-    subscribersRef.current.forEach((cb) => cb());
+    const subs = subscribersRef.current;
+    subs.forEach((cb) => cb());
 
     return () => {
       instance.destroy();
       trackerRef.current = noopTracker;
-      subscribersRef.current.forEach((cb) => cb());
+      subs.forEach((cb) => cb());
     };
   }, [tenantId]);
 

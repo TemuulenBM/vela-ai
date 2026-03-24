@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Modal,
   ModalContent,
@@ -45,29 +45,15 @@ interface ProductEditModalProps {
 }
 
 export function ProductEditModal({ product, isPending, onClose, onSubmit }: ProductEditModalProps) {
-  const [form, setForm] = useState({
-    name: "",
-    description: "",
-    price: "",
-    category: "",
-    brand: "",
-    stockQty: 0,
-    isAvailable: true,
-  });
-
-  useEffect(() => {
-    if (product) {
-      setForm({
-        name: product.name,
-        description: product.description ?? "",
-        price: product.price,
-        category: product.category ?? "",
-        brand: product.brand ?? "",
-        stockQty: product.stockQty,
-        isAvailable: product.isAvailable,
-      });
-    }
-  }, [product]);
+  const [form, setForm] = useState(() => ({
+    name: product?.name ?? "",
+    description: product?.description ?? "",
+    price: product?.price ?? "",
+    category: product?.category ?? "",
+    brand: product?.brand ?? "",
+    stockQty: product?.stockQty ?? 0,
+    isAvailable: product?.isAvailable ?? true,
+  }));
 
   const handleSubmit = () => {
     if (!product) return;
