@@ -124,6 +124,39 @@ export const chatRouter = router({
       return { ...conversation, messages: msgs };
     }),
 
+  getRecentConversations: protectedProcedure
+    .input(z.object({ limit: z.number().int().min(1).max(20).default(5) }))
+    .query(async ({ ctx, input }) => {
+      return db
+        .select({
+          id: conversations.id,
+          status: conversations.status,
+          shopperName: shoppers.name,
+          shopperEmail: shoppers.email,
+          createdAt: conversations.createdAt,
+          lastMessage: sql<string | null>`(
+            SELECT ${messages.content}
+            FROM ${messages}
+            WHERE ${messages.conversationId} = ${conversations.id}
+              AND ${messages.role} IN ('user', 'assistant')
+            ORDER BY ${messages.createdAt} DESC
+            LIMIT 1
+          )`,
+          lastMessageAt: sql<Date | null>`(
+            SELECT ${messages.createdAt}
+            FROM ${messages}
+            WHERE ${messages.conversationId} = ${conversations.id}
+            ORDER BY ${messages.createdAt} DESC
+            LIMIT 1
+          )`,
+        })
+        .from(conversations)
+        .leftJoin(shoppers, eq(conversations.shopperId, shoppers.id))
+        .where(eq(conversations.tenantId, ctx.tenantId))
+        .orderBy(desc(conversations.createdAt))
+        .limit(input.limit);
+    }),
+
   updateStatus: protectedProcedure
     .input(
       z.object({
