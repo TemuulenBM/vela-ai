@@ -98,9 +98,10 @@ export function ApiKeysTab() {
             ))}
           </div>
         ) : keys.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16">
-            <span className="material-symbols-outlined mb-3 text-[32px] text-white/20">key</span>
+          <div className="flex flex-col items-center justify-center gap-2 py-16">
+            <span className="material-symbols-outlined text-[32px] text-white/20">key</span>
             <p className="text-sm text-white/40">API түлхүүр байхгүй байна</p>
+            <p className="text-xs text-white/30">Дээрх формоор шинэ түлхүүр үүсгэнэ үү</p>
           </div>
         ) : (
           <div className="overflow-x-auto">

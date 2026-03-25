@@ -119,6 +119,7 @@ export default function ConversationsPage() {
             <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
               <span className="material-symbols-outlined text-[28px] text-white/20">forum</span>
               <p className="text-sm text-white/50">Яриа алга</p>
+              <p className="text-xs text-white/30">Виджетээр дамжуулан яриа эхлэх боломжтой</p>
             </div>
           ) : (
             <AnimateList stagger={0.04}>

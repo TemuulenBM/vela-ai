@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   AreaChart,
   Area,
@@ -235,7 +236,16 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : (recentConvs.data ?? []).length === 0 ? (
-              <p className="py-8 text-center text-sm text-white/45">Яриа алга байна</p>
+              <div className="flex flex-col items-center justify-center gap-2 py-8">
+                <span className="material-symbols-outlined text-[28px] text-white/15">forum</span>
+                <p className="text-sm text-white/40">Яриа алга байна</p>
+                <Link
+                  href="/conversations"
+                  className="mt-1 text-xs text-white/50 underline decoration-white/20 hover:text-white/70 transition-colors"
+                >
+                  Яриа хуудас руу очих →
+                </Link>
+              </div>
             ) : (
               <AnimateList stagger={0.04}>
                 {(recentConvs.data ?? []).map((conv) => {
@@ -284,7 +294,18 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : (topProducts.data ?? []).length === 0 ? (
-              <p className="py-8 text-center text-sm text-white/45">Мэдээлэл алга</p>
+              <div className="flex flex-col items-center justify-center gap-2 py-8">
+                <span className="material-symbols-outlined text-[28px] text-white/15">
+                  inventory_2
+                </span>
+                <p className="text-sm text-white/40">Бараа алга байна</p>
+                <Link
+                  href="/products"
+                  className="mt-1 text-xs text-white/50 underline decoration-white/20 hover:text-white/70 transition-colors"
+                >
+                  Бараа нэмэх →
+                </Link>
+              </div>
             ) : (
               <AnimateList stagger={0.04}>
                 {(topProducts.data ?? []).map((product, index) => {

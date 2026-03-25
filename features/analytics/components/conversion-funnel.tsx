@@ -56,34 +56,29 @@ export function ConversionFunnel({ stages, isLoading }: ConversionFunnelProps) {
 
               return (
                 <div key={stage.label}>
-                  {/* Bar row */}
-                  <div className="flex items-center gap-3">
-                    <div className="min-w-0 flex-1">
-                      <motion.div
-                        className="flex items-center justify-between rounded-2xl px-5 py-3.5"
-                        style={{
-                          backgroundColor: `rgba(255,255,255,${(opacities[index] ?? 0.35) * 0.12})`,
-                        }}
-                        initial={{ width: 0 }}
-                        animate={{ width: `${widthPercent}%` }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 50,
-                          damping: 20,
-                          delay: index * 0.12,
-                        }}
-                      >
-                        <span className="truncate text-[12px] font-medium text-white/80">
-                          {stage.label}
-                        </span>
-                        <span className="ml-2 shrink-0 text-lg font-serif italic text-white tabular-nums">
-                          <CountUp
-                            to={stage.value}
-                            format={(n) => Math.round(n).toLocaleString()}
-                          />
-                        </span>
-                      </motion.div>
-                    </div>
+                  {/* Label + value above bar */}
+                  <div className="flex items-baseline justify-between mb-1.5 px-1">
+                    <span className="text-xs font-medium text-white/60">{stage.label}</span>
+                    <span className="text-sm font-headline italic text-white tabular-nums">
+                      <CountUp to={stage.value} format={(n) => Math.round(n).toLocaleString()} />
+                    </span>
+                  </div>
+                  {/* Bar */}
+                  <div className="min-w-0">
+                    <motion.div
+                      className="rounded-2xl h-10"
+                      style={{
+                        backgroundColor: `rgba(255,255,255,${(opacities[index] ?? 0.35) * 0.12})`,
+                      }}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${widthPercent}%` }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 50,
+                        damping: 20,
+                        delay: index * 0.12,
+                      }}
+                    />
                   </div>
 
                   {/* Drop-off indicator */}

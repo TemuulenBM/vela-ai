@@ -204,14 +204,14 @@ export default function ProductsPage() {
             </div>
           ) : items.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-3 p-16 text-center">
-              <span className="material-symbols-outlined text-[32px] text-white/30">
+              <span className="material-symbols-outlined text-[32px] text-white/20">
                 inventory_2
               </span>
-              <p className="text-sm text-white/60">Бараа олдсонгүй</p>
-              <p className="text-xs text-white/40">
+              <p className="text-sm text-white/50">Бараа олдсонгүй</p>
+              <p className="text-xs text-white/30">
                 {debouncedSearch
                   ? "Хайлтад тохирох бараа алга"
-                  : "Бараа нэмсний дараа энд харагдана"}
+                  : 'Дээрх "Бараа нэмэх" товчоор шинэ бараа нэмнэ үү'}
               </p>
             </div>
           ) : (
