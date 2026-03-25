@@ -35,6 +35,8 @@ import {
   ModalTitle,
   ModalDescription,
   ModalFooter,
+  PageHeader,
+  EmptyState,
 } from "@/shared/components/ui";
 import { cn, formatPrice } from "@/shared/lib/utils";
 import { trpc } from "@/shared/lib/trpc";
@@ -157,24 +159,28 @@ export default function ProductsPage() {
     <div className="px-8 py-10 max-w-[1600px] mx-auto">
       {/* Editorial heading */}
       <FadeIn>
-        <div className="flex items-end justify-between mb-10">
-          <h1 className="text-5xl font-headline italic tracking-tighter text-white">Бараа</h1>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="glass"
-              size="md"
-              onClick={handleExportCSV}
-              disabled={items.length === 0}
-            >
-              <span className="material-symbols-outlined text-[18px]">download</span>
-              CSV татах
-            </Button>
-            <Button size="md" onClick={() => setShowCreateModal(true)}>
-              <span className="material-symbols-outlined text-[18px]">add</span>
-              Бараа нэмэх
-            </Button>
-          </div>
-        </div>
+        <PageHeader
+          title="Бараа"
+          description="Бүх барааны жагсаалт, нэмэх, засах"
+          className="mb-10"
+          actions={
+            <div className="flex items-center gap-3">
+              <Button
+                variant="glass"
+                size="md"
+                onClick={handleExportCSV}
+                disabled={items.length === 0}
+              >
+                <span className="material-symbols-outlined text-[18px]">download</span>
+                CSV татах
+              </Button>
+              <Button size="md" onClick={() => setShowCreateModal(true)}>
+                <span className="material-symbols-outlined text-[18px]">add</span>
+                Бараа нэмэх
+              </Button>
+            </div>
+          }
+        />
       </FadeIn>
 
       {/* Error banner */}
@@ -233,17 +239,16 @@ export default function ProductsPage() {
               </button>
             </div>
           ) : items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-3 p-16 text-center">
-              <span className="material-symbols-outlined text-[32px] text-white/20">
-                inventory_2
-              </span>
-              <p className="text-sm text-white/50">Бараа олдсонгүй</p>
-              <p className="text-xs text-white/30">
-                {debouncedSearch
+            <EmptyState
+              icon={<span className="material-symbols-outlined text-[20px]">inventory_2</span>}
+              title="Бараа олдсонгүй"
+              description={
+                debouncedSearch
                   ? "Хайлтад тохирох бараа алга"
-                  : 'Дээрх "Бараа нэмэх" товчоор шинэ бараа нэмнэ үү'}
-              </p>
-            </div>
+                  : 'Дээрх "Бараа нэмэх" товчоор шинэ бараа нэмнэ үү'
+              }
+              className="p-16"
+            />
           ) : (
             <>
               <div className="overflow-x-auto">

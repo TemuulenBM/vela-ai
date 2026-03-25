@@ -60,7 +60,7 @@ function Sidebar({ className }: SidebarProps) {
               className={cn(
                 "flex items-center gap-3 rounded-full px-4 py-3 text-[14px] font-light tracking-tight transition-all duration-200",
                 active
-                  ? "bg-white/[0.1] backdrop-blur-xl text-white font-normal"
+                  ? "bg-white/[0.1] backdrop-blur-xl text-white font-medium"
                   : "text-white/40 hover:text-white/70 hover:bg-white/[0.03]",
               )}
             >

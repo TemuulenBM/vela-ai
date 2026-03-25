@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Input, Avatar, Badge, AnimateList, Button } from "@/shared/components/ui";
+import { Input, Avatar, Badge, AnimateList, Button, EmptyState } from "@/shared/components/ui";
 import { cn, formatRelativeTime, formatTime } from "@/shared/lib/utils";
 import { trpc } from "@/shared/lib/trpc";
 
@@ -149,11 +149,12 @@ export default function ConversationsPage() {
               ))}
             </div>
           ) : items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
-              <span className="material-symbols-outlined text-[28px] text-white/20">forum</span>
-              <p className="text-sm text-white/50">Яриа алга</p>
-              <p className="text-xs text-white/30">Виджетээр дамжуулан яриа эхлэх боломжтой</p>
-            </div>
+            <EmptyState
+              icon={<span className="material-symbols-outlined text-[20px]">forum</span>}
+              title="Яриа алга"
+              description="Виджетээр дамжуулан яриа эхлэх боломжтой"
+              className="p-8"
+            />
           ) : (
             <AnimateList stagger={0.04}>
               {items.map((conv) => {
@@ -216,12 +217,10 @@ export default function ConversationsPage() {
       <div className="flex flex-1 flex-col">
         {!effectiveSelectedId || !selected ? (
           <div className="flex flex-1 items-center justify-center">
-            <div className="text-center">
-              <span className="material-symbols-outlined text-[32px] text-white/15">forum</span>
-              <p className="mt-2 text-sm text-white/40">
-                {detailQuery.isLoading ? "Ачааллаж байна..." : "Яриа сонгоно уу"}
-              </p>
-            </div>
+            <EmptyState
+              icon={<span className="material-symbols-outlined text-[20px]">forum</span>}
+              title={detailQuery.isLoading ? "Ачааллаж байна..." : "Яриа сонгоно уу"}
+            />
           </div>
         ) : (
           <>

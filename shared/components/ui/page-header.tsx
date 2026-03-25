@@ -1,7 +1,7 @@
 import { cn } from "@/shared/lib/utils";
 
 interface PageHeaderProps {
-  title: string;
+  title: React.ReactNode;
   description?: string;
   actions?: React.ReactNode;
   className?: string;
@@ -9,12 +9,10 @@ interface PageHeaderProps {
 
 function PageHeader({ title, description, actions, className }: PageHeaderProps) {
   return (
-    <div className={cn("flex items-start justify-between gap-4", className)}>
+    <div className={cn("flex items-end justify-between gap-4", className)}>
       <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-normal text-white font-serif italic tracking-[-0.02em]">
-          {title}
-        </h1>
-        {description && <p className="text-sm text-white/45 font-light">{description}</p>}
+        <h1 className="text-5xl font-headline italic tracking-tight text-white">{title}</h1>
+        {description && <p className="text-base text-white/50 font-light">{description}</p>}
       </div>
       {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
     </div>

@@ -18,6 +18,9 @@ import {
   CountUp,
   FadeIn,
   AnimateList,
+  PageHeader,
+  EmptyState,
+  Button,
 } from "@/shared/components/ui";
 import { cn, formatDay, formatRelativeTime } from "@/shared/lib/utils";
 import { trpc } from "@/shared/lib/trpc";
@@ -75,20 +78,25 @@ export default function DashboardPage() {
     <div className="px-8 py-10 max-w-[1600px] mx-auto">
       {/* Hero heading */}
       <FadeIn>
-        <h1 className="text-5xl font-headline italic tracking-tight text-white">
-          Хяналтын <span className="text-white/40">самбар</span>
-        </h1>
+        <PageHeader
+          title={
+            <>
+              Хяналтын <span className="text-white/40">самбар</span>
+            </>
+          }
+          description="Бизнесийн ерөнхий мэдээлэл"
+        />
       </FadeIn>
 
       {/* KPI Cards */}
       <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
         {/* Total Sales / Conversations */}
-        <FadeIn delay={0.05}>
-          <div className="glass-card glass-glint rounded-3xl p-8 group">
+        <FadeIn delay={0.05} className="h-full">
+          <div className="glass-card glass-glint rounded-3xl p-8 group h-full">
             <div className="flex items-center gap-3 mb-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/[0.05] group-hover:scale-110 transition-transform duration-300">
                 <span className="material-symbols-outlined text-[20px] text-white/60">
-                  payments
+                  chat_bubble
                 </span>
               </div>
               <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
@@ -113,8 +121,8 @@ export default function DashboardPage() {
         </FadeIn>
 
         {/* Active Chats */}
-        <FadeIn delay={0.1}>
-          <div className="glass-card glass-glint rounded-3xl p-8 group">
+        <FadeIn delay={0.1} className="h-full">
+          <div className="glass-card glass-glint rounded-3xl p-8 group h-full">
             <div className="flex items-center gap-3 mb-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/[0.05] group-hover:scale-110 transition-transform duration-300">
                 <span className="material-symbols-outlined text-[20px] text-white/60">forum</span>
@@ -138,8 +146,8 @@ export default function DashboardPage() {
         </FadeIn>
 
         {/* Resolution Rate */}
-        <FadeIn delay={0.15}>
-          <div className="glass-card glass-glint rounded-3xl p-8 group">
+        <FadeIn delay={0.15} className="h-full">
+          <div className="glass-card glass-glint rounded-3xl p-8 group h-full">
             <div className="flex items-center gap-3 mb-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/[0.05] group-hover:scale-110 transition-transform duration-300">
                 <span className="material-symbols-outlined text-[20px] text-white/60">
@@ -215,9 +223,12 @@ export default function DashboardPage() {
                   </AreaChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="flex h-full items-center justify-center text-sm text-white/45">
-                  {convStats.isLoading ? "Ачааллаж байна..." : "Мэдээлэл алга"}
-                </div>
+                <EmptyState
+                  icon={<span className="material-symbols-outlined text-[20px]">bar_chart</span>}
+                  title={convStats.isLoading ? "Ачааллаж байна..." : "Мэдээлэл алга"}
+                  description="Өгөгдөл цуглагдсаны дараа график харагдана"
+                  className="py-0 h-full"
+                />
               )}
             </div>
           </div>
@@ -236,16 +247,16 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : (recentConvs.data ?? []).length === 0 ? (
-              <div className="flex flex-col items-center justify-center gap-2 py-8">
-                <span className="material-symbols-outlined text-[28px] text-white/15">forum</span>
-                <p className="text-sm text-white/40">Яриа алга байна</p>
-                <Link
-                  href="/conversations"
-                  className="mt-1 text-xs text-white/50 underline decoration-white/20 hover:text-white/70 transition-colors"
-                >
-                  Яриа хуудас руу очих →
-                </Link>
-              </div>
+              <EmptyState
+                icon={<span className="material-symbols-outlined text-[20px]">forum</span>}
+                title="Яриа алга байна"
+                action={
+                  <Button variant="link" asChild>
+                    <Link href="/conversations">Яриа хуудас руу очих →</Link>
+                  </Button>
+                }
+                className="py-8"
+              />
             ) : (
               <AnimateList stagger={0.04}>
                 {(recentConvs.data ?? []).map((conv) => {
@@ -294,18 +305,16 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : (topProducts.data ?? []).length === 0 ? (
-              <div className="flex flex-col items-center justify-center gap-2 py-8">
-                <span className="material-symbols-outlined text-[28px] text-white/15">
-                  inventory_2
-                </span>
-                <p className="text-sm text-white/40">Бараа алга байна</p>
-                <Link
-                  href="/products"
-                  className="mt-1 text-xs text-white/50 underline decoration-white/20 hover:text-white/70 transition-colors"
-                >
-                  Бараа нэмэх →
-                </Link>
-              </div>
+              <EmptyState
+                icon={<span className="material-symbols-outlined text-[20px]">inventory_2</span>}
+                title="Бараа алга байна"
+                action={
+                  <Button variant="link" asChild>
+                    <Link href="/products">Бараа нэмэх →</Link>
+                  </Button>
+                }
+                className="py-8"
+              />
             ) : (
               <AnimateList stagger={0.04}>
                 {(topProducts.data ?? []).map((product, index) => {

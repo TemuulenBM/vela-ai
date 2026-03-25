@@ -2,15 +2,14 @@
 
 import { SessionProvider } from "next-auth/react";
 import { Sidebar } from "@/shared/components/ui/sidebar";
+import { Avatar } from "@/shared/components/ui/avatar";
 import { TooltipProvider } from "@/shared/components/ui/tooltip";
 import { TRPCProvider } from "@/shared/components/providers/trpc-provider";
 
 function TopHeader() {
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-end px-8 bg-black/40 backdrop-blur-xl border-b border-white/[0.04]">
-      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.08] text-sm font-medium text-white">
-        A
-      </div>
+      <Avatar size="sm" fallback="A" />
     </header>
   );
 }
