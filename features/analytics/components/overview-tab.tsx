@@ -28,17 +28,17 @@ export function OverviewTab({ days }: { days: number }) {
 
   // Conversion funnel stages
   const funnelStages = [
-    { label: "Page Views", value: stats.data?.pageViews ?? 0 },
-    { label: "Add to Cart", value: stats.data?.addToCarts ?? 0 },
-    { label: "Checkout", value: stats.data?.checkouts ?? 0 },
+    { label: "Хуудас үзэлт", value: stats.data?.pageViews ?? 0 },
+    { label: "Сагсанд нэмсэн", value: stats.data?.addToCarts ?? 0 },
+    { label: "Захиалга", value: stats.data?.checkouts ?? 0 },
   ];
 
   if (hasError) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <span className="material-symbols-outlined text-white/20 text-[32px] mb-4">cloud_off</span>
-        <p className="text-sm font-medium text-white/70">Data loading failed</p>
-        <p className="mt-1 text-xs text-white/40 font-light">Please try again</p>
+        <p className="text-sm font-medium text-white/70">Мэдээлэл ачаалахад алдаа гарлаа</p>
+        <p className="mt-1 text-xs text-white/40 font-light">Дахин оролдоно уу</p>
         <button
           onClick={() => {
             stats.refetch();
@@ -47,7 +47,7 @@ export function OverviewTab({ days }: { days: number }) {
           }}
           className="mt-4 glass-card rounded-full px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-white/[0.08]"
         >
-          Retry
+          Дахин
         </button>
       </div>
     );
@@ -62,7 +62,7 @@ export function OverviewTab({ days }: { days: number }) {
         {/* Left column: Hero metric (8 cols) */}
         <div className="lg:col-span-8 flex flex-col gap-6">
           <HeroMetric
-            label="Revenue Flow"
+            label="Хуудас үзэлт"
             value={stats.data?.pageViews ?? 0}
             trend={
               stats.data
@@ -82,7 +82,7 @@ export function OverviewTab({ days }: { days: number }) {
           <MetricPair
             metrics={[
               {
-                label: "AI Sentiment",
+                label: "Чат харилцаа",
                 value: stats.data?.chatInteractions ?? 0,
                 trend: stats.data
                   ? {
@@ -93,7 +93,7 @@ export function OverviewTab({ days }: { days: number }) {
                 sparklineData: chatSeries,
               },
               {
-                label: "Global Reach",
+                label: "Сагсанд нэмэлт",
                 value: stats.data?.addToCarts ?? 0,
                 trend: stats.data
                   ? {

@@ -44,9 +44,9 @@ export function RankedProductList({ products, isLoading }: RankedProductListProp
           <span className="material-symbols-outlined text-white/20 text-[32px] mb-4">
             inventory_2
           </span>
-          <p className="text-sm text-white/40 font-light">No data found</p>
+          <p className="text-sm text-white/40 font-light">Мэдээлэл алга</p>
           <p className="mt-1 text-xs text-white/30 font-light">
-            Product view data takes time to accumulate
+            Барааны үзэлтийн мэдээлэл цуглахад хугацаа шаардлагатай
           </p>
         </div>
       </FadeIn>
@@ -61,10 +61,10 @@ export function RankedProductList({ products, isLoading }: RankedProductListProp
         {/* Header */}
         <div className="px-10 pt-10 pb-6 flex justify-between items-center">
           <h3 className="text-sm font-semibold uppercase tracking-widest text-white/80">
-            Inventory Excellence
+            Шилдэг бараа
           </h3>
           <button className="text-[10px] font-bold text-white/40 hover:text-white transition-colors uppercase tracking-[0.2em]">
-            View Full Catalog
+            Бүх бараа харах
           </button>
         </div>
 
@@ -119,7 +119,7 @@ export function RankedProductList({ products, isLoading }: RankedProductListProp
                   <div className="flex shrink-0 items-center gap-6">
                     <div className="hidden text-right sm:block">
                       <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                        Views
+                        Үзэлт
                       </p>
                       <p className="text-sm font-serif italic text-white/70 tabular-nums">
                         {product.views.toLocaleString()}
@@ -127,7 +127,7 @@ export function RankedProductList({ products, isLoading }: RankedProductListProp
                     </div>
                     <div className="hidden text-right md:block">
                       <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                        Cart
+                        Сагс
                       </p>
                       <p className="text-sm font-serif italic text-white/70 tabular-nums">
                         {product.carts.toLocaleString()}
@@ -135,7 +135,7 @@ export function RankedProductList({ products, isLoading }: RankedProductListProp
                     </div>
                     <div className="hidden text-right md:block">
                       <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                        Orders
+                        Захиалга
                       </p>
                       <p className="text-sm font-serif italic text-white/70 tabular-nums">
                         {product.orders.toLocaleString()}

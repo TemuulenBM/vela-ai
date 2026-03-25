@@ -24,10 +24,10 @@ import { trpc } from "@/shared/lib/trpc";
 type ConvStatus = "active" | "resolved" | "abandoned" | "escalated";
 
 const STATUS_BADGE: Record<ConvStatus, { variant: "success" | "default"; label: string }> = {
-  active: { variant: "success", label: "Active" },
-  resolved: { variant: "default", label: "Resolved" },
-  escalated: { variant: "success", label: "Escalated" },
-  abandoned: { variant: "default", label: "Abandoned" },
+  active: { variant: "success", label: "Идэвхтэй" },
+  resolved: { variant: "default", label: "Шийдсэн" },
+  escalated: { variant: "success", label: "Дамжуулсан" },
+  abandoned: { variant: "default", label: "Орхисон" },
 };
 
 function TrendBadge({ value }: { value: number }) {
@@ -74,9 +74,8 @@ export default function DashboardPage() {
     <div className="px-8 py-10 max-w-[1600px] mx-auto">
       {/* Hero heading */}
       <FadeIn>
-        <h1 className="text-6xl font-serif italic tracking-tight text-white">
-          <span className="shimmer-text">Performance</span>{" "}
-          <span className="text-white/40">Pulse</span>
+        <h1 className="text-5xl font-headline italic tracking-tight text-white">
+          Хяналтын <span className="text-white/40">самбар</span>
         </h1>
       </FadeIn>
 
@@ -92,14 +91,14 @@ export default function DashboardPage() {
                 </span>
               </div>
               <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                Total Sales
+                Нийт яриа
               </p>
             </div>
             <div className="flex items-end gap-3">
               <p className="text-4xl font-serif italic leading-none tracking-tight text-white tabular-nums">
                 <CountUp
                   to={convSummary.data?.total ?? 0}
-                  format={(n) => `$${Math.round(n).toLocaleString()}`}
+                  format={(n) => Math.round(n).toLocaleString()}
                 />
               </p>
               {convSummary.data && <TrendBadge value={convSummary.data.totalTrend} />}
@@ -120,7 +119,7 @@ export default function DashboardPage() {
                 <span className="material-symbols-outlined text-[20px] text-white/60">forum</span>
               </div>
               <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                Active Chats
+                Чатын харилцаа
               </p>
             </div>
             <p className="text-4xl font-serif italic leading-none tracking-tight text-white tabular-nums">
@@ -147,7 +146,7 @@ export default function DashboardPage() {
                 </span>
               </div>
               <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                Resolution Rate
+                Шийдвэрлэлт
               </p>
             </div>
             <p className="text-4xl font-serif italic leading-none tracking-tight text-white tabular-nums">
@@ -160,10 +159,10 @@ export default function DashboardPage() {
       {/* Chart + Conversations + Products */}
       <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* Usage Analytics Chart */}
-        <FadeIn delay={0.2}>
-          <div className="glass-card rounded-3xl p-8 lg:col-span-8">
+        <FadeIn delay={0.2} className="lg:col-span-8">
+          <div className="glass-card rounded-3xl p-8">
             <h3 className="text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-6">
-              Usage Analytics
+              Ашиглалтын график
             </h3>
             <div className="h-[300px] w-full">
               {chartData.length > 0 ? (
@@ -210,13 +209,13 @@ export default function DashboardPage() {
                         strokeWidth: 2,
                         fill: "rgba(255,255,255,0.1)",
                       }}
-                      name="Conversations"
+                      name="Яриа"
                     />
                   </AreaChart>
                 </ResponsiveContainer>
               ) : (
                 <div className="flex h-full items-center justify-center text-sm text-white/45">
-                  {convStats.isLoading ? "Loading..." : "No data available"}
+                  {convStats.isLoading ? "Ачааллаж байна..." : "Мэдээлэл алга"}
                 </div>
               )}
             </div>
@@ -224,10 +223,10 @@ export default function DashboardPage() {
         </FadeIn>
 
         {/* Recent Conversations */}
-        <FadeIn delay={0.25}>
-          <div className="glass-card rounded-3xl p-8 lg:col-span-4">
+        <FadeIn delay={0.25} className="lg:col-span-4">
+          <div className="glass-card rounded-3xl p-8">
             <h3 className="text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-6">
-              Recent Conversations
+              Сүүлийн яриа
             </h3>
             {recentConvs.isLoading ? (
               <div className="space-y-3">
@@ -236,11 +235,11 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : (recentConvs.data ?? []).length === 0 ? (
-              <p className="py-8 text-center text-sm text-white/45">No conversations yet</p>
+              <p className="py-8 text-center text-sm text-white/45">Яриа алга байна</p>
             ) : (
               <AnimateList stagger={0.04}>
                 {(recentConvs.data ?? []).map((conv) => {
-                  const name = conv.shopperName ?? conv.shopperEmail ?? "Guest";
+                  const name = conv.shopperName ?? conv.shopperEmail ?? "Зочин";
                   const badge = STATUS_BADGE[conv.status as ConvStatus] ?? STATUS_BADGE.active;
                   return (
                     <div
@@ -256,7 +255,7 @@ export default function DashboardPage() {
                           </Badge>
                         </div>
                         <p className="mt-0.5 truncate text-[13px] text-white/50">
-                          {conv.lastMessage ?? "No messages"}
+                          {conv.lastMessage ?? "Мессеж алга"}
                         </p>
                       </div>
                       <span className="shrink-0 text-xs text-white/30">
@@ -276,7 +275,7 @@ export default function DashboardPage() {
         <FadeIn delay={0.3}>
           <div className="glass-card rounded-3xl p-8">
             <h3 className="text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-6">
-              Top Products
+              Шилдэг бараа
             </h3>
             {topProducts.isLoading ? (
               <div className="space-y-3">
@@ -285,7 +284,7 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : (topProducts.data ?? []).length === 0 ? (
-              <p className="py-8 text-center text-sm text-white/45">No data available</p>
+              <p className="py-8 text-center text-sm text-white/45">Мэдээлэл алга</p>
             ) : (
               <AnimateList stagger={0.04}>
                 {(topProducts.data ?? []).map((product, index) => {
@@ -315,7 +314,7 @@ export default function DashboardPage() {
                               <Eye className="h-3 w-3" />
                               {product.views.toLocaleString()}
                             </span>
-                            <span className="text-xs text-white/60">{product.orders} orders</span>
+                            <span className="text-xs text-white/60">{product.orders} захиалга</span>
                             <span className="text-xs font-medium text-white/60">
                               {product.conversionRate}%
                             </span>

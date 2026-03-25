@@ -42,7 +42,7 @@ export function GeneralTab() {
       {/* Store Info Card */}
       <div className="glass-card rounded-3xl p-8">
         <div className="mb-8">
-          <h2 className="font-serif text-2xl italic text-white">Store Details</h2>
+          <h2 className="font-headline text-2xl italic text-white">Дэлгүүрийн мэдээлэл</h2>
           <p className="mt-1 text-sm text-white/40">Дэлгүүрийн ерөнхий мэдээллийг засварлах</p>
         </div>
 
@@ -50,7 +50,7 @@ export function GeneralTab() {
           {/* Store Name */}
           <div className="flex flex-col gap-2">
             <label className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
-              STORE NAME
+              ДЭЛГҮҮРИЙН НЭР
             </label>
             <input
               type="text"
@@ -78,7 +78,7 @@ export function GeneralTab() {
           {/* Description */}
           <div className="flex flex-col gap-2">
             <label className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
-              DESCRIPTION
+              ТАЙЛБАР
             </label>
             <textarea
               value={displayDesc}
@@ -97,7 +97,7 @@ export function GeneralTab() {
             disabled={updateMutation.isPending}
             className="rounded-full bg-white px-6 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-black transition-all hover:bg-white/90 disabled:opacity-50"
           >
-            {updateMutation.isPending ? "Хадгалж байна..." : "Save Changes"}
+            {updateMutation.isPending ? "Хадгалж байна..." : "Хадгалах"}
           </button>
           {updateMutation.isSuccess && (
             <span className="flex items-center gap-1.5 text-xs text-white/40">

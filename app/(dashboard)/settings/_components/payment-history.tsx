@@ -4,10 +4,10 @@ import { trpc } from "@/shared/lib/trpc";
 import { PLAN_LABELS } from "@/shared/lib/plan-config";
 
 const STATUS_MAP: Record<string, { label: string; color: string }> = {
-  pending: { label: "PENDING", color: "text-yellow-400" },
-  success: { label: "COMPLETED", color: "text-emerald-400" },
-  failed: { label: "FAILED", color: "text-red-400" },
-  refunded: { label: "REFUNDED", color: "text-blue-400" },
+  pending: { label: "ХҮЛЭЭГДЭЖ БУЙ", color: "text-yellow-400" },
+  success: { label: "АМЖИЛТТАЙ", color: "text-emerald-400" },
+  failed: { label: "АМЖИЛТГҮЙ", color: "text-red-400" },
+  refunded: { label: "БУЦААСАН", color: "text-blue-400" },
 };
 
 export function PaymentHistory() {
@@ -25,9 +25,9 @@ export function PaymentHistory() {
     <div className="glass-card rounded-3xl overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-8 pt-8 pb-6">
-        <h2 className="font-serif text-2xl italic text-white">Payment History</h2>
+        <h2 className="font-headline text-2xl italic text-white">Төлбөрийн түүх</h2>
         <button className="text-[10px] font-semibold uppercase tracking-widest text-white/40 transition-colors hover:text-white/60">
-          EXPORT CSV
+          CSV ТАТАХ
         </button>
       </div>
 
@@ -44,19 +44,19 @@ export function PaymentHistory() {
             <thead>
               <tr className="border-b border-white/[0.06]">
                 <th className="px-8 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                  Date
+                  Огноо
                 </th>
                 <th className="px-8 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                  Transaction ID
+                  Гүйлгээний ID
                 </th>
                 <th className="px-8 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                  Processor
+                  Төлбөрийн систем
                 </th>
                 <th className="px-8 py-3 text-right text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                  Amount
+                  Дүн
                 </th>
                 <th className="px-8 py-3 text-right text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                  Status
+                  Төлөв
                 </th>
               </tr>
             </thead>
@@ -69,7 +69,7 @@ export function PaymentHistory() {
                     className="border-b border-white/[0.03] transition-colors hover:bg-white/[0.02]"
                   >
                     <td className="px-8 py-4 text-sm text-white">
-                      {new Date(log.createdAt).toLocaleDateString("en-US", {
+                      {new Date(log.createdAt).toLocaleDateString("mn-MN", {
                         month: "short",
                         day: "numeric",
                         year: "numeric",

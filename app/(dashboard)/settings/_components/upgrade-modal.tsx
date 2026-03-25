@@ -136,7 +136,7 @@ export function UpgradeModal({ open, onOpenChange, currentPlan }: UpgradeModalPr
           <>
             <ModalHeader>
               <ModalTitle>
-                <span className="font-serif text-2xl italic">Upgrade Plan</span>
+                <span className="font-headline text-2xl italic">Багц сонгох</span>
               </ModalTitle>
               <ModalDescription>Өөрийн бизнест тохирох багцаа сонгоно уу</ModalDescription>
             </ModalHeader>
@@ -157,12 +157,12 @@ export function UpgradeModal({ open, onOpenChange, currentPlan }: UpgradeModalPr
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
-                        <span className="font-serif text-lg italic text-white">
+                        <span className="font-headline text-lg italic text-white">
                           {PLAN_LABELS[plan]}
                         </span>
                         {isCurrent && (
                           <span className="rounded-full bg-white/10 px-3 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-white/50">
-                            Current
+                            Одоогийн
                           </span>
                         )}
                       </div>
@@ -201,7 +201,7 @@ export function UpgradeModal({ open, onOpenChange, currentPlan }: UpgradeModalPr
           <>
             <ModalHeader>
               <ModalTitle>
-                <span className="font-serif text-2xl italic">Scan to Pay</span>
+                <span className="font-headline text-2xl italic">QR уншуулах</span>
               </ModalTitle>
               <ModalDescription>Банкны аппликейшнээрээ QR кодыг уншуулна уу</ModalDescription>
             </ModalHeader>
@@ -221,7 +221,7 @@ export function UpgradeModal({ open, onOpenChange, currentPlan }: UpgradeModalPr
               {invoiceData.urls.length > 0 && (
                 <div className="w-full">
                   <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                    OR OPEN WITH BANK APP
+                    ЭСВЭЛ БАНКНЫ АПП-ААР НЭЭХ
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {invoiceData.urls.map((url, i) => (
@@ -270,7 +270,7 @@ export function UpgradeModal({ open, onOpenChange, currentPlan }: UpgradeModalPr
           <>
             <ModalHeader>
               <ModalTitle>
-                <span className="font-serif text-2xl italic">Success!</span>
+                <span className="font-headline text-2xl italic">Амжилттай!</span>
               </ModalTitle>
               <ModalDescription>
                 Таны {selectedPlan && PLAN_LABELS[selectedPlan]} багц идэвхжлээ
@@ -290,7 +290,7 @@ export function UpgradeModal({ open, onOpenChange, currentPlan }: UpgradeModalPr
                 onClick={() => handleOpenChange(false)}
                 className="rounded-full bg-white px-6 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-black transition-all hover:bg-white/90"
               >
-                Done
+                Болсон
               </button>
             </ModalFooter>
           </>

@@ -32,8 +32,8 @@ export function MetricPair({ metrics, isLoading }: MetricPairProps) {
   }
 
   const icons = ["psychology", "language"];
-  const labels = ["Positive Resonance", "Unique Curators"];
-  const topLabels = ["AI Sentiment", "Global Reach"];
+  const labels = ["Чат харилцаа", "Сагсанд нэмэлт"];
+  const topLabels = ["Чат харилцаа", "Сагсанд нэмэлт"];
 
   return (
     <FadeIn delay={0.1}>

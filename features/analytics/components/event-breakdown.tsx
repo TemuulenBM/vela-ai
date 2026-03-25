@@ -8,14 +8,14 @@ interface EventBreakdownProps {
 }
 
 const EVENT_LABELS: Record<string, { label: string; icon: string }> = {
-  page_view: { label: "Page Views", icon: "visibility" },
-  product_view: { label: "Product Views", icon: "shopping_bag" },
-  add_to_cart: { label: "Add to Cart", icon: "add_shopping_cart" },
-  checkout_started: { label: "Checkout Started", icon: "shopping_cart_checkout" },
-  checkout_completed: { label: "Checkout Completed", icon: "check_circle" },
-  chat_interaction: { label: "Chat Interactions", icon: "forum" },
-  search_query: { label: "Search Queries", icon: "search" },
-  recommendation_clicked: { label: "Recommendations", icon: "recommend" },
+  page_view: { label: "Хуудас үзэлт", icon: "visibility" },
+  product_view: { label: "Бараа үзэлт", icon: "shopping_bag" },
+  add_to_cart: { label: "Сагсанд нэмсэн", icon: "add_shopping_cart" },
+  checkout_started: { label: "Захиалга эхэлсэн", icon: "shopping_cart_checkout" },
+  checkout_completed: { label: "Захиалга дууссан", icon: "check_circle" },
+  chat_interaction: { label: "Чат харилцаа", icon: "forum" },
+  search_query: { label: "Хайлт", icon: "search" },
+  recommendation_clicked: { label: "Санал болголт", icon: "recommend" },
 };
 
 export function EventBreakdown({ data, isLoading }: EventBreakdownProps) {
@@ -41,7 +41,7 @@ export function EventBreakdown({ data, isLoading }: EventBreakdownProps) {
     <FadeIn delay={0.3}>
       <div className="glass-card rounded-3xl p-10">
         <h3 className="mb-6 text-sm font-semibold uppercase tracking-widest text-white/80">
-          Event Taxonomy
+          Үйл явдлын задаргаа
         </h3>
 
         <AnimateList stagger={0.04}>

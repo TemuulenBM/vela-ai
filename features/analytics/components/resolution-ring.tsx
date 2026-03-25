@@ -46,8 +46,8 @@ export function ResolutionRing({
   ];
 
   const metrics = [
-    { label: "Total Conversations", value: total, trend: totalTrend, icon: "forum" },
-    { label: "Resolved", value: resolved, trend: resolvedTrend, icon: "check_circle" },
+    { label: "Нийт яриа", value: total, trend: totalTrend, icon: "forum" },
+    { label: "Шийдсэн", value: resolved, trend: resolvedTrend, icon: "check_circle" },
   ];
 
   return (
@@ -60,9 +60,9 @@ export function ResolutionRing({
           </div>
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-widest text-white/80">
-              Conversation IQ
+              Ярианы шийдвэрлэлт
             </h3>
-            <p className="text-xs text-white/30 font-light">Resolution performance</p>
+            <p className="text-xs text-white/30 font-light">Шийдвэрлэлтийн гүйцэтгэл</p>
           </div>
         </div>
 
@@ -93,7 +93,7 @@ export function ResolutionRing({
               {resolutionRate}%
             </span>
             <span className="mt-1.5 text-[10px] font-semibold uppercase tracking-widest text-white/40">
-              Resolution
+              Шийдсэн
             </span>
           </div>
         </div>
@@ -105,7 +105,7 @@ export function ResolutionRing({
               <div className="space-y-1">
                 <p className="text-sm font-medium text-white">{metric.label}</p>
                 <p className="text-xs text-white/20 font-light">
-                  {metric.label === "Total Conversations" ? "All sessions" : "Handled by AI"}
+                  {metric.label === "Нийт яриа" ? "Бүх сешн" : "AI шийдсэн"}
                 </p>
               </div>
               <div className="flex items-center gap-2">

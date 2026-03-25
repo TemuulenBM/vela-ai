@@ -30,9 +30,9 @@ export function ProductSummaryStrip({
   }
 
   const items = [
-    { label: "Total Products", value: totalProducts, icon: "inventory_2" },
-    { label: "Active", value: activeProducts, icon: "check_circle" },
-    { label: "Out of Stock", value: outOfStock, warn: outOfStock > 0, icon: "warning" },
+    { label: "Нийт бараа", value: totalProducts, icon: "inventory_2" },
+    { label: "Идэвхтэй", value: activeProducts, icon: "check_circle" },
+    { label: "Дууссан", value: outOfStock, warn: outOfStock > 0, icon: "warning" },
   ];
 
   return (

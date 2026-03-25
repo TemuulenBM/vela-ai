@@ -5,11 +5,11 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/shared/lib/utils";
 
 const navItems = [
-  { label: "Overview", href: "/overview", icon: "dashboard" },
-  { label: "Products", href: "/products", icon: "inventory_2" },
-  { label: "Conversations", href: "/conversations", icon: "forum" },
-  { label: "Analytics", href: "/analytics", icon: "monitoring" },
-  { label: "Settings", href: "/settings", icon: "settings" },
+  { label: "Хяналт", href: "/overview", icon: "dashboard" },
+  { label: "Бараа", href: "/products", icon: "inventory_2" },
+  { label: "Яриа", href: "/conversations", icon: "forum" },
+  { label: "Аналитик", href: "/analytics", icon: "monitoring" },
+  { label: "Тохиргоо", href: "/settings", icon: "settings" },
 ];
 
 interface SidebarProps {
@@ -44,7 +44,7 @@ function Sidebar({ className }: SidebarProps) {
         <div className="flex flex-col min-w-0">
           <span className="text-lg font-serif italic text-white tracking-tight">Vela AI</span>
           <span className="text-[9px] text-white/30 uppercase tracking-[0.15em]">
-            E-commerce Assistant
+            И-коммерс туслах
           </span>
         </div>
       </div>
@@ -74,12 +74,8 @@ function Sidebar({ className }: SidebarProps) {
         })}
       </nav>
 
-      {/* Footer — New Campaign */}
-      <div className="px-2">
-        <button className="flex items-center justify-center gap-2 w-full rounded-full bg-white text-black px-4 py-3 text-[13px] font-semibold hover:bg-white/90 transition-all duration-200">
-          New Campaign
-        </button>
-      </div>
+      {/* Footer */}
+      <div className="px-2" />
     </aside>
   );
 }

@@ -133,15 +133,15 @@ export default function ProductsPage() {
       {/* Editorial heading */}
       <FadeIn>
         <div className="flex items-end justify-between mb-10">
-          <h1 className="text-7xl font-serif italic tracking-tighter text-white">Catalogue</h1>
+          <h1 className="text-5xl font-headline italic tracking-tighter text-white">Бараа</h1>
           <div className="flex items-center gap-3">
             <Button variant="glass" size="md">
               <span className="material-symbols-outlined text-[18px]">download</span>
-              Export CSV
+              CSV татах
             </Button>
             <Button size="md">
               <span className="material-symbols-outlined text-[18px]">add</span>
-              Add Product
+              Бараа нэмэх
             </Button>
           </div>
         </div>
@@ -162,7 +162,7 @@ export default function ProductsPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center mb-6">
           <div className="flex-1">
             <Input
-              placeholder="Search products..."
+              placeholder="Бараа хайх..."
               icon={<span className="material-symbols-outlined text-[18px]">search</span>}
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
@@ -173,11 +173,11 @@ export default function ProductsPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="Электроник">Electronics</SelectItem>
-              <SelectItem value="Хувцас">Apparel</SelectItem>
-              <SelectItem value="Гэр ахуй">Home</SelectItem>
-              <SelectItem value="Гутал">Footwear</SelectItem>
+              <SelectItem value="all">Бүгд</SelectItem>
+              <SelectItem value="Электроник">Электроник</SelectItem>
+              <SelectItem value="Хувцас">Хувцас</SelectItem>
+              <SelectItem value="Гэр ахуй">Гэр ахуй</SelectItem>
+              <SelectItem value="Гутал">Гутал</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -194,12 +194,12 @@ export default function ProductsPage() {
             </div>
           ) : listQuery.isError ? (
             <div className="flex flex-col items-center justify-center gap-2 p-12 text-center">
-              <p className="text-sm text-[#ffb4ab]">Error loading products</p>
+              <p className="text-sm text-[#ffb4ab]">Бараа ачаалахад алдаа гарлаа</p>
               <button
                 onClick={() => listQuery.refetch()}
                 className="text-xs text-white/70 underline"
               >
-                Retry
+                Дахин оролдох
               </button>
             </div>
           ) : items.length === 0 ? (
@@ -207,11 +207,11 @@ export default function ProductsPage() {
               <span className="material-symbols-outlined text-[32px] text-white/30">
                 inventory_2
               </span>
-              <p className="text-sm text-white/60">No products found</p>
+              <p className="text-sm text-white/60">Бараа олдсонгүй</p>
               <p className="text-xs text-white/40">
                 {debouncedSearch
-                  ? "No results matched your search"
-                  : "Products will appear here once added"}
+                  ? "Хайлтад тохирох бараа алга"
+                  : "Бараа нэмсний дараа энд харагдана"}
               </p>
             </div>
           ) : (
@@ -222,16 +222,16 @@ export default function ProductsPage() {
                     <tr>
                       <th className="w-16 px-6 py-4" />
                       <th className="px-6 py-4 text-left text-[10px] font-semibold uppercase tracking-widest text-white/30">
-                        Product
+                        Бараа
                       </th>
                       <th className="px-6 py-4 text-right text-[10px] font-semibold uppercase tracking-widest text-white/30">
-                        Price
+                        Үнэ
                       </th>
                       <th className="px-6 py-4 text-right text-[10px] font-semibold uppercase tracking-widest text-white/30">
-                        Stock
+                        Нөөц
                       </th>
                       <th className="px-6 py-4 text-left text-[10px] font-semibold uppercase tracking-widest text-white/30">
-                        Status
+                        Төлөв
                       </th>
                       <th className="w-12 px-6 py-4" />
                     </tr>
@@ -296,7 +296,7 @@ export default function ProductsPage() {
                                 )}
                               />
                               <span className="text-xs text-white/60">
-                                {product.isAvailable ? "Synced" : "Inactive"}
+                                {product.isAvailable ? "Идэвхтэй" : "Идэвхгүй"}
                               </span>
                             </div>
                           </td>
@@ -310,14 +310,14 @@ export default function ProductsPage() {
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem onClick={() => setEditingProduct(product)}>
                                   <Pencil className="h-4 w-4" />
-                                  Edit
+                                  Засах
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   disabled={createMutation.isPending}
                                   onClick={() => handleDuplicate(product)}
                                 >
                                   <Copy className="h-4 w-4" />
-                                  {createMutation.isPending ? "Duplicating..." : "Duplicate"}
+                                  {createMutation.isPending ? "Хуулж байна..." : "Хуулах"}
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
@@ -325,7 +325,7 @@ export default function ProductsPage() {
                                   onClick={() => setDeletingProduct(product)}
                                 >
                                   <Trash2 className="h-4 w-4" />
-                                  Delete
+                                  Устгах
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -340,7 +340,7 @@ export default function ProductsPage() {
               {/* Pagination */}
               <div className="flex items-center justify-between px-6 py-4">
                 <p className="text-sm text-white/50">
-                  <span className="font-medium text-white">{total}</span> products total
+                  <span className="font-medium text-white">{total}</span> нийт бараа
                 </p>
                 {totalPages > 1 && (
                   <div className="flex items-center gap-2">
@@ -375,22 +375,22 @@ export default function ProductsPage() {
       <Modal open={!!deletingProduct} onOpenChange={(open) => !open && setDeletingProduct(null)}>
         <ModalContent>
           <ModalHeader>
-            <ModalTitle>Delete Product</ModalTitle>
+            <ModalTitle>Бараа устгах</ModalTitle>
             <ModalDescription>
-              Are you sure you want to delete &ldquo;{deletingProduct?.name}&rdquo;? This action
-              cannot be undone.
+              &ldquo;{deletingProduct?.name}&rdquo; барааг устгахдаа итгэлтэй байна уу? Энэ үйлдлийг
+              буцаах боломжгүй.
             </ModalDescription>
           </ModalHeader>
           <ModalFooter>
             <Button variant="glass" onClick={() => setDeletingProduct(null)}>
-              Cancel
+              Болих
             </Button>
             <Button
               variant="destructive"
               disabled={deleteMutation.isPending}
               onClick={() => deletingProduct && deleteMutation.mutate({ id: deletingProduct.id })}
             >
-              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+              {deleteMutation.isPending ? "Устгаж байна..." : "Устгах"}
             </Button>
           </ModalFooter>
         </ModalContent>

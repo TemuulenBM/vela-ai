@@ -29,7 +29,7 @@ export function HeroMetric({ label, value, trend, sparklineData, isLoading }: He
         {trend && (
           <div className="absolute top-8 right-8 flex items-center gap-2">
             <span className="text-[10px] font-semibold uppercase tracking-widest text-white/20">
-              Growth Velocity
+              Өсөлт
             </span>
             <div
               className={cn(
@@ -48,9 +48,7 @@ export function HeroMetric({ label, value, trend, sparklineData, isLoading }: He
           </div>
         )}
 
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
-          Revenue Flow
-        </p>
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">{label}</p>
 
         <p className="mt-3 text-5xl font-serif italic leading-none text-white">
           <CountUp to={value} format={(n) => Math.round(n).toLocaleString()} />

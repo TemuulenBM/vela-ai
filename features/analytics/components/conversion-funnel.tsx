@@ -39,13 +39,11 @@ export function ConversionFunnel({ stages, isLoading }: ConversionFunnelProps) {
         <div className="p-10">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold uppercase tracking-widest text-white/80">
-              Conversion Pipeline
+              Хөрвүүлэлтийн шат
             </h3>
             <span className="material-symbols-outlined text-white/40 text-[20px]">filter_alt</span>
           </div>
-          <p className="text-xs text-white/30 font-light mb-8">
-            Customer journey stage progression
-          </p>
+          <p className="text-xs text-white/30 font-light mb-8">Хэрэглэгчийн замналын шатлал</p>
 
           <div className="flex flex-col gap-3">
             {stages.map((stage, index) => {
@@ -95,7 +93,7 @@ export function ConversionFunnel({ stages, isLoading }: ConversionFunnelProps) {
                         south
                       </span>
                       <span className="text-[10px] font-semibold uppercase tracking-widest text-white/30 tabular-nums">
-                        {dropRate}% drop-off
+                        {dropRate}% буурсан
                       </span>
                     </div>
                   )}

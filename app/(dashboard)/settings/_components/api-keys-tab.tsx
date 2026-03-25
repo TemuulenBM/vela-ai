@@ -37,7 +37,7 @@ export function ApiKeysTab() {
       {/* Create new key */}
       <div className="glass-card rounded-3xl p-8">
         <div className="mb-6">
-          <h2 className="font-serif text-2xl italic text-white">API Keys</h2>
+          <h2 className="font-headline text-2xl italic text-white">API түлхүүрүүд</h2>
           <p className="mt-1 text-sm text-white/40">
             API түлхүүрүүдийг удирдах. Түлхүүрүүдийг нууцаар хадгална уу.
           </p>
@@ -46,7 +46,7 @@ export function ApiKeysTab() {
         <div className="flex items-end gap-3">
           <div className="flex-1 flex flex-col gap-2">
             <label className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
-              NEW KEY NAME
+              ШИНЭ ТҮЛХҮҮРИЙН НЭР
             </label>
             <input
               type="text"
@@ -108,16 +108,16 @@ export function ApiKeysTab() {
               <thead>
                 <tr className="border-b border-white/[0.06]">
                   <th className="px-8 py-4 text-left text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                    Name
+                    Нэр
                   </th>
                   <th className="px-8 py-4 text-left text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                    Prefix
+                    Угтвар
                   </th>
                   <th className="px-8 py-4 text-left text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                    Created
+                    Үүсгэсэн
                   </th>
                   <th className="px-8 py-4 text-left text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                    Last Used
+                    Сүүлд ашигласан
                   </th>
                   <th className="w-20 px-8 py-4" />
                 </tr>
@@ -170,7 +170,7 @@ export function ApiKeysTab() {
       {/* Widget embed snippet */}
       <div className="glass-card rounded-3xl p-8">
         <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-white/40">
-          WIDGET EMBED CODE
+          ВИДЖЕТ EMBED КОД
         </p>
         <div className="rounded-2xl bg-white/[0.04] p-4">
           <code className="block text-xs font-mono text-white/60">

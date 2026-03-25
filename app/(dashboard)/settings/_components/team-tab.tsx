@@ -14,7 +14,7 @@ export function TeamTab() {
       <div className="glass-card rounded-3xl p-8">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="font-serif text-2xl italic text-white">Team Members</h2>
+            <h2 className="font-headline text-2xl italic text-white">Багийн гишүүд</h2>
             <p className="mt-1 text-sm text-white/40">Дэлгүүрийн удирдлагын багийг удирдах</p>
           </div>
           <button
@@ -46,13 +46,13 @@ export function TeamTab() {
               <thead>
                 <tr className="border-b border-white/[0.06]">
                   <th className="px-8 py-4 text-left text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                    Member
+                    Гишүүн
                   </th>
                   <th className="px-8 py-4 text-left text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                    Email
+                    Имэйл
                   </th>
                   <th className="px-8 py-4 text-left text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                    Role
+                    Үүрэг
                   </th>
                 </tr>
               </thead>

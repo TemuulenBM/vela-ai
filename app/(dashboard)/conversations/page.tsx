@@ -9,21 +9,21 @@ import { trpc } from "@/shared/lib/trpc";
 type ConvStatus = "active" | "resolved" | "abandoned" | "escalated";
 
 const STATUS_OPTIONS: { value: ConvStatus | "all"; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "active", label: "Active" },
-  { value: "resolved", label: "Resolved" },
-  { value: "escalated", label: "Escalated" },
-  { value: "abandoned", label: "Abandoned" },
+  { value: "all", label: "Бүгд" },
+  { value: "active", label: "Идэвхтэй" },
+  { value: "resolved", label: "Шийдсэн" },
+  { value: "escalated", label: "Дамжуулсан" },
+  { value: "abandoned", label: "Орхисон" },
 ];
 
 const STATUS_BADGE: Record<
   ConvStatus,
   { variant: "success" | "default" | "warning" | "error"; label: string }
 > = {
-  active: { variant: "success", label: "Active" },
-  resolved: { variant: "default", label: "Resolved" },
-  escalated: { variant: "warning", label: "Escalated" },
-  abandoned: { variant: "default", label: "Abandoned" },
+  active: { variant: "success", label: "Идэвхтэй" },
+  resolved: { variant: "default", label: "Шийдсэн" },
+  escalated: { variant: "warning", label: "Дамжуулсан" },
+  abandoned: { variant: "default", label: "Орхисон" },
 };
 
 export default function ConversationsPage() {
@@ -77,15 +77,15 @@ export default function ConversationsPage() {
       {/* Left panel — conversation list */}
       <div className="flex w-96 shrink-0 flex-col border-r border-white/[0.04]">
         <div className="px-6 pt-8 pb-4">
-          <h2 className="text-4xl font-serif italic tracking-tight text-white">Inbox</h2>
+          <h2 className="text-4xl font-headline italic tracking-tight text-white">Яриа</h2>
           <p className="mt-1 text-[10px] font-semibold uppercase tracking-widest text-white/30">
-            {listQuery.isLoading ? "..." : `${activeCount} active sessions`}
+            {listQuery.isLoading ? "..." : `${activeCount} идэвхтэй сешн`}
           </p>
         </div>
 
         <div className="space-y-3 px-4 pb-3">
           <Input
-            placeholder="Search conversations..."
+            placeholder="Яриа хайх..."
             icon={<span className="material-symbols-outlined text-[18px]">search</span>}
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
@@ -118,12 +118,12 @@ export default function ConversationsPage() {
           ) : items.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
               <span className="material-symbols-outlined text-[28px] text-white/20">forum</span>
-              <p className="text-sm text-white/50">No conversations</p>
+              <p className="text-sm text-white/50">Яриа алга</p>
             </div>
           ) : (
             <AnimateList stagger={0.04}>
               {items.map((conv) => {
-                const name = conv.shopperName ?? conv.shopperEmail ?? "Guest";
+                const name = conv.shopperName ?? conv.shopperEmail ?? "Зочин";
                 const isActive = conv.id === effectiveSelectedId;
                 return (
                   <button
@@ -145,7 +145,7 @@ export default function ConversationsPage() {
                         </span>
                       </div>
                       <p className="mt-1 truncate text-xs text-white/50 font-light">
-                        {conv.lastMessage ?? conv.summary ?? "No messages"}
+                        {conv.lastMessage ?? conv.summary ?? "Мессеж алга"}
                       </p>
                     </div>
                   </button>
@@ -185,7 +185,7 @@ export default function ConversationsPage() {
             <div className="text-center">
               <span className="material-symbols-outlined text-[32px] text-white/15">forum</span>
               <p className="mt-2 text-sm text-white/40">
-                {detailQuery.isLoading ? "Loading..." : "Select a conversation"}
+                {detailQuery.isLoading ? "Ачааллаж байна..." : "Яриа сонгоно уу"}
               </p>
             </div>
           </div>
@@ -199,20 +199,20 @@ export default function ConversationsPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-white">
-                    {selected.shopperName ?? selected.shopperEmail ?? "Guest"}
+                    {selected.shopperName ?? selected.shopperEmail ?? "Зочин"}
                   </h3>
                   <div className="flex items-center gap-2 mt-0.5">
                     <div className="flex items-center gap-1.5">
                       <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]" />
                       <span className="text-[10px] text-white/40 uppercase tracking-wider">
-                        Online
+                        Идэвхтэй
                       </span>
                     </div>
                   </div>
                 </div>
               </div>
               <Button variant="glass" size="md">
-                Resolve
+                Шийдэх
               </Button>
             </div>
 
@@ -273,7 +273,7 @@ export default function ConversationsPage() {
                 <div className="relative flex-1">
                   <input
                     type="text"
-                    placeholder="Type a message or search suggestion..."
+                    placeholder="Мессеж бичих..."
                     className="w-full h-12 rounded-3xl bg-white/[0.05] border-none px-5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:bg-white/[0.08] transition-all"
                   />
                 </div>
@@ -283,7 +283,7 @@ export default function ConversationsPage() {
               </div>
               {/* Quick replies */}
               <div className="flex gap-2 mt-3">
-                {["How can I help?", "Check order status", "Return policy"].map((text) => (
+                {["Юугаар тусалж болох вэ?", "Захиалгын төлөв", "Буцаалтын бодлого"].map((text) => (
                   <button
                     key={text}
                     className="rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-[11px] text-white/50 hover:bg-white/[0.06] hover:text-white/70 transition-colors"

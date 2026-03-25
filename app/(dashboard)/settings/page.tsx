@@ -10,10 +10,10 @@ import { BillingTab } from "./_components/billing-tab";
 type TabKey = "general" | "api-keys" | "team" | "billing";
 
 const TABS: { key: TabKey; label: string; icon: string }[] = [
-  { key: "general", label: "GENERAL", icon: "tune" },
-  { key: "api-keys", label: "API KEYS", icon: "key" },
-  { key: "team", label: "TEAM", icon: "group" },
-  { key: "billing", label: "BILLING", icon: "account_balance_wallet" },
+  { key: "general", label: "ЕРӨНХИЙ", icon: "tune" },
+  { key: "api-keys", label: "API ТҮЛХҮҮР", icon: "key" },
+  { key: "team", label: "БАГ", icon: "group" },
+  { key: "billing", label: "ТӨЛБӨР", icon: "account_balance_wallet" },
 ];
 
 export default function SettingsPage() {
@@ -24,12 +24,9 @@ export default function SettingsPage() {
       {/* Header */}
       <FadeIn>
         <div className="flex flex-col gap-3">
-          <h1 className="text-7xl font-serif italic tracking-tight text-white">
-            Workspace configuration.
-          </h1>
+          <h1 className="text-5xl font-headline italic tracking-tight text-white">Тохиргоо</h1>
           <p className="max-w-2xl text-base text-white/50">
-            Manage your e-commerce AI engine, API integrations, and billing cycles through our
-            centralized administrative console.
+            Дэлгүүрийн тохиргоо, API холболт, төлбөрийн удирдлага
           </p>
         </div>
       </FadeIn>

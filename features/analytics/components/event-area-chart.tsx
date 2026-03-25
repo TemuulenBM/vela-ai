@@ -26,19 +26,19 @@ export function EventAreaChart({ data, isLoading, isEmpty }: EventAreaChartProps
       <div className="glass-card rounded-3xl p-10">
         <div className="mb-6 flex items-center justify-between">
           <h3 className="text-sm font-semibold uppercase tracking-widest text-white/80">
-            Event Trajectory
+            Үйл явдлын график
           </h3>
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-white/60" />
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                Views
+                Үзэлт
               </span>
             </div>
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-emerald-400" />
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                Cart
+                Сагс
               </span>
             </div>
           </div>
@@ -46,7 +46,7 @@ export function EventAreaChart({ data, isLoading, isEmpty }: EventAreaChartProps
 
         {isEmpty ? (
           <div className="flex h-[260px] items-center justify-center">
-            <p className="text-sm text-white/40 font-light">No data in this period</p>
+            <p className="text-sm text-white/40 font-light">Энэ хугацаанд мэдээлэл алга</p>
           </div>
         ) : (
           <ChartContainer height={260}>
@@ -88,7 +88,7 @@ export function EventAreaChart({ data, isLoading, isEmpty }: EventAreaChartProps
                     strokeWidth: 2,
                     fill: "#000000",
                   }}
-                  name="Page Views"
+                  name="Хуудас үзэлт"
                 />
                 <Area
                   type="monotone"
@@ -103,7 +103,7 @@ export function EventAreaChart({ data, isLoading, isEmpty }: EventAreaChartProps
                     strokeWidth: 2,
                     fill: "#000000",
                   }}
-                  name="Add to Cart"
+                  name="Сагсанд нэмсэн"
                 />
               </AreaChart>
             )}

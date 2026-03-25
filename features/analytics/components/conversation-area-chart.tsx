@@ -26,19 +26,19 @@ export function ConversationAreaChart({ data, isLoading, isEmpty }: Conversation
       <div className="glass-card rounded-3xl p-10">
         <div className="mb-6 flex items-center justify-between">
           <h3 className="text-sm font-semibold uppercase tracking-widest text-white/80">
-            Conversation Dynamics
+            Ярианы график
           </h3>
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-white/60" />
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                Started
+                Эхэлсэн
               </span>
             </div>
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-emerald-400" />
               <span className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                Completed
+                Дууссан
               </span>
             </div>
           </div>
@@ -46,7 +46,7 @@ export function ConversationAreaChart({ data, isLoading, isEmpty }: Conversation
 
         {isEmpty ? (
           <div className="flex h-[340px] items-center justify-center">
-            <p className="text-sm text-white/40 font-light">No conversations in this period</p>
+            <p className="text-sm text-white/40 font-light">Энэ хугацаанд яриа алга</p>
           </div>
         ) : (
           <ChartContainer height={340}>
@@ -88,7 +88,7 @@ export function ConversationAreaChart({ data, isLoading, isEmpty }: Conversation
                     strokeWidth: 2,
                     fill: "#000000",
                   }}
-                  name="Started"
+                  name="Эхэлсэн"
                 />
                 <Area
                   type="monotone"
@@ -103,7 +103,7 @@ export function ConversationAreaChart({ data, isLoading, isEmpty }: Conversation
                     strokeWidth: 2,
                     fill: "#000000",
                   }}
-                  name="Completed"
+                  name="Дууссан"
                 />
               </AreaChart>
             )}

@@ -23,7 +23,7 @@ export function BillingTab() {
         {/* Active Plan */}
         <div className="col-span-8 glass-card rounded-3xl p-8">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
-            ACTIVE PLAN
+            ИДЭВХТЭЙ БАГЦ
           </p>
           <h3 className="mt-2 font-serif text-3xl italic text-white">
             {PLAN_LABELS[plan] ?? plan}
@@ -34,7 +34,7 @@ export function BillingTab() {
               onClick={() => setShowUpgrade(true)}
               className="rounded-full bg-white/[0.08] px-5 py-2 text-[10px] font-semibold uppercase tracking-widest text-white/70 transition-all hover:bg-white/[0.12]"
             >
-              Change Plan
+              Багц солих
             </button>
           </div>
         </div>
@@ -42,14 +42,14 @@ export function BillingTab() {
         {/* Payment Method */}
         <div className="col-span-4 glass-card rounded-3xl p-8 flex flex-col justify-between">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
-            PAYMENT METHOD
+            ТӨЛБӨРИЙН АРГА
           </p>
           <div className="mt-3 flex items-center gap-3">
             <span className="material-symbols-outlined text-[24px] text-white/50">credit_card</span>
             <span className="font-mono text-lg text-white tracking-wider">•••• 8821</span>
           </div>
           <p className="mt-2 text-[10px] font-semibold uppercase tracking-widest text-white/30">
-            EXPIRES 09/27
+            ХҮЧИНТЭЙ 09/27
           </p>
         </div>
       </div>
@@ -59,7 +59,7 @@ export function BillingTab() {
       {/* Usage Stats */}
       <div className="glass-card rounded-3xl p-8">
         <div className="mb-6">
-          <h2 className="font-serif text-2xl italic text-white">Usage Overview</h2>
+          <h2 className="font-headline text-2xl italic text-white">Ашиглалтын тойм</h2>
           <p className="mt-1 text-sm text-white/40">Нийт ашиглалтын статистик</p>
         </div>
 
@@ -71,7 +71,7 @@ export function BillingTab() {
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                  CONVERSATIONS
+                  ЯРИА
                 </span>
                 <span className="text-sm text-white/50 tabular-nums">
                   <CountUp
@@ -92,7 +92,7 @@ export function BillingTab() {
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                  PRODUCTS
+                  БАРАА
                 </span>
                 <span className="text-sm text-white/50 tabular-nums">
                   <CountUp
@@ -114,7 +114,7 @@ export function BillingTab() {
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                  TEAM MEMBERS
+                  БАГИЙН ГИШҮҮД
                 </span>
                 <span className="text-sm text-white/50 tabular-nums">
                   <CountUp
@@ -144,20 +144,19 @@ export function BillingTab() {
           <span className="material-symbols-outlined text-[24px] text-white/60">auto_awesome</span>
         </div>
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-white">Upgrade your compute limits?</h3>
+          <h3 className="text-lg font-semibold text-white">Багцаа шинэчлэх үү?</h3>
           <p className="mt-1 text-sm text-white/40">
-            Your current token usage is nearing its monthly threshold. Switching to yearly billing
-            saves 20% on all enterprise features and unlocks dedicated GPU clusters.
+            Таны одоогийн ашиглалт сарын хязгаартаа ойртож байна. Жилээр төлснөөр 20% хэмнэнэ.
           </p>
           <div className="mt-4 flex items-center gap-3">
             <button
               onClick={() => setShowUpgrade(true)}
               className="rounded-full bg-white px-5 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-black transition-all hover:bg-white/90"
             >
-              Review Limits
+              Багц харах
             </button>
             <button className="text-sm text-white/40 transition-colors hover:text-white/60">
-              Dismiss
+              Хаах
             </button>
           </div>
         </div>
