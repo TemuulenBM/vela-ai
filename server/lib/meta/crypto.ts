@@ -40,5 +40,6 @@ export function decryptToken(encoded: string): string {
   const decipher = createDecipheriv(ALGORITHM, key, iv);
   decipher.setAuthTag(authTag);
 
-  return decipher.update(ciphertext) + decipher.final("utf8");
+  const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+  return decrypted.toString("utf8");
 }

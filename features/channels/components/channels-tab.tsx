@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui";
+import { Badge, Button, Card } from "@/shared/components/ui";
 import {
   Modal,
   ModalContent,
@@ -32,9 +32,6 @@ export function ChannelsTab() {
   const [showPageSelect, setShowPageSelect] = useState(false);
   const [disconnectTarget, setDisconnectTarget] = useState<string | null>(null);
   const [pagesData, setPagesData] = useState<string | null>(null);
-  const [pages, setPages] = useState<
-    Array<{ pageId: string; pageName: string; igAccountId?: string; igUsername?: string }>
-  >([]);
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
   const [connectIg, setConnectIg] = useState(true);
 
@@ -43,6 +40,12 @@ export function ChannelsTab() {
       redirectUri: `${typeof window !== "undefined" ? window.location.origin : ""}/api/auth/meta/callback`,
     },
     { enabled: typeof window !== "undefined" },
+  );
+
+  // Server дээр encrypted pages задлах
+  const decryptPagesQuery = trpc.channels.decryptPages.useQuery(
+    { pagesData: pagesData! },
+    { enabled: !!pagesData },
   );
 
   // OAuth callback-аас pages data ирсэн бол dialog нээх
@@ -57,16 +60,14 @@ export function ChannelsTab() {
 
     if (metaPages) {
       setPagesData(metaPages);
-      // Decrypt pages on server side — for now use the data as-is
-      // The actual decryption happens in the tRPC mutation
       setShowPageSelect(true);
-
-      // Pages-ийг parse хийхийн тулд server-д илгээх шаардлагагүй
-      // connectPage mutation-д бүтэн pagesData дамжуулна
-      // Гэхдээ UI-д page нэр харуулахын тулд query param-аас задалж болохгүй (encrypted)
-      // → Тиймээс "page сонгох" dialog-д encrypted data-г mutation-руу шууд дамжуулна
     }
   }, [searchParams]);
+
+  // Pages data decrypt болмогц selectedPageId auto-select
+  const pages = decryptPagesQuery.data?.pages ?? [];
+  const selectedPage = pages.find((p) => p.pageId === selectedPageId);
+  const hasIgAccount = !!selectedPage?.igAccountId;
 
   const handleConnect = () => {
     if (oauthUrlQuery.data?.url) {
@@ -81,7 +82,7 @@ export function ChannelsTab() {
       await connectPage.mutateAsync({
         pagesData,
         selectedPageId,
-        connectInstagram: connectIg,
+        connectInstagram: connectIg && hasIgAccount,
       });
       setShowPageSelect(false);
       setPagesData(null);
@@ -99,8 +100,12 @@ export function ChannelsTab() {
 
   const handleDisconnect = async () => {
     if (!disconnectTarget) return;
-    await disconnect.mutateAsync({ connectionId: disconnectTarget });
-    setDisconnectTarget(null);
+    try {
+      await disconnect.mutateAsync({ connectionId: disconnectTarget });
+      setDisconnectTarget(null);
+    } catch (err) {
+      console.error("Disconnect failed:", err);
+    }
   };
 
   // Loading state
@@ -187,7 +192,11 @@ export function ChannelsTab() {
             <ModalDescription>AI борлуулагч холбох Facebook Page-ээ сонгоно уу</ModalDescription>
           </ModalHeader>
           <div className="px-6 pb-4">
-            {pages.length > 0 ? (
+            {decryptPagesQuery.isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-white/60" />
+              </div>
+            ) : pages.length > 0 ? (
               <div className="space-y-2">
                 {pages.map((page) => (
                   <button
@@ -205,10 +214,30 @@ export function ChannelsTab() {
                     )}
                   </button>
                 ))}
+
+                {/* Instagram toggle — сонгосон page-д IG account байвал */}
+                {hasIgAccount && (
+                  <label className="mt-4 flex cursor-pointer items-center gap-3 rounded-2xl bg-white/[0.04] px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={connectIg}
+                      onChange={(e) => setConnectIg(e.target.checked)}
+                      className="h-4 w-4 rounded border-white/20 bg-transparent accent-white"
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-white">Instagram DM холбох</p>
+                      <p className="text-xs text-white/40">
+                        @{selectedPage?.igUsername} дээр ирсэн DM-д AI хариулна
+                      </p>
+                    </div>
+                  </label>
+                )}
               </div>
             ) : (
-              <p className="text-center text-sm text-white/40 py-4">
-                OAuth амжилттай. Доорх товч дарж холбоно уу.
+              <p className="py-4 text-center text-sm text-white/40">
+                {decryptPagesQuery.isError
+                  ? "Pages задлахад алдаа гарлаа. Дахин оролдоно уу."
+                  : "OAuth амжилттай. Доорх товч дарж холбоно уу."}
               </p>
             )}
           </div>

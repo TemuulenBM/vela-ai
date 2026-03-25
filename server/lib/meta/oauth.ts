@@ -112,7 +112,8 @@ export async function exchangeForLongLivedToken(shortLivedToken: string): Promis
  */
 export async function getUserPages(userAccessToken: string): Promise<MetaPageInfo[]> {
   const res = await fetch(
-    `${GRAPH_API_BASE}/me/accounts?fields=id,name,access_token,instagram_business_account&access_token=${userAccessToken}`,
+    `${GRAPH_API_BASE}/me/accounts?fields=id,name,access_token,instagram_business_account`,
+    { headers: { Authorization: `Bearer ${userAccessToken}` } },
   );
   if (!res.ok) {
     const err = await res.text();
@@ -133,9 +134,9 @@ export async function getUserPages(userAccessToken: string): Promise<MetaPageInf
     // IG username авах (хэрэв linked account байвал)
     if (info.igAccountId) {
       try {
-        const igRes = await fetch(
-          `${GRAPH_API_BASE}/${info.igAccountId}?fields=username&access_token=${userAccessToken}`,
-        );
+        const igRes = await fetch(`${GRAPH_API_BASE}/${info.igAccountId}?fields=username`, {
+          headers: { Authorization: `Bearer ${userAccessToken}` },
+        });
         if (igRes.ok) {
           const igData = (await igRes.json()) as { username?: string };
           info.igUsername = igData.username;
@@ -159,8 +160,11 @@ export async function subscribePageToWebhook(
   pageAccessToken: string,
 ): Promise<void> {
   const res = await fetch(
-    `${GRAPH_API_BASE}/${pageId}/subscribed_apps?subscribed_fields=messages,messaging_postbacks&access_token=${pageAccessToken}`,
-    { method: "POST" },
+    `${GRAPH_API_BASE}/${pageId}/subscribed_apps?subscribed_fields=messages,messaging_postbacks`,
+    {
+      method: "POST",
+      headers: { Authorization: `Bearer ${pageAccessToken}` },
+    },
   );
   if (!res.ok) {
     const err = await res.text();

@@ -66,20 +66,16 @@ export function verifyWebhookSubscription(
 /**
  * Webhook payload-аас text message events-ийг ялгаж авах.
  */
-export function extractTextMessages(payload: MetaWebhookPayload): Array<{
+interface TextMessage {
   platform: "messenger" | "instagram";
   pageId: string;
   senderId: string;
   messageId: string;
   text: string;
-}> {
-  const results: Array<{
-    platform: "messenger" | "instagram";
-    pageId: string;
-    senderId: string;
-    messageId: string;
-    text: string;
-  }> = [];
+}
+
+export function extractTextMessages(payload: MetaWebhookPayload): TextMessage[] {
+  const results: TextMessage[] = [];
 
   const platform = payload.object === "instagram" ? "instagram" : "messenger";
 

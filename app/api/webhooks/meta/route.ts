@@ -83,14 +83,16 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ status: "ok" });
 }
 
-async function processIncomingMessage(msg: {
+interface IncomingMessage {
   platform: "messenger" | "instagram";
   pageId: string;
   senderId: string;
   messageId: string;
   text: string;
-}) {
-  // 1. Channel connection олох → tenantId + access token
+}
+
+/** pageId + platform-аар active connection олох. */
+async function findActiveConnection(msg: IncomingMessage) {
   const [connection] = await db
     .select({
       id: channelConnections.id,
@@ -108,6 +110,44 @@ async function processIncomingMessage(msg: {
     )
     .limit(1);
 
+  return connection ?? null;
+}
+
+/** Conversation history-г UIMessage[] руу хөрвүүлэх. */
+function toUIMessages(history: Awaited<ReturnType<typeof getConversationMessages>>): UIMessage[] {
+  return history
+    .filter((m) => m.role === "user" || m.role === "assistant")
+    .map((m) => ({
+      id: m.id,
+      role: m.role as "user" | "assistant",
+      content: m.content ?? "",
+      parts: [{ type: "text" as const, text: m.content ?? "" }],
+      createdAt: m.createdAt,
+    }));
+}
+
+/** Tenant-ийн нэр + бүтээгдэхүүний ангилал авах. */
+async function getTenantContext(tenantId: string) {
+  const [tenant] = await db
+    .select({ name: tenants.name })
+    .from(tenants)
+    .where(eq(tenants.id, tenantId))
+    .limit(1);
+
+  const categories = await db
+    .selectDistinct({ category: products.category })
+    .from(products)
+    .where(eq(products.tenantId, tenantId));
+
+  return {
+    tenantName: tenant?.name ?? "Дэлгүүр",
+    productCategories: categories.map((c) => c.category).filter((c): c is string => c !== null),
+  };
+}
+
+async function processIncomingMessage(msg: IncomingMessage) {
+  // 1. Connection олох
+  const connection = await findActiveConnection(msg);
   if (!connection) {
     console.warn(`[Meta Webhook] No active connection for pageId=${msg.pageId}`);
     return;
@@ -125,54 +165,23 @@ async function processIncomingMessage(msg: {
     msg.platform,
   );
 
-  // 3. User message хадгалах
-  await saveMessage({
-    tenantId,
-    conversationId,
-    role: "user",
-    content: msg.text,
-  });
-
-  // 4. Conversation history → UIMessage[]
+  // 3. User message хадгалах + history авах
+  await saveMessage({ tenantId, conversationId, role: "user", content: msg.text });
   const history = await getConversationMessages(conversationId, tenantId);
-  const uiMessages: UIMessage[] = history
-    .filter((m) => m.role === "user" || m.role === "assistant")
-    .map((m) => ({
-      id: m.id,
-      role: m.role as "user" | "assistant",
-      content: m.content ?? "",
-      parts: [{ type: "text" as const, text: m.content ?? "" }],
-      createdAt: m.createdAt,
-    }));
 
-  // 5. Tenant info + categories
-  const [tenant] = await db
-    .select({ name: tenants.name })
-    .from(tenants)
-    .where(eq(tenants.id, tenantId))
-    .limit(1);
-
-  const categories = await db
-    .selectDistinct({ category: products.category })
-    .from(products)
-    .where(eq(products.tenantId, tenantId));
-
-  const productCategories = categories
-    .map((c) => c.category)
-    .filter((c): c is string => c !== null);
-
-  // 6. RAG pipeline (streaming-гүй — бүтэн текст авна)
+  // 4. RAG pipeline
+  const { tenantName, productCategories } = await getTenantContext(tenantId);
   const result = await executeChatPipeline({
     tenantId,
-    tenantName: tenant?.name ?? "Дэлгүүр",
+    tenantName,
     productCategories,
-    messages: uiMessages,
+    messages: toUIMessages(history),
   });
 
   const responseText = await result.text;
   const usage = await result.totalUsage;
 
-  // 7. Assistant message хадгалах
+  // 5. Хариу хадгалах + илгээх
   if (responseText) {
     await saveMessage({
       tenantId,
@@ -183,7 +192,6 @@ async function processIncomingMessage(msg: {
     });
   }
 
-  // 8. Meta-руу хариу илгээх
   await sendMetaMessage({
     recipientId: msg.senderId,
     text: responseText || "Уучлаарай, хариулж чадахгүй байна.",
@@ -191,15 +199,12 @@ async function processIncomingMessage(msg: {
     platform: msg.platform,
   });
 
-  // 9. Analytics event
+  // 6. Analytics event
   await db.insert(events).values({
     tenantId,
     shopperId,
     conversationId,
     eventType: "chat_interaction",
-    metadata: {
-      channel: msg.platform,
-      tokensUsed: usage?.totalTokens,
-    },
+    metadata: { channel: msg.platform, tokensUsed: usage?.totalTokens },
   });
 }

@@ -13,7 +13,6 @@ export interface ChannelConnection {
 export interface MetaPageOption {
   pageId: string;
   pageName: string;
-  pageAccessToken: string;
   igAccountId?: string;
   igUsername?: string;
 }

@@ -27,9 +27,12 @@ async function sendSingleMessage(
   text: string,
   pageAccessToken: string,
 ): Promise<void> {
-  const response = await fetch(`${GRAPH_API_BASE}/me/messages?access_token=${pageAccessToken}`, {
+  const response = await fetch(`${GRAPH_API_BASE}/me/messages`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${pageAccessToken}`,
+    },
     body: JSON.stringify({
       recipient: { id: recipientId },
       message: { text },
@@ -87,9 +90,9 @@ export async function getMetaUserProfile(
   pageAccessToken: string,
 ): Promise<{ name?: string; profilePic?: string }> {
   try {
-    const response = await fetch(
-      `${GRAPH_API_BASE}/${userId}?fields=name,profile_pic&access_token=${pageAccessToken}`,
-    );
+    const response = await fetch(`${GRAPH_API_BASE}/${userId}?fields=name,profile_pic`, {
+      headers: { Authorization: `Bearer ${pageAccessToken}` },
+    });
     if (!response.ok) return {};
     const data = (await response.json()) as { name?: string; profile_pic?: string };
     return { name: data.name, profilePic: data.profile_pic };
