@@ -46,20 +46,22 @@ export default function LoginPage() {
         <FadeIn>
           <div className="mb-12 text-center">
             <Link href="/" className="inline-block">
-              <h2 className="text-6xl font-serif italic text-white tracking-tighter">Vela AI</h2>
+              <h2 className="text-6xl font-headline italic text-white tracking-tighter">Vela AI</h2>
               <p className="mt-2 text-[10px] uppercase tracking-[0.2em] text-white/30 font-semibold">
-                E-commerce assistant
+                AI борлуулалтын туслах
               </p>
             </Link>
           </div>
         </FadeIn>
 
-        {/* Liquid glass card */}
+        {/* Card */}
         <FadeIn delay={0.1}>
           <div className="liquid-glass rounded-xl p-10 md:p-12 border border-white/[0.05]">
-            <h1 className="text-4xl font-serif italic text-white tracking-tight">Welcome back</h1>
+            <h1 className="text-4xl font-headline italic text-white tracking-tight">
+              Тавтай морил
+            </h1>
             <p className="mt-2 text-sm text-white/50 tracking-tight font-light">
-              Access your editorial e-commerce suite.
+              AI борлуулалтын удирдлагад нэвтрэх
             </p>
 
             <form className="mt-10 space-y-6" onSubmit={handleSubmit}>
@@ -70,7 +72,7 @@ export default function LoginPage() {
               )}
 
               <Input
-                label="EMAIL ADDRESS"
+                label="ИМЭЙЛ ХАЯГ"
                 name="email"
                 type="email"
                 placeholder="curator@vela.ai"
@@ -82,13 +84,13 @@ export default function LoginPage() {
               />
 
               <Input
-                label="PASSWORD"
+                label="НУУЦ ҮГ"
                 labelRight={
                   <Link
                     href="#"
                     className="text-[10px] font-semibold uppercase tracking-widest text-white/40 hover:text-white/70 transition-colors"
                   >
-                    Forgot?
+                    Мартсан?
                   </Link>
                 }
                 name="password"
@@ -100,18 +102,17 @@ export default function LoginPage() {
               />
 
               <Button size="xl" className="w-full mt-2" disabled={loading}>
-                {loading ? "Signing in..." : "Sign In"}
+                {loading ? "Нэвтэрч байна..." : "Нэвтрэх"}
               </Button>
             </form>
 
-            {/* Sign up link */}
             <p className="mt-8 text-center text-sm text-white/40 font-light">
-              New to the assistant?{" "}
+              Шинэ хэрэглэгч?{" "}
               <Link
                 href="/register"
                 className="font-semibold text-white transition-colors hover:text-white/80"
               >
-                Create Account
+                Бүртгүүлэх
               </Link>
             </p>
           </div>

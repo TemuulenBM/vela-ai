@@ -39,7 +39,7 @@ export default function RegisterPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: formData.get("organizationName") as string,
+          name: formData.get("name") as string,
           email: formData.get("email") as string,
           password,
           organizationName: formData.get("organizationName") as string,
@@ -80,34 +80,27 @@ export default function RegisterPage() {
       <div className="pointer-events-none absolute top-1/3 right-1/4 h-[500px] w-[500px] rounded-full bg-white/[0.02] blur-[120px]" />
       <div className="pointer-events-none absolute bottom-1/3 left-1/3 h-[400px] w-[400px] rounded-full bg-white/[0.015] blur-[100px]" />
 
-      {/* Decorative text */}
-      <div className="pointer-events-none absolute top-16 right-12 select-none hidden lg:block">
-        <span className="text-[120px] font-serif italic text-white/[0.06] leading-none rotate-12 inline-block">
-          Elevate.
-        </span>
-      </div>
-
       <div className="relative z-10 w-full max-w-[540px]">
         {/* Logo */}
         <FadeIn>
           <div className="mb-10 text-center">
             <Link href="/" className="inline-block">
-              <h2 className="text-5xl font-serif italic text-white tracking-tighter">Vela AI</h2>
+              <h2 className="text-5xl font-headline italic text-white tracking-tighter">Vela AI</h2>
               <p className="mt-2 text-[10px] uppercase tracking-[0.2em] text-white/30 font-semibold">
-                The e-commerce curator
+                AI борлуулалтын туслах
               </p>
             </Link>
           </div>
         </FadeIn>
 
-        {/* Liquid glass card */}
+        {/* Card */}
         <FadeIn delay={0.1}>
           <div className="liquid-glass rounded-xl p-10 md:p-14 border border-white/[0.05]">
-            <h1 className="text-3xl font-serif italic text-white tracking-tight">
-              Begin your journey.
+            <h1 className="text-3xl font-headline italic text-white tracking-tight">
+              Бүртгэл үүсгэх
             </h1>
             <p className="mt-2 text-lg text-white/60 font-light tracking-tight">
-              Set up your store assistant and scale with precision.
+              AI борлуулагчаа тохируулж, бизнесээ өсгө.
             </p>
 
             <form className="mt-10 space-y-6" onSubmit={handleSubmit}>
@@ -118,35 +111,44 @@ export default function RegisterPage() {
               )}
 
               <Input
-                label="STORE NAME"
+                label="ТАНЫ НЭР"
+                name="name"
+                type="text"
+                placeholder="Батбаяр"
+                suffix={<span className="material-symbols-outlined text-[20px]">person</span>}
+                required
+              />
+
+              <Input
+                label="ДЭЛГҮҮРИЙН НЭР"
                 name="organizationName"
                 type="text"
-                placeholder=""
+                placeholder="Миний дэлгүүр"
+                suffix={<span className="material-symbols-outlined text-[20px]">storefront</span>}
                 required
-                className="bg-white text-black placeholder:text-black/30 h-14 rounded-full"
               />
 
               <Input
-                label="CORPORATE EMAIL"
+                label="ИМЭЙЛ ХАЯГ"
                 name="email"
                 type="email"
-                placeholder=""
+                placeholder="info@mystore.mn"
+                suffix={
+                  <span className="material-symbols-outlined text-[20px]">alternate_email</span>
+                }
                 autoComplete="email"
                 required
-                className="bg-white text-black placeholder:text-black/30 h-14 rounded-full"
               />
 
               <Input
-                label="SECURE PASSWORD"
+                label="НУУЦ ҮГ"
                 name="password"
                 type="password"
-                placeholder=""
+                placeholder="••••••••"
+                suffix={<span className="material-symbols-outlined text-[20px]">lock</span>}
                 autoComplete="new-password"
                 required
-                className="bg-white text-black placeholder:text-black/30 h-14 rounded-full"
               />
-
-              <input type="hidden" name="name" value="" />
 
               {/* Terms checkbox */}
               <div className="flex items-start gap-3 pt-2">
@@ -160,38 +162,37 @@ export default function RegisterPage() {
                   htmlFor="terms"
                   className="cursor-pointer select-none text-sm leading-snug text-white/45"
                 >
-                  I agree to the{" "}
                   <Link
                     href="#"
                     className="text-white/70 transition-colors hover:text-white font-semibold"
                   >
-                    Terms of Service
+                    Үйлчилгээний нөхцөл
                   </Link>{" "}
-                  and{" "}
+                  болон{" "}
                   <Link
                     href="#"
                     className="text-white/70 transition-colors hover:text-white font-semibold"
                   >
-                    Privacy Protocol
+                    Нууцлалын бодлого
                   </Link>
-                  .
+                  -г зөвшөөрч байна.
                 </label>
               </div>
 
               <Button size="xl" className="w-full mt-2" disabled={loading}>
-                {loading ? "Creating..." : "CREATE ACCOUNT"}
+                {loading ? "Үүсгэж байна..." : "Бүртгүүлэх"}
               </Button>
             </form>
 
-            {/* Separator + Login link */}
+            {/* Login link */}
             <div className="mt-8 pt-6 border-t border-white/[0.05] text-center">
               <p className="text-sm text-white/40 font-light">
-                Already a member?{" "}
+                Бүртгэлтэй юу?{" "}
                 <Link
                   href="/login"
                   className="font-semibold text-white transition-colors hover:text-white/80"
                 >
-                  Sign In
+                  Нэвтрэх
                 </Link>
               </p>
             </div>
@@ -203,11 +204,11 @@ export default function RegisterPage() {
           <div className="mt-8 flex items-center justify-center gap-8 text-[10px] text-white/20 uppercase tracking-[0.2em] font-semibold">
             <span className="flex items-center gap-1.5">
               <span className="material-symbols-outlined text-[14px]">shield</span>
-              AES-256 Encryption
+              AES-256 Шифрлэлт
             </span>
             <span className="flex items-center gap-1.5">
               <span className="material-symbols-outlined text-[14px]">public</span>
-              Global Infrastructure
+              Дэлхийн дэд бүтэц
             </span>
           </div>
         </FadeIn>
