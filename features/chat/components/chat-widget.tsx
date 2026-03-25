@@ -62,7 +62,7 @@ function ChatWidget({ apiKey }: ChatWidgetProps) {
             <div>
               <p className="text-[15px] font-semibold tracking-wide text-white">Vela AI</p>
               <p className="text-[10px] uppercase tracking-widest text-white/40">
-                E-Commerce Assistant
+                AI Борлуулалтын Платформ
               </p>
             </div>
           </div>
@@ -102,10 +102,9 @@ function ChatWidget({ apiKey }: ChatWidgetProps) {
                 style={{ borderRadius: "2rem 2rem 2rem 0.5rem" }}
               >
                 <p className="text-[13.5px] leading-relaxed text-white/90">
-                  Hello! I&apos;m{" "}
-                  <span className="font-serif italic text-[15px] text-white">Vela</span> . I can
-                  help you track orders, browse new arrivals, or adjust your store settings.
-                  How&apos;s your day going?
+                  Сайн байна уу! Би{" "}
+                  <span className="font-serif italic text-[15px] text-white">Vela AI</span> — AI
+                  борлуулалтын платформ. Таны дэлгүүрт хэрхэн туслахыг мэдэхийг хүсвэл асууна уу.
                 </p>
               </div>
             </div>
@@ -114,7 +113,7 @@ function ChatWidget({ apiKey }: ChatWidgetProps) {
           {messages.length === 0 && (
             <div className="pl-1">
               <p className="text-[10px] text-white/30">
-                <span className="text-white/40">Vela AI</span> &bull; Delivered
+                <span className="text-white/40">Vela AI</span> &bull; Хүргэгдсэн
               </p>
             </div>
           )}
@@ -177,7 +176,7 @@ function ChatWidget({ apiKey }: ChatWidgetProps) {
                 value={input}
                 onChange={handleInputChange}
                 onKeyDown={onKeyDown}
-                placeholder="Ask Vela anything..."
+                placeholder="Vela AI-аас асуух..."
                 rows={1}
                 disabled={isLoading}
                 className="flex-1 resize-none rounded-full bg-white/[0.04] px-5 py-2.5 text-[13px] text-white placeholder:text-white/25 focus:outline-none max-h-[100px] disabled:opacity-50"
@@ -198,18 +197,6 @@ function ChatWidget({ apiKey }: ChatWidgetProps) {
               </button>
             </div>
           </form>
-
-          {/* Voice & Vision buttons */}
-          <div className="flex justify-center gap-8 mt-3 pb-1">
-            <button className="flex items-center gap-1.5 text-white/30 hover:text-white/50 transition-colors">
-              <span className="material-symbols-outlined text-[16px]">mic</span>
-              <span className="text-[10px] uppercase tracking-widest font-medium">Voice</span>
-            </button>
-            <button className="flex items-center gap-1.5 text-white/30 hover:text-white/50 transition-colors">
-              <span className="material-symbols-outlined text-[16px]">visibility</span>
-              <span className="text-[10px] uppercase tracking-widest font-medium">Vision</span>
-            </button>
-          </div>
         </div>
       </div>
 
