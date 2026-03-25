@@ -57,7 +57,7 @@ export default function DashboardPage() {
   const overviewStats = trpc.analytics.getOverviewStats.useQuery({ days: 7 });
   const convStats = trpc.analytics.getConversationStats.useQuery({ days: 7 });
   const topProducts = trpc.analytics.getTopProducts.useQuery({ days: 7, limit: 5 });
-  const productSummary = trpc.analytics.getProductSummary.useQuery();
+
   const recentConvs = trpc.chat.getRecentConversations.useQuery({ limit: 5 });
 
   const chartData = (convStats.data ?? []).map((d) => ({

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Button, ProgressBar, Input } from "@/shared/components/ui";
 import { trpc } from "@/shared/lib/trpc";
 
@@ -74,11 +74,12 @@ export function ImportTab() {
   }, [isActive, job?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Pre-fill URL from last crawl
-  const prefilled = useRef(false);
-  if (job?.websiteUrl && !prefilled.current && !url) {
-    prefilled.current = true;
-    setUrl(job.websiteUrl);
-  }
+  useEffect(() => {
+    if (job?.websiteUrl && !url) {
+      setUrl(job.websiteUrl);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only prefill once on first data load
+  }, [job?.websiteUrl]);
 
   const handleStart = () => {
     if (!url.trim()) return;

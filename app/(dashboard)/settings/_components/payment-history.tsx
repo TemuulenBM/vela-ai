@@ -1,7 +1,6 @@
 "use client";
 
 import { trpc } from "@/shared/lib/trpc";
-import { PLAN_LABELS } from "@/shared/lib/plan-config";
 
 const STATUS_MAP: Record<string, { label: string; color: string }> = {
   pending: { label: "ХҮЛЭЭГДЭЖ БУЙ", color: "text-yellow-400" },

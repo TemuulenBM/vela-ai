@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { Resend } from "resend";
 import { db } from "@/server/db/db";
 import { users, verificationTokens } from "@/server/db/schema";
