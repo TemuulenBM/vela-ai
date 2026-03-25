@@ -1,7 +1,7 @@
 "use client";
 
 import { AreaChart, Area, XAxis, CartesianGrid, Tooltip as RechartsTooltip } from "recharts";
-import { FadeIn, Skeleton } from "@/shared/components/ui";
+import { FadeIn, Skeleton, EmptyState } from "@/shared/components/ui";
 import { ChartContainer } from "./chart-container";
 import { ChartTooltip } from "./chart-tooltip";
 
@@ -45,9 +45,12 @@ export function EventAreaChart({ data, isLoading, isEmpty }: EventAreaChartProps
         </div>
 
         {isEmpty ? (
-          <div className="flex h-[260px] items-center justify-center">
-            <p className="text-sm text-white/40 font-light">Энэ хугацаанд мэдээлэл алга</p>
-          </div>
+          <EmptyState
+            icon={<span className="material-symbols-outlined text-[24px]">show_chart</span>}
+            title="Энэ хугацаанд мэдээлэл алга"
+            description="Үйл явдлын дата цуглагдсаны дараа график энд харагдана"
+            className="h-[260px]"
+          />
         ) : (
           <ChartContainer height={260}>
             {(w, h) => (

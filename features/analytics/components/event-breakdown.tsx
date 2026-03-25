@@ -57,7 +57,7 @@ export function EventBreakdown({ data, isLoading }: EventBreakdownProps) {
                     </span>
                     <span className="text-[12px] text-white/60 font-light">{meta.label}</span>
                   </div>
-                  <span className="text-[13px] font-serif italic text-white tabular-nums">
+                  <span className="text-[13px] font-medium text-white tabular-nums">
                     {item.count.toLocaleString()}
                   </span>
                 </div>

@@ -2,8 +2,7 @@
 
 import { trpc } from "@/shared/lib/trpc";
 import { formatDay } from "@/shared/lib/utils";
-import { HeroMetric } from "./hero-metric";
-import { MetricPair } from "./metric-pair";
+import { MetricCard } from "./metric-card";
 import { ConversionFunnel } from "./conversion-funnel";
 import { EventAreaChart } from "./event-area-chart";
 import { EventBreakdown } from "./event-breakdown";
@@ -57,56 +56,59 @@ export function OverviewTab({ days }: { days: number }) {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Row 1: Bento grid — hero metric + side stats + funnel */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Left column: Hero metric (8 cols) */}
-        <div className="lg:col-span-8 flex flex-col gap-6">
-          <HeroMetric
-            label="Хуудас үзэлт"
-            value={stats.data?.pageViews ?? 0}
-            trend={
-              stats.data
-                ? {
-                    value: Math.abs(stats.data.pageViewsTrend),
-                    isPositive: stats.data.pageViewsTrend >= 0,
-                  }
-                : undefined
-            }
-            sparklineData={pageViewSeries}
-            isLoading={isLoading}
-          />
-        </div>
-
-        {/* Right column: MetricPair side stats (4 cols) */}
-        <div className="lg:col-span-4">
-          <MetricPair
-            metrics={[
-              {
-                label: "Чат харилцаа",
-                value: stats.data?.chatInteractions ?? 0,
-                trend: stats.data
-                  ? {
-                      value: Math.abs(stats.data.chatInteractionsTrend),
-                      isPositive: stats.data.chatInteractionsTrend >= 0,
-                    }
-                  : undefined,
-                sparklineData: chatSeries,
-              },
-              {
-                label: "Сагсанд нэмэлт",
-                value: stats.data?.addToCarts ?? 0,
-                trend: stats.data
-                  ? {
-                      value: Math.abs(stats.data.addToCartsTrend),
-                      isPositive: stats.data.addToCartsTrend >= 0,
-                    }
-                  : undefined,
-                sparklineData: cartSeries,
-              },
-            ]}
-            isLoading={isLoading}
-          />
-        </div>
+      {/* Row 1: 3 equal metric cards */}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <MetricCard
+          label="Хуудас үзэлт"
+          value={stats.data?.pageViews ?? 0}
+          trend={
+            stats.data
+              ? {
+                  value: Math.abs(stats.data.pageViewsTrend),
+                  isPositive: stats.data.pageViewsTrend >= 0,
+                }
+              : undefined
+          }
+          sparklineData={pageViewSeries}
+          icon="visibility"
+          accentColor="#22c55e"
+          delay={0.05}
+          isLoading={isLoading}
+        />
+        <MetricCard
+          label="Чат харилцаа"
+          value={stats.data?.chatInteractions ?? 0}
+          trend={
+            stats.data
+              ? {
+                  value: Math.abs(stats.data.chatInteractionsTrend),
+                  isPositive: stats.data.chatInteractionsTrend >= 0,
+                }
+              : undefined
+          }
+          sparklineData={chatSeries}
+          icon="forum"
+          accentColor="#38bdf8"
+          delay={0.1}
+          isLoading={isLoading}
+        />
+        <MetricCard
+          label="Сагсанд нэмэлт"
+          value={stats.data?.addToCarts ?? 0}
+          trend={
+            stats.data
+              ? {
+                  value: Math.abs(stats.data.addToCartsTrend),
+                  isPositive: stats.data.addToCartsTrend >= 0,
+                }
+              : undefined
+          }
+          sparklineData={cartSeries}
+          icon="add_shopping_cart"
+          accentColor="#fbbf24"
+          delay={0.15}
+          isLoading={isLoading}
+        />
       </div>
 
       {/* Row 2: Conversion funnel full width */}
