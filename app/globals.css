@@ -65,14 +65,15 @@
 /* ─── Tailwind v4 theme ─── */
 @theme inline {
   /* Fonts */
-  --font-sans: var(--font-barlow), system-ui, sans-serif;
-  --font-serif: var(--font-instrument-serif), Georgia, serif;
+  --font-sans: var(--font-manrope), system-ui, sans-serif;
+  --font-serif: var(--font-cormorant), Georgia, serif;
   --font-mono: "SF Mono", "Fira Code", monospace;
 
   /* Font family aliases for design system */
-  --font-headline: var(--font-instrument-serif), Georgia, serif;
-  --font-body: var(--font-barlow), system-ui, sans-serif;
-  --font-label: var(--font-barlow), system-ui, sans-serif;
+  --font-display: var(--font-raleway), system-ui, sans-serif;
+  --font-headline: var(--font-cormorant), Georgia, serif;
+  --font-body: var(--font-manrope), system-ui, sans-serif;
+  --font-label: var(--font-manrope), system-ui, sans-serif;
 
   /* Colors — Surfaces */
   --color-bg-base: var(--bg-base);
@@ -247,7 +248,7 @@
 body {
   background: var(--bg-base);
   color: var(--text-primary);
-  font-family: var(--font-barlow), system-ui, sans-serif;
+  font-family: var(--font-manrope), system-ui, sans-serif;
   font-size: 0.875rem;
   line-height: 1.5;
   font-variant-numeric: tabular-nums;
@@ -293,14 +294,16 @@ body {
 
 /* ─── Glass Card — primary card treatment ─── */
 .glass-card {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(40px);
   -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
 }
 
 .glass-card:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 /* ─── Liquid Glass — stronger variant for modals/auth ─── */
@@ -443,6 +446,16 @@ body {
 }
 .glass-glint:hover::after {
   transform: translate(50%, 50%) rotate(45deg);
+}
+
+/* ─── Hero Vignette — dark edges, clear center for text-video harmony ─── */
+.hero-vignette {
+  background: radial-gradient(
+    ellipse 70% 60% at 50% 45%,
+    transparent 0%,
+    rgba(0, 0, 0, 0.25) 60%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
 }
 
 /* ─── Hero Ambient Gradient — animated background ─── */

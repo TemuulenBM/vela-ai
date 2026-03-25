@@ -1,19 +1,26 @@
 import type { Metadata } from "next";
-import { Instrument_Serif, Barlow } from "next/font/google";
+import { Cormorant, Manrope, Raleway } from "next/font/google";
 import "./globals.css";
 
-const instrumentSerif = Instrument_Serif({
-  variable: "--font-instrument-serif",
-  subsets: ["latin"],
-  style: ["italic"],
-  weight: ["400"],
+const cormorant = Cormorant({
+  variable: "--font-cormorant",
+  subsets: ["latin", "cyrillic"],
+  style: ["normal", "italic"],
+  weight: ["400", "600"],
   display: "swap",
 });
 
-const barlow = Barlow({
-  variable: "--font-barlow",
-  subsets: ["latin", "latin-ext"],
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin", "cyrillic", "latin-ext"],
   weight: ["300", "400", "600"],
+  display: "swap",
+});
+
+const raleway = Raleway({
+  variable: "--font-raleway",
+  subsets: ["latin", "cyrillic", "latin-ext"],
+  weight: ["600", "700"],
   display: "swap",
 });
 
@@ -30,7 +37,7 @@ export default function RootLayout({
   return (
     <html
       lang="mn"
-      className={`${instrumentSerif.variable} ${barlow.variable} h-full`}
+      className={`${cormorant.variable} ${manrope.variable} ${raleway.variable} h-full`}
       suppressHydrationWarning
     >
       <head>
