@@ -3,7 +3,9 @@ import { and, eq, desc, count, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../trpc";
 import { db } from "@/server/db/db";
-import { conversations, messages, shoppers } from "@/server/db/schema";
+import { conversations, messages, shoppers, channelConnections } from "@/server/db/schema";
+import { sendMetaMessage } from "@/server/lib/meta/api";
+import { decryptToken } from "@/server/lib/meta/crypto";
 
 export const chatRouter = router({
   listConversations: protectedProcedure
@@ -187,8 +189,13 @@ export const chatRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // Conversation + shopper мэдээлэл авах
       const [conv] = await db
-        .select({ id: conversations.id })
+        .select({
+          id: conversations.id,
+          channel: conversations.channel,
+          shopperId: conversations.shopperId,
+        })
         .from(conversations)
         .where(
           and(eq(conversations.id, input.conversationId), eq(conversations.tenantId, ctx.tenantId)),
@@ -199,6 +206,7 @@ export const chatRouter = router({
         throw new TRPCError({ code: "NOT_FOUND", message: "Яриа олдсонгүй" });
       }
 
+      // DB-д хадгалах
       const [msg] = await db
         .insert(messages)
         .values({
@@ -214,6 +222,54 @@ export const chatRouter = router({
           createdAt: messages.createdAt,
         });
 
+      // Meta channel бол Messenger/Instagram руу илгээх
+      if (conv.channel === "messenger" || conv.channel === "instagram") {
+        sendToMeta(ctx.tenantId, conv.channel, conv.shopperId, input.content).catch(
+          (err: unknown) => {
+            console.error("[Chat] Failed to send to Meta:", err);
+          },
+        );
+      }
+
       return msg;
     }),
 });
+
+/** Merchant хариуг Meta Messenger/Instagram руу илгээх. */
+async function sendToMeta(
+  tenantId: string,
+  platform: "messenger" | "instagram",
+  shopperId: string,
+  content: string,
+) {
+  // Shopper-ийн anonymousId-аас recipient ID гаргах (meta_messenger_12345 → 12345)
+  const [shopper] = await db
+    .select({ anonymousId: shoppers.anonymousId })
+    .from(shoppers)
+    .where(and(eq(shoppers.id, shopperId), eq(shoppers.tenantId, tenantId)))
+    .limit(1);
+
+  if (!shopper?.anonymousId) return;
+
+  const prefix = `meta_${platform}_`;
+  if (!shopper.anonymousId.startsWith(prefix)) return;
+  const recipientId = shopper.anonymousId.slice(prefix.length);
+
+  // Active connection-оос access token авах
+  const [connection] = await db
+    .select({ accessToken: channelConnections.accessToken })
+    .from(channelConnections)
+    .where(
+      and(
+        eq(channelConnections.tenantId, tenantId),
+        eq(channelConnections.platform, platform),
+        eq(channelConnections.status, "active"),
+      ),
+    )
+    .limit(1);
+
+  if (!connection) return;
+
+  const pageAccessToken = decryptToken(connection.accessToken);
+  await sendMetaMessage({ recipientId, text: content, pageAccessToken, platform });
+}

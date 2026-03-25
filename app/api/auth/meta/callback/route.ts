@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
           igAccountId: p.igAccountId,
           igUsername: p.igUsername,
         })),
-        tokenExpiresAt: new Date(Date.now() + expiresIn * 1000).toISOString(),
+        tokenExpiresAt: new Date(Date.now() + (expiresIn || 5_184_000) * 1000).toISOString(),
       }),
     );
 

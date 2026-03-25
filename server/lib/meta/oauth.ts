@@ -30,7 +30,7 @@ export function buildOAuthUrl(tenantId: string, redirectUri: string): string {
   const params = new URLSearchParams({
     client_id: appId,
     redirect_uri: redirectUri,
-    scope: "pages_messaging,pages_manage_metadata,pages_show_list,instagram_manage_messages",
+    scope: "pages_messaging,pages_manage_metadata,pages_show_list",
     response_type: "code",
     state,
   });

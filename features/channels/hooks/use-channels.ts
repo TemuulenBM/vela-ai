@@ -12,10 +12,15 @@ export function useChannels() {
     onSuccess: () => utils.channels.listConnections.invalidate(),
   });
 
+  const syncCatalog = trpc.channels.syncCatalog.useMutation({
+    onSuccess: () => utils.channels.listConnections.invalidate(),
+  });
+
   return {
     connections: connectionsQuery.data ?? [],
     isLoading: connectionsQuery.isLoading,
     connectPage,
     disconnect,
+    syncCatalog,
   };
 }

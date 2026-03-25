@@ -6,6 +6,7 @@ import { db } from "@/server/db/db";
 import { channelConnections } from "@/server/db/schema";
 import { encryptToken, decryptToken } from "@/server/lib/meta/crypto";
 import { buildOAuthUrl, subscribePageToWebhook } from "@/server/lib/meta/oauth";
+import { getPageCatalogs, syncCatalogProducts } from "@/server/lib/meta/catalog";
 
 /** Encrypted pages data-г задалж parsed object буцаана. */
 function decryptPagesData(pagesData: string, tenantId: string) {
@@ -76,6 +77,29 @@ async function upsertConnection(params: {
   return conn.id;
 }
 
+/** Connection олох + tenant verify. */
+async function findConnection(connectionId: string, tenantId: string) {
+  const [connection] = await db
+    .select({
+      id: channelConnections.id,
+      pageId: channelConnections.pageId,
+      accessToken: channelConnections.accessToken,
+      status: channelConnections.status,
+    })
+    .from(channelConnections)
+    .where(and(eq(channelConnections.id, connectionId), eq(channelConnections.tenantId, tenantId)))
+    .limit(1);
+
+  if (!connection) {
+    throw new TRPCError({ code: "NOT_FOUND", message: "Connection олдсонгүй" });
+  }
+  if (connection.status !== "active") {
+    throw new TRPCError({ code: "BAD_REQUEST", message: "Connection идэвхгүй байна" });
+  }
+
+  return connection;
+}
+
 export const channelsRouter = router({
   /**
    * Tenant-ийн бүх channel connections.
@@ -90,6 +114,8 @@ export const channelsRouter = router({
         igAccountId: channelConnections.igAccountId,
         igUsername: channelConnections.igUsername,
         status: channelConnections.status,
+        catalogId: channelConnections.catalogId,
+        lastSyncAt: channelConnections.lastSyncAt,
         createdAt: channelConnections.createdAt,
         updatedAt: channelConnections.updatedAt,
       })
@@ -182,6 +208,50 @@ export const channelsRouter = router({
         igConnectionId,
         pageName: selectedPage.pageName,
       };
+    }),
+
+  /**
+   * Page-д холбогдсон FB Catalog-уудыг авах.
+   */
+  getPageCatalogs: protectedProcedure
+    .input(z.object({ connectionId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const connection = await findConnection(input.connectionId, ctx.tenantId);
+      const token = decryptToken(connection.accessToken);
+      return getPageCatalogs(connection.pageId, token);
+    }),
+
+  /**
+   * FB Catalog-аас бүтээгдэхүүнүүдийг sync хийх.
+   */
+  syncCatalog: protectedProcedure
+    .input(
+      z.object({
+        connectionId: z.string().uuid(),
+        catalogId: z.string().min(1),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const connection = await findConnection(input.connectionId, ctx.tenantId);
+      const token = decryptToken(connection.accessToken);
+
+      const result = await syncCatalogProducts({
+        tenantId: ctx.tenantId,
+        catalogId: input.catalogId,
+        pageAccessToken: token,
+      });
+
+      // Connection-д catalogId + lastSyncAt хадгалах
+      await db
+        .update(channelConnections)
+        .set({
+          catalogId: input.catalogId,
+          lastSyncAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(channelConnections.id, input.connectionId));
+
+      return result;
     }),
 
   /**

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   CountUp,
   ProgressBar,
@@ -20,10 +20,13 @@ import { PaymentHistory } from "./payment-history";
 export function BillingTab() {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
-  const [bannerDismissed, setBannerDismissed] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return localStorage.getItem("upgrade-banner-dismissed") === "true";
-  });
+  const [bannerDismissed, setBannerDismissed] = useState(true);
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem("upgrade-banner-dismissed") === "true";
+    setBannerDismissed(dismissed);
+  }, []);
+
   const storeQuery = trpc.tenants.getStore.useQuery();
   const usageQuery = trpc.tenants.getUsage.useQuery();
   const subQuery = trpc.payments.getActiveSubscription.useQuery();
