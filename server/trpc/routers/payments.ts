@@ -200,6 +200,24 @@ export const paymentsRouter = router({
     return logs;
   }),
 
+  // ─── Идэвхтэй subscription ───────────────────────────────────────
+  getActiveSubscription: protectedProcedure.query(async ({ ctx }) => {
+    const [sub] = await db
+      .select({
+        id: subscriptions.id,
+        plan: subscriptions.plan,
+        status: subscriptions.status,
+        periodStart: subscriptions.periodStart,
+        periodEnd: subscriptions.periodEnd,
+      })
+      .from(subscriptions)
+      .where(and(eq(subscriptions.tenantId, ctx.tenantId), eq(subscriptions.status, "active")))
+      .orderBy(desc(subscriptions.createdAt))
+      .limit(1);
+
+    return sub ?? null;
+  }),
+
   // ─── Subscription цуцлах ────────────────────────────────────────
   cancelSubscription: protectedProcedure.mutation(async ({ ctx }) => {
     const now = new Date();

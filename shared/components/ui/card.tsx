@@ -1,30 +1,29 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/shared/lib/utils";
 
-const cardVariants = cva(
-  "rounded-[var(--radius-md)] border border-border-default bg-surface-primary",
-  {
-    variants: {
-      variant: {
-        default: "shadow-xs",
-        elevated: "shadow-sm",
-        interactive:
-          "shadow-xs hover:shadow-md hover:border-border-strong hover:-translate-y-px transition-all duration-200 cursor-pointer",
-        ghost: "border-transparent shadow-none",
-      },
-      padding: {
-        none: "",
-        sm: "p-4",
-        md: "p-5",
-        lg: "p-6",
-      },
+const cardVariants = cva("rounded-3xl", {
+  variants: {
+    variant: {
+      default: "bg-surface-2",
+      glass: "glass-card",
+      elevated: "glass glass-glow",
+      interactive:
+        "glass-card hover:bg-white/[0.05] hover:-translate-y-px transition-all duration-300 cursor-pointer",
+      ghost: "bg-transparent",
     },
-    defaultVariants: {
-      variant: "default",
-      padding: "md",
+    padding: {
+      none: "",
+      sm: "p-4",
+      md: "p-6",
+      lg: "p-8",
+      xl: "p-10",
     },
   },
-);
+  defaultVariants: {
+    variant: "glass",
+    padding: "md",
+  },
+});
 
 export interface CardProps
   extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof cardVariants> {}
@@ -38,11 +37,11 @@ function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement
 }
 
 function CardTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
-  return <h3 className={cn("text-sm font-semibold text-text-primary", className)} {...props} />;
+  return <h3 className={cn("text-sm font-semibold text-white", className)} {...props} />;
 }
 
 function CardDescription({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={cn("text-sm text-text-secondary", className)} {...props} />;
+  return <p className={cn("text-sm text-white/45", className)} {...props} />;
 }
 
 function CardContent({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {

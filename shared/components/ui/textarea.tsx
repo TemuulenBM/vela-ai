@@ -13,25 +13,28 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     const textareaId = id || label?.toLowerCase().replace(/\s+/g, "-");
 
     return (
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-2">
         {label && (
-          <label htmlFor={textareaId} className="text-sm font-medium text-text-primary">
+          <label
+            htmlFor={textareaId}
+            className="text-[10px] font-semibold uppercase tracking-widest text-white/40 px-1"
+          >
             {label}
           </label>
         )}
         <textarea
           id={textareaId}
           className={cn(
-            "flex min-h-[80px] w-full rounded-[var(--radius-sm)] border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary transition-colors duration-150 resize-y",
-            "focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500",
+            "flex min-h-[120px] w-full rounded-xl bg-surface-container-lowest border-none px-6 py-4 text-sm text-white placeholder:text-white/30 transition-all duration-300 resize-y",
+            "focus:outline-none focus:bg-white/[0.08] focus:shadow-[0_0_0_1px_rgba(255,255,255,0.15)]",
             "disabled:opacity-50 disabled:cursor-not-allowed",
-            error && "border-error focus:border-error focus:ring-error",
+            error && "shadow-[0_0_0_1px_rgba(255,180,171,0.3)]",
             className,
           )}
           ref={ref}
           {...props}
         />
-        {error && <p className="text-xs text-error">{error}</p>}
+        {error && <p className="text-xs text-[#ffb4ab] px-1">{error}</p>}
       </div>
     );
   },

@@ -72,6 +72,30 @@ export const memberRoleEnum = pgEnum("member_role", ["owner", "admin", "member",
 
 export const messageRoleEnum = pgEnum("message_role", ["user", "assistant", "system", "tool"]);
 
+export const orderStatusEnum = pgEnum("order_status", [
+  "pending",
+  "processing",
+  "shipped",
+  "delivered",
+  "cancelled",
+]);
+
+export const returnStatusEnum = pgEnum("return_status", [
+  "pending",
+  "approved",
+  "rejected",
+  "completed",
+]);
+
+export const crawlStatusEnum = pgEnum("crawl_status_enum", [
+  "pending",
+  "discovering",
+  "extracting",
+  "embedding",
+  "completed",
+  "failed",
+]);
+
 // ─── CORE ──────────────────────────────────────────────────────
 export const tenants = pgTable("tenants", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -139,6 +163,9 @@ export const products = pgTable(
     index("products_tenant_category_idx")
       .on(table.tenantId, table.category)
       .where(sql`${table.deletedAt} IS NULL`),
+    uniqueIndex("products_tenant_external_id_uniq")
+      .on(table.tenantId, table.externalId)
+      .where(sql`${table.externalId} IS NOT NULL`),
   ],
 );
 
@@ -380,4 +407,96 @@ export const usageLogs = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [uniqueIndex("usage_logs_tenant_month_idx").on(table.tenantId, table.periodMonth)],
+);
+
+// ─── ORDERS ───────────────────────────────────────────────────
+export const orders = pgTable(
+  "orders",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id),
+    shopperId: uuid("shopper_id")
+      .notNull()
+      .references(() => shoppers.id),
+    orderNumber: varchar("order_number", { length: 50 }).notNull().unique(),
+    status: orderStatusEnum("status").notNull().default("pending"),
+    totalAmount: numeric("total_amount", { precision: 12, scale: 2 }).notNull(),
+    shippingAddress: jsonb("shipping_address"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("orders_tenant_id_idx").on(table.tenantId),
+    index("orders_order_number_idx").on(table.orderNumber),
+  ],
+);
+
+export const orderItems = pgTable("order_items", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  orderId: uuid("order_id")
+    .notNull()
+    .references(() => orders.id),
+  productId: uuid("product_id")
+    .notNull()
+    .references(() => products.id),
+  tenantId: uuid("tenant_id")
+    .notNull()
+    .references(() => tenants.id),
+  quantity: integer("quantity").notNull().default(1),
+  unitPrice: numeric("unit_price", { precision: 12, scale: 2 }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ─── CRAWLER ─────────────────────────────────────────────────
+export const crawlJobs = pgTable(
+  "crawl_jobs",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id),
+    websiteUrl: text("website_url").notNull(),
+    status: crawlStatusEnum("status").notNull().default("pending"),
+    config: jsonb("config"),
+    discoveredUrls: jsonb("discovered_urls"),
+    cursor: integer("cursor").notNull().default(0),
+    totalFound: integer("total_found").notNull().default(0),
+    totalImported: integer("total_imported").notNull().default(0),
+    totalUpdated: integer("total_updated").notNull().default(0),
+    totalSkipped: integer("total_skipped").notNull().default(0),
+    error: text("error"),
+    startedAt: timestamp("started_at", { withTimezone: true }),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("crawl_jobs_tenant_id_idx").on(table.tenantId),
+    index("crawl_jobs_tenant_status_idx").on(table.tenantId, table.status),
+  ],
+);
+
+// ─── RETURNS ──────────────────────────────────────────────────
+export const returns = pgTable(
+  "returns",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id),
+    orderId: uuid("order_id")
+      .notNull()
+      .references(() => orders.id),
+    returnNumber: varchar("return_number", { length: 50 }).notNull().unique(),
+    reason: text("reason").notNull(),
+    status: returnStatusEnum("status").notNull().default("pending"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("returns_tenant_id_idx").on(table.tenantId),
+    index("returns_return_number_idx").on(table.returnNumber),
+  ],
 );

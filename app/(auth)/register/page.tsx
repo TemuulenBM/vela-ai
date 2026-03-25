@@ -8,8 +8,6 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { FadeIn } from "@/shared/components/ui";
-import { User, Mail, Lock, Building2, Sparkles } from "lucide-react";
-import { AuthShowcasePanel } from "../components/auth-showcase-panel";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -23,12 +21,6 @@ export default function RegisterPage() {
 
     const formData = new FormData(e.currentTarget);
     const password = formData.get("password") as string;
-    const confirmPassword = formData.get("confirmPassword") as string;
-
-    if (password !== confirmPassword) {
-      setError("Нууц үг таарахгүй байна");
-      return;
-    }
 
     if (password.length < 8) {
       setError("Нууц үг хамгийн багадаа 8 тэмдэгт байх ёстой");
@@ -62,7 +54,6 @@ export default function RegisterPage() {
         return;
       }
 
-      // Auto-login after registration
       const result = await signIn("credentials", {
         email: formData.get("email") as string,
         password,
@@ -84,85 +75,83 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="grid min-h-dvh grid-cols-1 lg:grid-cols-[2fr_3fr]">
-      {/* Left panel — Form */}
-      <div className="flex items-center justify-center px-6 py-12 lg:justify-end lg:pr-16">
-        <div className="w-full max-w-[380px]">
-          {/* Logo & heading — left-aligned */}
-          <FadeIn>
-            <Link href="/" className="mb-8 inline-flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-md)] bg-brand-600">
-                <Sparkles className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-sm font-semibold text-text-primary">Vela AI</span>
+    <div className="relative flex min-h-dvh flex-col items-center justify-center bg-black px-6 py-12">
+      {/* Ambient background */}
+      <div className="pointer-events-none absolute top-1/3 right-1/4 h-[500px] w-[500px] rounded-full bg-white/[0.02] blur-[120px]" />
+      <div className="pointer-events-none absolute bottom-1/3 left-1/3 h-[400px] w-[400px] rounded-full bg-white/[0.015] blur-[100px]" />
+
+      <div className="relative z-10 w-full max-w-[540px]">
+        {/* Logo */}
+        <FadeIn>
+          <div className="mb-10 text-center">
+            <Link href="/" className="inline-block">
+              <h2 className="text-5xl font-headline italic text-white tracking-tighter">Vela AI</h2>
+              <p className="mt-2 text-[10px] uppercase tracking-[0.2em] text-white/30 font-semibold">
+                AI борлуулалтын туслах
+              </p>
             </Link>
-          </FadeIn>
+          </div>
+        </FadeIn>
 
-          <FadeIn delay={0.05}>
-            <h1 className="text-2xl font-bold tracking-tight text-text-primary">Бүртгүүлэх</h1>
-            <p className="mt-1 text-sm text-text-secondary">Шинэ бүртгэл үүсгэж эхэлнэ үү</p>
-          </FadeIn>
+        {/* Card */}
+        <FadeIn delay={0.1}>
+          <div className="liquid-glass rounded-xl p-10 md:p-14 border border-white/[0.05]">
+            <h1 className="text-3xl font-headline italic text-white tracking-tight">
+              Бүртгэл үүсгэх
+            </h1>
+            <p className="mt-2 text-lg text-white/60 font-light tracking-tight">
+              AI борлуулагчаа тохируулж, бизнесээ өсгө.
+            </p>
 
-          {/* Form — no card border */}
-          <FadeIn delay={0.1}>
-            <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
+            <form className="mt-10 space-y-6" onSubmit={handleSubmit}>
               {error && (
-                <div className="rounded-[var(--radius-md)] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+                <div className="rounded-2xl bg-[#ffb4ab]/10 px-4 py-3 text-sm text-[#ffb4ab]">
                   {error}
                 </div>
               )}
 
               <Input
-                label="Нэр"
+                label="ТАНЫ НЭР"
                 name="name"
                 type="text"
-                placeholder="Таны нэр"
-                icon={<User className="h-4 w-4" />}
-                autoComplete="name"
+                placeholder="Батбаяр"
+                suffix={<span className="material-symbols-outlined text-[20px]">person</span>}
                 required
               />
 
               <Input
-                label="Имэйл"
+                label="ДЭЛГҮҮРИЙН НЭР"
+                name="organizationName"
+                type="text"
+                placeholder="Миний дэлгүүр"
+                suffix={<span className="material-symbols-outlined text-[20px]">storefront</span>}
+                required
+              />
+
+              <Input
+                label="ИМЭЙЛ ХАЯГ"
                 name="email"
                 type="email"
-                placeholder="та@жишээ.mn"
-                icon={<Mail className="h-4 w-4" />}
+                placeholder="info@mystore.mn"
+                suffix={
+                  <span className="material-symbols-outlined text-[20px]">alternate_email</span>
+                }
                 autoComplete="email"
                 required
               />
 
               <Input
-                label="Нууц үг"
+                label="НУУЦ ҮГ"
                 name="password"
                 type="password"
-                placeholder="Хамгийн багадаа 8 тэмдэгт"
-                icon={<Lock className="h-4 w-4" />}
+                placeholder="••••••••"
+                suffix={<span className="material-symbols-outlined text-[20px]">lock</span>}
                 autoComplete="new-password"
-                required
-              />
-
-              <Input
-                label="Нууц үг давтах"
-                name="confirmPassword"
-                type="password"
-                placeholder="Нууц үгээ давтана уу"
-                icon={<Lock className="h-4 w-4" />}
-                autoComplete="new-password"
-                required
-              />
-
-              <Input
-                label="Байгууллагын нэр"
-                name="organizationName"
-                type="text"
-                placeholder="Таны байгууллагын нэр"
-                icon={<Building2 className="h-4 w-4" />}
                 required
               />
 
               {/* Terms checkbox */}
-              <div className="flex items-start gap-2.5 pt-1">
+              <div className="flex items-start gap-3 pt-2">
                 <Checkbox
                   id="terms"
                   className="mt-0.5"
@@ -171,38 +160,59 @@ export default function RegisterPage() {
                 />
                 <label
                   htmlFor="terms"
-                  className="cursor-pointer select-none text-sm leading-snug text-text-secondary"
+                  className="cursor-pointer select-none text-sm leading-snug text-white/45"
                 >
-                  <Link href="#" className="text-brand-600 transition-colors hover:text-brand-700">
+                  <Link
+                    href="#"
+                    className="text-white/70 transition-colors hover:text-white font-semibold"
+                  >
                     Үйлчилгээний нөхцөл
+                  </Link>{" "}
+                  болон{" "}
+                  <Link
+                    href="#"
+                    className="text-white/70 transition-colors hover:text-white font-semibold"
+                  >
+                    Нууцлалын бодлого
                   </Link>
-                  -ийг зөвшөөрч байна
+                  -г зөвшөөрч байна.
                 </label>
               </div>
 
-              <Button size="lg" className="w-full" disabled={loading}>
-                {loading ? "Бүртгүүлж байна..." : "Бүртгүүлэх"}
+              <Button size="xl" className="w-full mt-2" disabled={loading}>
+                {loading ? "Үүсгэж байна..." : "Бүртгүүлэх"}
               </Button>
             </form>
-          </FadeIn>
 
-          {/* Login link */}
-          <FadeIn delay={0.15}>
-            <p className="mt-8 text-sm text-text-secondary">
-              Бүртгэлтэй юу?{" "}
-              <Link
-                href="/login"
-                className="font-medium text-brand-600 transition-colors hover:text-brand-700"
-              >
-                Нэвтрэх
-              </Link>
-            </p>
-          </FadeIn>
-        </div>
+            {/* Login link */}
+            <div className="mt-8 pt-6 border-t border-white/[0.05] text-center">
+              <p className="text-sm text-white/40 font-light">
+                Бүртгэлтэй юу?{" "}
+                <Link
+                  href="/login"
+                  className="font-semibold text-white transition-colors hover:text-white/80"
+                >
+                  Нэвтрэх
+                </Link>
+              </p>
+            </div>
+          </div>
+        </FadeIn>
+
+        {/* Security badges */}
+        <FadeIn delay={0.2}>
+          <div className="mt-8 flex items-center justify-center gap-8 text-[10px] text-white/20 uppercase tracking-[0.2em] font-semibold">
+            <span className="flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[14px]">shield</span>
+              AES-256 Шифрлэлт
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[14px]">public</span>
+              Дэлхийн дэд бүтэц
+            </span>
+          </div>
+        </FadeIn>
       </div>
-
-      {/* Right panel — Showcase */}
-      <AuthShowcasePanel />
     </div>
   );
 }

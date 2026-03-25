@@ -22,7 +22,7 @@ export default function AnalyticsPage() {
   const [tab, setTab] = useState("overview");
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="px-8 py-10 max-w-[1600px] mx-auto flex flex-col gap-6">
       <FadeIn>
         <PageHeader
           title="Аналитик"

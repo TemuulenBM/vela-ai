@@ -2,7 +2,6 @@
 
 import { motion } from "motion/react";
 import { cn } from "@/shared/lib/utils";
-import { Avatar } from "@/shared/components/ui/avatar";
 import { ToolResult } from "./tool-result";
 import { isToolUIPart, getToolName, type UIMessage } from "ai";
 
@@ -18,46 +17,75 @@ export function MessageBubble({ message }: MessageBubbleProps) {
       initial={{ opacity: 0, x: isUser ? 12 : -12 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className={cn("flex gap-2.5", isUser ? "justify-end" : "justify-start")}
+      className="space-y-1.5"
     >
-      {!isUser && (
-        <Avatar size="xs" fallback="V" className="shrink-0 mt-0.5 bg-brand-100 text-brand-700" />
-      )}
-      <div
-        className={cn(
-          "max-w-[75%] rounded-[var(--radius-lg)] px-3.5 py-2.5",
-          isUser
-            ? "bg-brand-600 text-white rounded-br-sm"
-            : "bg-surface-tertiary text-text-primary rounded-bl-sm",
-        )}
-      >
-        {/* Text content */}
-        {message.parts.map((part, i) => {
-          if (part.type === "text" && part.text) {
-            return (
-              <p key={i} className="text-[13px] leading-relaxed whitespace-pre-wrap">
-                {part.text}
-              </p>
-            );
-          }
-
-          if (isToolUIPart(part)) {
-            const toolName = getToolName(part);
-            if (part.state === "output-available") {
-              return <ToolResult key={i} toolName={toolName} result={part.output} />;
+      <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
+        <div
+          className={cn(
+            "max-w-[80%] px-4 py-3.5",
+            isUser ? "bg-white text-black" : "glass-card text-white/90",
+          )}
+          style={{
+            borderRadius: isUser ? "2rem 2rem 0.5rem 2rem" : "2rem 2rem 2rem 0.5rem",
+          }}
+        >
+          {/* Content parts */}
+          {message.parts.map((part, i) => {
+            if (part.type === "text" && part.text) {
+              return (
+                <p
+                  key={i}
+                  className={cn(
+                    "text-[13.5px] leading-relaxed whitespace-pre-wrap",
+                    isUser ? "text-black" : "text-white/90",
+                  )}
+                >
+                  {part.text}
+                </p>
+              );
             }
 
-            // Tool is being called — show loading
-            return (
-              <div key={i} className="text-[11px] text-text-tertiary mt-1 italic">
-                {toolName === "searchProducts" ? "Бараа хайж байна..." : "Шалгаж байна..."}
-              </div>
-            );
-          }
+            if (isToolUIPart(part)) {
+              const toolName = getToolName(part);
+              if (part.state === "output-available") {
+                return <ToolResult key={i} toolName={toolName} result={part.output} />;
+              }
 
-          return null;
-        })}
+              // Tool is being called — show loading
+              return (
+                <div key={i} className="text-[11px] text-white/35 mt-2 italic font-serif">
+                  {toolName === "searchProducts" ? "Бараа хайж байна..." : "Шалгаж байна..."}
+                </div>
+              );
+            }
+
+            return null;
+          })}
+        </div>
       </div>
+
+      {/* Metadata line under AI messages */}
+      {!isUser && (
+        <div className="pl-1">
+          <p className="text-[10px] text-white/30">
+            <span className="text-white/40">Vela AI</span> &bull; Delivered
+          </p>
+        </div>
+      )}
+
+      {/* Timestamp under user messages */}
+      {isUser && (
+        <div className="flex justify-end pr-1">
+          <p className="text-[10px] text-white/25 flex items-center gap-1.5">
+            {new Date().toLocaleTimeString("en-US", {
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            })}
+            <span className="material-symbols-outlined text-[12px] text-white/25">done_all</span>
+          </p>
+        </div>
+      )}
     </motion.div>
   );
 }

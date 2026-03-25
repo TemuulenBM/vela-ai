@@ -211,4 +211,33 @@ function StaggerGroup({
   );
 }
 
-export { FadeIn, SlideIn, AnimateList, CountUp, StaggerGroup };
+/* ─────────────────────────────────────────────
+ * Reveal3D — scroll-triggered 3D entrance.
+ * Elements rotate in from below with perspective.
+ * ───────────────────────────────────────────── */
+interface Reveal3DProps extends HTMLMotionProps<"div"> {
+  delay?: number;
+  rotateX?: number;
+  y?: number;
+}
+
+function Reveal3D({ delay = 0, rotateX = -15, y = 80, children, style, ...props }: Reveal3DProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y, rotateX }}
+      whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{
+        duration: 1.2,
+        delay,
+        ease: [0.16, 1, 0.3, 1],
+      }}
+      style={{ perspective: 1000, transformStyle: "preserve-3d", ...style }}
+      {...props}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export { FadeIn, SlideIn, AnimateList, CountUp, StaggerGroup, Reveal3D };

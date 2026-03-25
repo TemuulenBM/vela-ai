@@ -1,5 +1,6 @@
 import { z } from "zod/v4";
 import { and, eq, desc, count, sql } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../trpc";
 import { db } from "@/server/db/db";
 import { conversations, messages, shoppers } from "@/server/db/schema";
@@ -176,5 +177,43 @@ export const chatRouter = router({
         .returning({ id: conversations.id });
 
       return updated ?? null;
+    }),
+
+  sendMessage: protectedProcedure
+    .input(
+      z.object({
+        conversationId: z.string().uuid(),
+        content: z.string().min(1).max(5000),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const [conv] = await db
+        .select({ id: conversations.id })
+        .from(conversations)
+        .where(
+          and(eq(conversations.id, input.conversationId), eq(conversations.tenantId, ctx.tenantId)),
+        )
+        .limit(1);
+
+      if (!conv) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Яриа олдсонгүй" });
+      }
+
+      const [msg] = await db
+        .insert(messages)
+        .values({
+          tenantId: ctx.tenantId,
+          conversationId: input.conversationId,
+          role: "assistant",
+          content: input.content,
+        })
+        .returning({
+          id: messages.id,
+          role: messages.role,
+          content: messages.content,
+          createdAt: messages.createdAt,
+        });
+
+      return msg;
     }),
 });

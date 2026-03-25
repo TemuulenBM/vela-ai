@@ -11,10 +11,7 @@ function TabsList({
 }: React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>) {
   return (
     <TabsPrimitive.List
-      className={cn(
-        "inline-flex items-center gap-0.5 rounded-[var(--radius-md)] bg-surface-tertiary p-1",
-        className,
-      )}
+      className={cn("inline-flex items-center gap-0.5 rounded-full bg-white/[0.03] p-1", className)}
       {...props}
     />
   );
@@ -27,10 +24,10 @@ function TabsTrigger({
   return (
     <TabsPrimitive.Trigger
       className={cn(
-        "inline-flex items-center justify-center px-3.5 py-1.5 text-[13px] font-medium text-text-tertiary rounded-[var(--radius-sm)] transition-all duration-150",
-        "hover:text-text-secondary",
-        "data-[state=active]:bg-surface-primary data-[state=active]:text-text-primary data-[state=active]:shadow-xs",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1",
+        "inline-flex items-center justify-center px-3.5 py-1.5 text-[13px] font-medium text-white/45 rounded-full transition-all duration-200",
+        "hover:text-white/70",
+        "data-[state=active]:bg-white/[0.1] data-[state=active]:text-white",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-1 focus-visible:ring-offset-black",
         className,
       )}
       {...props}

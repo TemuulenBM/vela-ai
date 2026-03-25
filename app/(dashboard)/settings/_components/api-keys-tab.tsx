@@ -1,15 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Key, Plus, Trash2, Copy, Check } from "lucide-react";
-import {
-  Card,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  Input,
-  Button,
-} from "@/shared/components/ui";
 import { trpc } from "@/shared/lib/trpc";
 
 export function ApiKeysTab() {
@@ -42,120 +33,132 @@ export function ApiKeysTab() {
   const keys = keysQuery.data ?? [];
 
   return (
-    <Card padding="none">
-      <div className="flex items-center justify-between px-5 pb-0 pt-5">
-        <div className="flex flex-col gap-1.5">
-          <CardTitle>API түлхүүрүүд</CardTitle>
-          <CardDescription>
-            API түлхүүрүүдийг удирдах. Түлхүүрүүдийг нууцаар хадгална уу.
-          </CardDescription>
-        </div>
-      </div>
-
+    <div className="flex flex-col gap-6">
       {/* Create new key */}
-      <div className="flex items-end gap-3 px-5 py-4">
-        <div className="flex-1">
-          <Input
-            label="Шинэ түлхүүрийн нэр"
-            placeholder="Жишээ нь: Production key"
-            value={newKeyName}
-            onChange={(e) => setNewKeyName(e.target.value)}
-          />
+      <div className="glass-card rounded-3xl p-8">
+        <div className="mb-6">
+          <h2 className="font-headline text-2xl italic text-white">API түлхүүрүүд</h2>
+          <p className="mt-1 text-sm text-white/40">
+            API түлхүүрүүдийг удирдах. Түлхүүрүүдийг нууцаар хадгална уу.
+          </p>
         </div>
-        <Button
-          size="sm"
-          onClick={handleCreate}
-          disabled={createMutation.isPending || !newKeyName.trim()}
-        >
-          <Plus className="h-4 w-4" />
-          Үүсгэх
-        </Button>
+
+        <div className="flex items-end gap-3">
+          <div className="flex-1 flex flex-col gap-2">
+            <label className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
+              ШИНЭ ТҮЛХҮҮРИЙН НЭР
+            </label>
+            <input
+              type="text"
+              placeholder="Жишээ нь: Production key"
+              value={newKeyName}
+              onChange={(e) => setNewKeyName(e.target.value)}
+              className="rounded-2xl bg-white/[0.04] px-4 py-3 text-sm text-white placeholder:text-white/20 outline-none ring-1 ring-white/[0.06] transition-all focus:ring-white/20"
+            />
+          </div>
+          <button
+            onClick={handleCreate}
+            disabled={createMutation.isPending || !newKeyName.trim()}
+            className="flex items-center gap-2 rounded-full bg-white px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-black transition-all hover:bg-white/90 disabled:opacity-50"
+          >
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            Үүсгэх
+          </button>
+        </div>
+
+        {/* Revealed key alert */}
+        {revealedKey && (
+          <div className="mt-4 rounded-2xl bg-[#ffd59e]/10 p-4">
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#ffd59e]">
+              Түлхүүрийг хуулж аваарай — дахин харагдахгүй
+            </p>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 break-all rounded-xl bg-white/[0.05] px-3 py-2 text-xs font-mono text-white">
+                {revealedKey}
+              </code>
+              <button
+                onClick={() => handleCopy(revealedKey)}
+                className="rounded-full bg-white/10 p-2 transition-colors hover:bg-white/20"
+              >
+                <span className="material-symbols-outlined text-[18px] text-white">
+                  {copied ? "check" : "content_copy"}
+                </span>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Revealed key alert */}
-      {revealedKey && (
-        <div className="mx-5 mb-4 rounded-[var(--radius-md)] border border-amber-200 bg-amber-50 p-3">
-          <p className="mb-1 text-xs font-medium text-amber-800">
-            Түлхүүрийг хуулж аваарай. Дахин харагдахгүй!
-          </p>
-          <div className="flex items-center gap-2">
-            <code className="flex-1 break-all rounded-[var(--radius-sm)] bg-white px-2 py-1 text-xs font-mono text-text-primary">
-              {revealedKey}
-            </code>
-            <Button variant="secondary" size="sm" onClick={() => handleCopy(revealedKey)}>
-              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-            </Button>
-          </div>
-        </div>
-      )}
-
-      <CardContent className="px-0">
+      {/* Keys list */}
+      <div className="glass-card rounded-3xl overflow-hidden">
         {keysQuery.isLoading ? (
-          <div className="space-y-2 p-5">
+          <div className="space-y-2 p-8">
             {Array.from({ length: 2 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-12 animate-pulse rounded-[var(--radius-md)] bg-surface-secondary"
-              />
+              <div key={i} className="h-12 animate-pulse rounded-2xl bg-white/[0.04]" />
             ))}
           </div>
         ) : keys.length === 0 ? (
-          <div className="py-8 text-center">
-            <Key className="mx-auto mb-2 h-6 w-6 text-text-tertiary" />
-            <p className="text-sm text-text-secondary">API түлхүүр байхгүй байна</p>
+          <div className="flex flex-col items-center justify-center gap-2 py-16">
+            <span className="material-symbols-outlined text-[32px] text-white/20">key</span>
+            <p className="text-sm text-white/40">API түлхүүр байхгүй байна</p>
+            <p className="text-xs text-white/30">Дээрх формоор шинэ түлхүүр үүсгэнэ үү</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-border-default">
-                  <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
+                <tr className="border-b border-white/[0.06]">
+                  <th className="px-8 py-4 text-left text-[10px] font-semibold uppercase tracking-widest text-white/40">
                     Нэр
                   </th>
-                  <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
-                    Prefix
+                  <th className="px-8 py-4 text-left text-[10px] font-semibold uppercase tracking-widest text-white/40">
+                    Угтвар
                   </th>
-                  <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
+                  <th className="px-8 py-4 text-left text-[10px] font-semibold uppercase tracking-widest text-white/40">
                     Үүсгэсэн
                   </th>
-                  <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
+                  <th className="px-8 py-4 text-left text-[10px] font-semibold uppercase tracking-widest text-white/40">
                     Сүүлд ашигласан
                   </th>
-                  <th className="w-20 px-5 py-2.5" />
+                  <th className="w-20 px-8 py-4" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border-default">
+              <tbody>
                 {keys.map((apiKey) => (
-                  <tr key={apiKey.id}>
-                    <td className="px-5 py-3">
-                      <div className="flex items-center gap-2">
-                        <Key className="h-4 w-4 text-text-tertiary" />
-                        <span className="text-sm font-medium text-text-primary">{apiKey.name}</span>
+                  <tr
+                    key={apiKey.id}
+                    className="border-b border-white/[0.03] transition-colors hover:bg-white/[0.02]"
+                  >
+                    <td className="px-8 py-4">
+                      <div className="flex items-center gap-3">
+                        <span className="material-symbols-outlined text-[18px] text-white/30">
+                          key
+                        </span>
+                        <span className="text-sm font-medium text-white">{apiKey.name}</span>
                       </div>
                     </td>
-                    <td className="px-5 py-3">
-                      <code className="rounded-[var(--radius-sm)] bg-surface-tertiary px-2 py-1 text-xs font-mono text-text-secondary">
+                    <td className="px-8 py-4">
+                      <code className="rounded-full bg-white/[0.06] px-3 py-1 text-xs font-mono text-white/60">
                         {apiKey.keyPrefix}...
                       </code>
                     </td>
-                    <td className="px-5 py-3 text-sm text-text-secondary">
+                    <td className="px-8 py-4 text-sm text-white/50">
                       {new Date(apiKey.createdAt).toLocaleDateString("mn-MN")}
                     </td>
-                    <td className="px-5 py-3 text-sm text-text-secondary">
+                    <td className="px-8 py-4 text-sm text-white/50">
                       {apiKey.lastUsedAt
                         ? new Date(apiKey.lastUsedAt).toLocaleDateString("mn-MN")
                         : "—"}
                     </td>
-                    <td className="px-5 py-3">
-                      <Button
-                        variant="destructive"
-                        size="sm"
+                    <td className="px-8 py-4">
+                      <button
                         onClick={() => revokeMutation.mutate({ id: apiKey.id })}
                         disabled={revokeMutation.isPending}
+                        className="flex items-center gap-1.5 rounded-full bg-red-500/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-red-400 transition-colors hover:bg-red-500/20 disabled:opacity-50"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <span className="material-symbols-outlined text-[14px]">delete</span>
                         Устгах
-                      </Button>
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -163,17 +166,19 @@ export function ApiKeysTab() {
             </table>
           </div>
         )}
-      </CardContent>
+      </div>
 
-      {/* Embed snippet */}
-      <div className="border-t border-border-default px-5 py-4">
-        <p className="mb-2 text-xs font-medium text-text-secondary">Widget embed код</p>
-        <div className="rounded-[var(--radius-md)] bg-surface-tertiary p-3">
-          <code className="block text-xs font-mono text-text-secondary">
+      {/* Widget embed snippet */}
+      <div className="glass-card rounded-3xl p-8">
+        <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-white/40">
+          ВИДЖЕТ EMBED КОД
+        </p>
+        <div className="rounded-2xl bg-white/[0.04] p-4">
+          <code className="block text-xs font-mono text-white/60">
             {`<script src="${typeof window !== "undefined" ? window.location.origin : ""}/api/widget?key=YOUR_API_KEY" async></script>`}
           </code>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

@@ -1,7 +1,10 @@
 import { tool } from "ai";
 import { z } from "zod/v4";
+import { and, eq } from "drizzle-orm";
 import { searchProducts } from "@/server/lib/product-search";
 import { getRecommendations } from "@/server/lib/recommendations";
+import { db } from "@/server/db/db";
+import { orders, orderItems, products, returns } from "@/server/db/schema";
 
 /**
  * Create chat tools scoped to a specific tenant.
@@ -53,13 +56,57 @@ export function createChatTools(tenantId: string) {
         orderId: z.string().describe("Захиалгын дугаар"),
       }),
       execute: async (input) => {
-        // MVP: Orders table одоогоор байхгүй — mock response
+        const STATUS_TEXT: Record<string, string> = {
+          pending: "Хүлээгдэж буй",
+          processing: "Боловсруулж байна",
+          shipped: "Хүргэлтэд гарсан",
+          delivered: "Хүргэгдсэн",
+          cancelled: "Цуцлагдсан",
+        };
+
+        const [order] = await db
+          .select({
+            id: orders.id,
+            orderNumber: orders.orderNumber,
+            status: orders.status,
+            totalAmount: orders.totalAmount,
+            createdAt: orders.createdAt,
+          })
+          .from(orders)
+          .where(and(eq(orders.orderNumber, input.orderId), eq(orders.tenantId, tenantId)))
+          .limit(1);
+
+        if (!order) {
+          return {
+            orderId: input.orderId,
+            found: false,
+            message: "Захиалга олдсонгүй. Захиалгын дугаараа шалгана уу.",
+          };
+        }
+
+        const items = await db
+          .select({
+            productName: products.name,
+            quantity: orderItems.quantity,
+            unitPrice: orderItems.unitPrice,
+          })
+          .from(orderItems)
+          .innerJoin(products, eq(orderItems.productId, products.id))
+          .where(and(eq(orderItems.orderId, order.id), eq(orderItems.tenantId, tenantId)));
+
         return {
-          orderId: input.orderId,
-          status: "processing" as const,
-          statusText: "Боловсруулж байна",
-          estimatedDelivery: "2-3 ажлын өдөр",
-          message: "Таны захиалга амжилттай хүлээн авагдсан. Бэлтгэл явагдаж байна.",
+          orderId: order.orderNumber,
+          found: true,
+          status: order.status,
+          statusText: STATUS_TEXT[order.status] ?? order.status,
+          totalAmount: order.totalAmount,
+          items: items.map((i) => ({
+            name: i.productName,
+            quantity: i.quantity,
+            unitPrice: i.unitPrice,
+          })),
+          createdAt: order.createdAt,
+          message: `Захиалга #${order.orderNumber}: ${STATUS_TEXT[order.status] ?? order.status}`,
         };
       },
     }),
@@ -114,12 +161,32 @@ export function createChatTools(tenantId: string) {
         reason: z.string().describe("Буцаалтын шалтгаан"),
       }),
       execute: async (input) => {
-        // MVP: Returns table одоогоор байхгүй — mock response
-        const returnId = `RET-${Date.now().toString(36).toUpperCase()}`;
+        const [order] = await db
+          .select({ id: orders.id, orderNumber: orders.orderNumber })
+          .from(orders)
+          .where(and(eq(orders.orderNumber, input.orderId), eq(orders.tenantId, tenantId)))
+          .limit(1);
+
+        if (!order) {
+          return { success: false, message: "Захиалга олдсонгүй. Захиалгын дугаараа шалгана уу." };
+        }
+
+        const returnNumber = `RET-${Date.now().toString(36).toUpperCase()}`;
+
+        const [newReturn] = await db
+          .insert(returns)
+          .values({
+            tenantId,
+            orderId: order.id,
+            returnNumber,
+            reason: input.reason,
+          })
+          .returning({ id: returns.id, returnNumber: returns.returnNumber });
 
         return {
-          returnId,
-          orderId: input.orderId,
+          success: true,
+          returnId: newReturn.returnNumber,
+          orderId: order.orderNumber,
           reason: input.reason,
           status: "pending" as const,
           statusText: "Хүлээн авсан",
@@ -129,7 +196,7 @@ export function createChatTools(tenantId: string) {
             "Барааг анхны сав баглаатай нь хамт илгээнэ үү.",
             "Буцаалт баталгаажсаны дараа 3-5 ажлын өдрийн дотор мөнгө буцаана.",
           ],
-          message: `Захиалга #${input.orderId}-ийн буцаалтын хүсэлт амжилттай бүртгэгдлээ. Буцаалтын дугаар: ${returnId}`,
+          message: `Захиалга #${order.orderNumber}-ийн буцаалтын хүсэлт амжилттай бүртгэгдлээ. Буцаалтын дугаар: ${newReturn.returnNumber}`,
         };
       },
     }),

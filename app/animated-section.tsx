@@ -1,6 +1,6 @@
 "use client";
 
-import { FadeIn } from "@/shared/components/ui/animate";
+import { Reveal3D } from "@/shared/components/ui/animate";
 
 interface AnimatedSectionProps {
   children: React.ReactNode;
@@ -10,8 +10,8 @@ interface AnimatedSectionProps {
 
 export function AnimatedSection({ children, delay = 0, className }: AnimatedSectionProps) {
   return (
-    <FadeIn trigger="scroll" delay={delay} className={className}>
+    <Reveal3D delay={delay} className={className}>
       {children}
-    </FadeIn>
+    </Reveal3D>
   );
 }
