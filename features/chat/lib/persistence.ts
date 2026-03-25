@@ -35,6 +35,51 @@ export async function createOrGetShopper(tenantId: string, anonymousId: string):
 }
 
 /**
+ * Find or create a shopper by Meta platform scoped ID.
+ * Messenger: PSID, Instagram: IG scoped ID.
+ */
+export async function createOrGetMetaShopper(
+  tenantId: string,
+  platform: "messenger" | "instagram",
+  scopedId: string,
+  name?: string,
+): Promise<string> {
+  const anonymousId = `meta_${platform}_${scopedId}`;
+
+  // Try to find existing shopper
+  const [existing] = await db
+    .select({ id: shoppers.id })
+    .from(shoppers)
+    .where(and(eq(shoppers.tenantId, tenantId), eq(shoppers.anonymousId, anonymousId)))
+    .limit(1);
+
+  if (existing) return existing.id;
+
+  // Create new shopper with Meta metadata
+  try {
+    const [created] = await db
+      .insert(shoppers)
+      .values({
+        tenantId,
+        anonymousId,
+        name: name ?? null,
+        metadata: { platform, scopedId },
+      })
+      .returning({ id: shoppers.id });
+    return created.id;
+  } catch {
+    // Race condition — re-fetch
+    const [raced] = await db
+      .select({ id: shoppers.id })
+      .from(shoppers)
+      .where(and(eq(shoppers.tenantId, tenantId), eq(shoppers.anonymousId, anonymousId)))
+      .limit(1);
+    if (raced) return raced.id;
+    throw new Error("Failed to create or find Meta shopper");
+  }
+}
+
+/**
  * Find an active conversation for the shopper, or create a new one.
  * If conversationId is provided, verify it belongs to the tenant.
  */
@@ -42,6 +87,7 @@ export async function createOrGetConversation(
   tenantId: string,
   shopperId: string,
   conversationId?: string,
+  channel: "web" | "messenger" | "instagram" | "email" = "web",
 ): Promise<string> {
   // If conversationId provided, verify ownership
   if (conversationId) {
@@ -82,7 +128,7 @@ export async function createOrGetConversation(
     .values({
       tenantId,
       shopperId,
-      channel: "web",
+      channel,
       status: "active",
     })
     .returning({ id: conversations.id });
