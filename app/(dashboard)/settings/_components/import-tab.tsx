@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button, ProgressBar, Input } from "@/shared/components/ui";
 import { trpc } from "@/shared/lib/trpc";
 
