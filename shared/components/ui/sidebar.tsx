@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { cn } from "@/shared/lib/utils";
 
 const navItems = [
@@ -75,7 +76,15 @@ function Sidebar({ className }: SidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="px-2" />
+      <div className="px-2">
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="flex w-full items-center gap-3 rounded-full px-4 py-3 text-[14px] font-light tracking-tight text-white/40 hover:text-white/70 hover:bg-white/[0.03] transition-all duration-200"
+        >
+          <MaterialIcon name="logout" className="shrink-0 text-white/40" />
+          <span>Гарах</span>
+        </button>
+      </div>
     </aside>
   );
 }

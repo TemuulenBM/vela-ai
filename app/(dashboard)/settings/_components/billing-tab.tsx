@@ -1,7 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CountUp, ProgressBar } from "@/shared/components/ui";
+import {
+  CountUp,
+  ProgressBar,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalDescription,
+  ModalFooter,
+  Button,
+} from "@/shared/components/ui";
 import { trpc } from "@/shared/lib/trpc";
 import { PLAN_LIMITS, PLAN_LABELS, PLAN_PRICES } from "./constants";
 import { UpgradeModal } from "./upgrade-modal";
@@ -9,10 +19,21 @@ import { PaymentHistory } from "./payment-history";
 
 export function BillingTab() {
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(true);
   const storeQuery = trpc.tenants.getStore.useQuery();
   const usageQuery = trpc.tenants.getUsage.useQuery();
   const subQuery = trpc.payments.getActiveSubscription.useQuery();
+  const utils = trpc.useUtils();
+
+  const cancelMutation = trpc.payments.cancelSubscription.useMutation({
+    onSuccess: () => {
+      utils.payments.getActiveSubscription.invalidate();
+      utils.tenants.getStore.invalidate();
+      utils.tenants.getUsage.invalidate();
+      setShowCancelConfirm(false);
+    },
+  });
 
   useEffect(() => {
     setBannerDismissed(localStorage.getItem("upgrade-banner-dismissed") === "true");
@@ -60,9 +81,17 @@ export function BillingTab() {
                   {PLAN_LABELS[subQuery.data.plan] ?? subQuery.data.plan}
                 </span>
               </div>
-              <p className="mt-2 text-[10px] font-semibold uppercase tracking-widest text-white/30">
-                Хүчинтэй: {new Date(subQuery.data.periodEnd).toLocaleDateString("mn-MN")} хүртэл
-              </p>
+              <div className="mt-2 flex items-center justify-between">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-white/30">
+                  Хүчинтэй: {new Date(subQuery.data.periodEnd).toLocaleDateString("mn-MN")} хүртэл
+                </p>
+                <button
+                  onClick={() => setShowCancelConfirm(true)}
+                  className="text-[10px] font-semibold uppercase tracking-widest text-white/30 hover:text-[#ffb4ab] transition-colors"
+                >
+                  Цуцлах
+                </button>
+              </div>
             </>
           ) : (
             <>
@@ -84,6 +113,31 @@ export function BillingTab() {
       </div>
 
       <UpgradeModal open={showUpgrade} onOpenChange={setShowUpgrade} currentPlan={plan} />
+
+      {/* Cancel subscription confirm */}
+      <Modal open={showCancelConfirm} onOpenChange={setShowCancelConfirm}>
+        <ModalContent>
+          <ModalHeader>
+            <ModalTitle>Захиалга цуцлах</ModalTitle>
+            <ModalDescription>
+              Захиалгаа цуцлахад Free багц руу буцна. Одоогийн хугацаа дуусах хүртэл үйлчилгээ
+              үргэлжилнэ.
+            </ModalDescription>
+          </ModalHeader>
+          <ModalFooter>
+            <Button variant="glass" onClick={() => setShowCancelConfirm(false)}>
+              Болих
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={cancelMutation.isPending}
+              onClick={() => cancelMutation.mutate()}
+            >
+              {cancelMutation.isPending ? "Цуцлаж байна..." : "Цуцлах"}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
       {/* Usage Stats */}
       <div className="glass-card rounded-3xl p-8">

@@ -87,6 +87,15 @@ export const returnStatusEnum = pgEnum("return_status", [
   "completed",
 ]);
 
+export const crawlStatusEnum = pgEnum("crawl_status_enum", [
+  "pending",
+  "discovering",
+  "extracting",
+  "embedding",
+  "completed",
+  "failed",
+]);
+
 // ─── CORE ──────────────────────────────────────────────────────
 export const tenants = pgTable("tenants", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -154,6 +163,9 @@ export const products = pgTable(
     index("products_tenant_category_idx")
       .on(table.tenantId, table.category)
       .where(sql`${table.deletedAt} IS NULL`),
+    uniqueIndex("products_tenant_external_id_uniq")
+      .on(table.tenantId, table.externalId)
+      .where(sql`${table.externalId} IS NOT NULL`),
   ],
 );
 
@@ -436,6 +448,35 @@ export const orderItems = pgTable("order_items", {
   unitPrice: numeric("unit_price", { precision: 12, scale: 2 }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
+
+// ─── CRAWLER ─────────────────────────────────────────────────
+export const crawlJobs = pgTable(
+  "crawl_jobs",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id),
+    websiteUrl: text("website_url").notNull(),
+    status: crawlStatusEnum("status").notNull().default("pending"),
+    config: jsonb("config"),
+    discoveredUrls: jsonb("discovered_urls"),
+    cursor: integer("cursor").notNull().default(0),
+    totalFound: integer("total_found").notNull().default(0),
+    totalImported: integer("total_imported").notNull().default(0),
+    totalUpdated: integer("total_updated").notNull().default(0),
+    totalSkipped: integer("total_skipped").notNull().default(0),
+    error: text("error"),
+    startedAt: timestamp("started_at", { withTimezone: true }),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("crawl_jobs_tenant_id_idx").on(table.tenantId),
+    index("crawl_jobs_tenant_status_idx").on(table.tenantId, table.status),
+  ],
+);
 
 // ─── RETURNS ──────────────────────────────────────────────────
 export const returns = pgTable(
