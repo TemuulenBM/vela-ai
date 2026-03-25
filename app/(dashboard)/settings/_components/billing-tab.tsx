@@ -20,7 +20,10 @@ import { PaymentHistory } from "./payment-history";
 export function BillingTab() {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
-  const [bannerDismissed, setBannerDismissed] = useState(true);
+  const [bannerDismissed, setBannerDismissed] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return localStorage.getItem("upgrade-banner-dismissed") === "true";
+  });
   const storeQuery = trpc.tenants.getStore.useQuery();
   const usageQuery = trpc.tenants.getUsage.useQuery();
   const subQuery = trpc.payments.getActiveSubscription.useQuery();
@@ -34,10 +37,6 @@ export function BillingTab() {
       setShowCancelConfirm(false);
     },
   });
-
-  useEffect(() => {
-    setBannerDismissed(localStorage.getItem("upgrade-banner-dismissed") === "true");
-  }, []);
 
   const plan = storeQuery.data?.plan ?? "free";
   const limits = PLAN_LIMITS[plan] ?? PLAN_LIMITS.free;

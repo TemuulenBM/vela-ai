@@ -74,11 +74,11 @@ export function ImportTab() {
   }, [isActive, job?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Pre-fill URL from last crawl
-  useEffect(() => {
-    if (job?.websiteUrl && !url) {
-      setUrl(job.websiteUrl);
-    }
-  }, [job?.websiteUrl]);
+  const prefilled = useRef(false);
+  if (job?.websiteUrl && !prefilled.current && !url) {
+    prefilled.current = true;
+    setUrl(job.websiteUrl);
+  }
 
   const handleStart = () => {
     if (!url.trim()) return;
