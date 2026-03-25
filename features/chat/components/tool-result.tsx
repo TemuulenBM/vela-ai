@@ -33,14 +33,14 @@ export function ToolResult({ toolName, result }: ToolResultProps) {
 
     if (!products || products.length === 0) {
       return (
-        <div className="rounded-[var(--radius-md)] bg-surface-tertiary px-3 py-2 text-[12px] text-text-secondary">
+        <div className="glass-card rounded-3xl px-4 py-3 text-[12px] text-white/40 mt-3">
           Уучлаарай, тохирох бараа олдсонгүй.
         </div>
       );
     }
 
     return (
-      <div className="space-y-2 mt-2">
+      <div className="space-y-2 mt-3">
         {products.map((product) => (
           <ProductCard key={product.id} {...product} />
         ))}
@@ -52,13 +52,39 @@ export function ToolResult({ toolName, result }: ToolResultProps) {
     const order = result as OrderResult;
 
     return (
-      <div className="rounded-[var(--radius-md)] border border-border-subtle bg-surface-secondary p-3 mt-2">
+      <div className="glass-card rounded-3xl p-4 mt-3">
         <div className="flex items-center justify-between">
-          <span className="text-[12px] text-text-secondary">Захиалга #{order.orderId}</span>
-          <span className="text-[12px] font-medium text-brand-600">{order.statusText}</span>
+          <span className="text-[10px] uppercase tracking-widest text-white/40">
+            Захиалга #{order.orderId}
+          </span>
+          <span className="text-[10px] uppercase tracking-widest text-white/60 font-medium">
+            {order.statusText}
+          </span>
         </div>
-        <p className="text-[12px] text-text-secondary mt-1">{order.message}</p>
-        <p className="text-[11px] text-text-tertiary mt-1">Хүргэлт: {order.estimatedDelivery}</p>
+        <p className="font-serif italic text-[16px] text-white/90 mt-2">{order.message}</p>
+        <p className="text-[10px] uppercase tracking-widest text-white/30 mt-2">
+          Хүргэлт: {order.estimatedDelivery}
+        </p>
+      </div>
+    );
+  }
+
+  // Analytics / stat inline cards (grid-cols-2 like screenshot)
+  if (toolName === "getAnalytics" || toolName === "getCampaignStats") {
+    const data = result as Record<string, string | number>;
+
+    if (!data) return null;
+
+    const entries = Object.entries(data).slice(0, 4);
+
+    return (
+      <div className="grid grid-cols-2 gap-2 mt-3">
+        {entries.map(([label, value]) => (
+          <div key={label} className="glass-card rounded-3xl px-4 py-3">
+            <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1">{label}</p>
+            <p className="font-serif italic text-[22px] text-white/90">{String(value)}</p>
+          </div>
+        ))}
       </div>
     );
   }

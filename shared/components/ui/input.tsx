@@ -8,46 +8,52 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   icon?: React.ReactNode;
   suffix?: React.ReactNode;
+  labelRight?: React.ReactNode;
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, label, error, icon, suffix, id, ...props }, ref) => {
+  ({ className, label, error, icon, suffix, labelRight, id, ...props }, ref) => {
     const inputId = id || label?.toLowerCase().replace(/\s+/g, "-");
 
     return (
-      <div className="flex flex-col gap-1.5">
-        {label && (
-          <label htmlFor={inputId} className="text-sm font-medium text-text-primary">
-            {label}
-          </label>
+      <div className="flex flex-col gap-2">
+        {(label || labelRight) && (
+          <div className="flex items-center justify-between px-1">
+            {label && (
+              <label
+                htmlFor={inputId}
+                className="text-[10px] font-semibold uppercase tracking-widest text-white/40"
+              >
+                {label}
+              </label>
+            )}
+            {labelRight}
+          </div>
         )}
         <div className="relative">
           {icon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary">
-              {icon}
-            </div>
+            <div className="absolute left-5 top-1/2 -translate-y-1/2 text-white/30">{icon}</div>
           )}
           <input
             id={inputId}
             className={cn(
-              "flex h-9 w-full rounded-[var(--radius-sm)] border border-border-default bg-surface-primary px-3 text-sm text-text-primary placeholder:text-text-tertiary transition-colors duration-150",
-              "focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500",
+              "flex h-14 w-full rounded-full bg-surface-container-lowest border-none px-6 text-sm text-white placeholder:text-white/30 transition-all duration-300",
+              "focus:outline-none focus:bg-white/[0.08] focus:shadow-[0_0_0_1px_rgba(255,255,255,0.15)]",
               "disabled:opacity-50 disabled:cursor-not-allowed",
-              icon && "pl-9",
-              suffix && "pr-9",
-              error && "border-error focus:border-error focus:ring-error",
+              icon && "pl-12",
+              suffix && "pr-12",
+              error &&
+                "shadow-[0_0_0_1px_rgba(255,180,171,0.3)] focus:shadow-[0_0_0_1px_rgba(255,180,171,0.5)]",
               className,
             )}
             ref={ref}
             {...props}
           />
           {suffix && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary">
-              {suffix}
-            </div>
+            <div className="absolute right-5 top-1/2 -translate-y-1/2 text-white/30">{suffix}</div>
           )}
         </div>
-        {error && <p className="text-xs text-error">{error}</p>}
+        {error && <p className="text-xs text-[#ffb4ab] px-1">{error}</p>}
       </div>
     );
   },

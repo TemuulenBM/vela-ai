@@ -10,19 +10,20 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "bg-brand-800 text-white hover:bg-brand-900 shadow-xs",
-        secondary:
-          "bg-surface-primary text-text-primary border border-border-default hover:bg-surface-secondary shadow-xs",
-        ghost: "text-text-secondary hover:text-text-primary hover:bg-surface-tertiary",
-        destructive: "bg-error text-white hover:bg-red-600 shadow-xs",
-        link: "text-brand-600 hover:text-brand-700 underline-offset-4 hover:underline p-0 h-auto hover:translate-y-0",
+        primary: "bg-white text-black hover:bg-white/90",
+        secondary: "glass glass-hover text-white/70 hover:text-white",
+        glass: "glass-card text-white hover:bg-white/[0.08] border border-white/[0.06]",
+        ghost: "text-white/45 hover:text-white/70 hover:bg-white/[0.05]",
+        destructive: "bg-[#ffb4ab]/15 text-[#ffb4ab] hover:bg-[#ffb4ab]/25",
+        link: "text-white/70 hover:text-white underline-offset-4 hover:underline p-0 h-auto hover:translate-y-0",
       },
       size: {
-        sm: "h-8 px-3 text-xs rounded-[var(--radius-sm)]",
-        md: "h-9 px-4 text-sm rounded-[var(--radius-sm)]",
-        lg: "h-10 px-5 text-sm rounded-[var(--radius-md)]",
-        xl: "h-11 px-6 text-base rounded-[var(--radius-md)]",
-        icon: "h-9 w-9 rounded-[var(--radius-sm)]",
+        sm: "h-8 px-3 text-xs rounded-full",
+        md: "h-9 px-4 text-sm rounded-full",
+        lg: "h-12 px-6 text-sm rounded-full",
+        xl: "h-14 px-8 text-sm font-semibold uppercase tracking-widest rounded-full",
+        icon: "h-9 w-9 rounded-full",
+        "icon-lg": "h-12 w-12 rounded-full",
       },
     },
     defaultVariants: {

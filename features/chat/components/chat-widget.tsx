@@ -2,9 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { AnimatePresence } from "motion/react";
-import { MessageSquare, X, Send, Sparkles, RotateCcw } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
-import { Avatar } from "@/shared/components/ui/avatar";
 import { useVelaChat } from "../hooks/use-chat";
 import { MessageBubble } from "./message-bubble";
 
@@ -35,61 +33,88 @@ function ChatWidget({ apiKey }: ChatWidgetProps) {
     }
   };
 
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+
   return (
     <>
       {/* Chat Window */}
       <div
         className={cn(
-          "fixed bottom-24 right-6 z-50 flex flex-col w-[380px] h-[560px] rounded-[var(--radius-xl)] border border-border-default bg-surface-primary shadow-xl overflow-hidden",
-          "transition-all duration-300 origin-bottom-right",
+          "fixed bottom-24 right-6 z-50 flex flex-col w-[380px] h-[600px] rounded-3xl overflow-hidden",
+          "bg-surface-1 transition-all duration-300 origin-bottom-right",
           isOpen
             ? "scale-100 opacity-100 translate-y-0"
             : "scale-95 opacity-0 translate-y-4 pointer-events-none",
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 bg-brand-600 text-white shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">
-              <Sparkles className="h-4 w-4" />
+        <div className="flex items-center justify-between px-5 py-4 shrink-0">
+          <div className="flex items-center gap-3">
+            {/* Logo circle with V */}
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1a2332]">
+              <span className="font-serif italic text-lg text-white/90">V</span>
             </div>
             <div>
-              <p className="text-sm font-semibold">Vela AI</p>
-              <p className="text-[11px] text-white/70">Борлуулалтын туслах</p>
+              <p className="text-[15px] font-semibold tracking-wide text-white">Vela AI</p>
+              <p className="text-[10px] uppercase tracking-widest text-white/40">
+                AI Борлуулалтын Платформ
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-1">
             <button
               onClick={resetChat}
-              className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-white/20 transition-colors"
+              className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/[0.06] transition-colors text-white/50"
               title="Шинэ яриа"
             >
-              <RotateCcw className="h-3.5 w-3.5" />
+              <span className="material-symbols-outlined text-[20px]">search</span>
             </button>
             <button
               onClick={() => setIsOpen(false)}
-              className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-white/20 transition-colors"
+              className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/[0.06] transition-colors text-white/50"
             >
-              <X className="h-4 w-4" />
+              <span className="material-symbols-outlined text-[20px]">more_vert</span>
             </button>
           </div>
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        <div className="flex-1 overflow-y-auto px-4 py-2 space-y-5">
+          {/* Date separator pill */}
+          <div className="flex justify-center">
+            <div className="rounded-full bg-white/[0.06] px-4 py-1.5">
+              <span className="text-[10px] uppercase tracking-widest text-white/40 font-medium">
+                Today &bull; {timeStr}
+              </span>
+            </div>
+          </div>
+
           {/* Welcome message when empty */}
           {messages.length === 0 && (
-            <div className="flex gap-2.5">
-              <Avatar
-                size="xs"
-                fallback="V"
-                className="shrink-0 mt-0.5 bg-brand-100 text-brand-700"
-              />
-              <div className="max-w-[75%] rounded-[var(--radius-lg)] rounded-bl-sm bg-surface-tertiary text-text-primary px-3.5 py-2.5">
-                <p className="text-[13px] leading-relaxed">
-                  Сайн байна уу! Би Vela AI борлуулалтын туслах. Танд юугаар туслах вэ?
+            <div className="flex justify-start">
+              <div
+                className="max-w-[80%] glass-card px-4 py-3.5"
+                style={{ borderRadius: "2rem 2rem 2rem 0.5rem" }}
+              >
+                <p className="text-[13.5px] leading-relaxed text-white/90">
+                  Сайн байна уу! Би{" "}
+                  <span className="font-serif italic text-[15px] text-white">Vela AI</span> — AI
+                  борлуулалтын платформ. Таны дэлгүүрт хэрхэн туслахыг мэдэхийг хүсвэл асууна уу.
                 </p>
               </div>
+            </div>
+          )}
+
+          {messages.length === 0 && (
+            <div className="pl-1">
+              <p className="text-[10px] text-white/30">
+                <span className="text-white/40">Vela AI</span> &bull; Хүргэгдсэн
+              </p>
             </div>
           )}
 
@@ -101,17 +126,15 @@ function ChatWidget({ apiKey }: ChatWidgetProps) {
 
           {/* Typing indicator */}
           {isLoading && (
-            <div className="flex gap-2.5">
-              <Avatar
-                size="xs"
-                fallback="V"
-                className="shrink-0 mt-0.5 bg-brand-100 text-brand-700"
-              />
-              <div className="bg-surface-tertiary rounded-[var(--radius-lg)] rounded-bl-sm px-4 py-3">
-                <div className="flex gap-1">
-                  <span className="h-2 w-2 rounded-full bg-text-tertiary animate-bounce [animation-delay:0ms]" />
-                  <span className="h-2 w-2 rounded-full bg-text-tertiary animate-bounce [animation-delay:150ms]" />
-                  <span className="h-2 w-2 rounded-full bg-text-tertiary animate-bounce [animation-delay:300ms]" />
+            <div className="flex justify-start">
+              <div
+                className="glass-card px-5 py-3.5"
+                style={{ borderRadius: "2rem 2rem 2rem 0.5rem" }}
+              >
+                <div className="flex gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-white/30 animate-bounce [animation-delay:0ms]" />
+                  <span className="h-2 w-2 rounded-full bg-white/30 animate-bounce [animation-delay:150ms]" />
+                  <span className="h-2 w-2 rounded-full bg-white/30 animate-bounce [animation-delay:300ms]" />
                 </div>
               </div>
             </div>
@@ -120,11 +143,11 @@ function ChatWidget({ apiKey }: ChatWidgetProps) {
           {/* Error state */}
           {error && (
             <div className="flex justify-center">
-              <div className="rounded-[var(--radius-md)] bg-error-light px-3 py-2 text-[12px] text-red-700">
+              <div className="rounded-3xl bg-error-light px-4 py-3 text-[12px] text-error">
                 <p>Алдаа гарлаа. {error.message}</p>
                 <button
                   onClick={() => reload()}
-                  className="mt-1 text-[11px] font-medium underline hover:no-underline"
+                  className="mt-1.5 text-[11px] font-medium underline hover:no-underline text-error/80"
                 >
                   Дахин оролдох
                 </button>
@@ -136,44 +159,60 @@ function ChatWidget({ apiKey }: ChatWidgetProps) {
         </div>
 
         {/* Input */}
-        <form onSubmit={handleSubmit} className="shrink-0 border-t border-border-default px-3 py-3">
-          <div className="flex items-end gap-2">
-            <textarea
-              ref={inputRef}
-              value={input}
-              onChange={handleInputChange}
-              onKeyDown={onKeyDown}
-              placeholder="Мессеж бичих..."
-              rows={1}
-              disabled={isLoading}
-              className="flex-1 resize-none rounded-[var(--radius-md)] border border-border-default bg-surface-secondary px-3 py-2 text-[13px] text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 max-h-[100px] disabled:opacity-50"
-            />
-            <button
-              type="submit"
-              disabled={!input.trim() || isLoading}
-              className={cn(
-                "flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] transition-colors",
-                input.trim() && !isLoading
-                  ? "bg-brand-600 text-white hover:bg-brand-700"
-                  : "bg-surface-tertiary text-text-tertiary cursor-not-allowed",
-              )}
-            >
-              <Send className="h-4 w-4" />
-            </button>
-          </div>
-          <p className="text-[10px] text-text-tertiary text-center mt-2">Powered by Vela AI</p>
-        </form>
+        <div className="shrink-0 px-4 pb-3 pt-2">
+          <form onSubmit={handleSubmit}>
+            <div className="flex items-end gap-3">
+              {/* Plus button */}
+              <button
+                type="button"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-white/50 hover:bg-white/[0.1] transition-colors"
+              >
+                <span className="material-symbols-outlined text-[22px]">add</span>
+              </button>
+
+              {/* Input field */}
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={handleInputChange}
+                onKeyDown={onKeyDown}
+                placeholder="Vela AI-аас асуух..."
+                rows={1}
+                disabled={isLoading}
+                className="flex-1 resize-none rounded-full bg-white/[0.04] px-5 py-2.5 text-[13px] text-white placeholder:text-white/25 focus:outline-none max-h-[100px] disabled:opacity-50"
+              />
+
+              {/* Send button */}
+              <button
+                type="submit"
+                disabled={!input.trim() || isLoading}
+                className={cn(
+                  "flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors",
+                  input.trim() && !isLoading
+                    ? "bg-white text-black hover:bg-white/90"
+                    : "bg-white/[0.06] text-white/25 cursor-not-allowed",
+                )}
+              >
+                <span className="material-symbols-outlined text-[20px]">arrow_upward</span>
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
 
       {/* Launcher Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-brand-600 text-white shadow-lg hover:bg-brand-700 transition-all duration-200 hover:scale-105 active:scale-95",
+          "fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-white text-black transition-all duration-200 hover:scale-105 active:scale-95",
           isOpen && "rotate-0",
         )}
       >
-        {isOpen ? <X className="h-6 w-6" /> : <MessageSquare className="h-6 w-6" />}
+        {isOpen ? (
+          <span className="material-symbols-outlined text-[24px]">close</span>
+        ) : (
+          <span className="material-symbols-outlined text-[24px]">chat_bubble</span>
+        )}
       </button>
     </>
   );

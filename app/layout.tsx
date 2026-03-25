@@ -1,16 +1,26 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Cormorant, Manrope, Raleway } from "next/font/google";
 import "./globals.css";
 
-const geist = Geist({
-  variable: "--font-geist",
+const cormorant = Cormorant({
+  variable: "--font-cormorant",
   subsets: ["latin", "cyrillic"],
+  style: ["normal", "italic"],
+  weight: ["400", "600"],
   display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin", "cyrillic", "latin-ext"],
+  weight: ["300", "400", "600"],
+  display: "swap",
+});
+
+const raleway = Raleway({
+  variable: "--font-raleway",
+  subsets: ["latin", "cyrillic", "latin-ext"],
+  weight: ["600", "700"],
   display: "swap",
 });
 
@@ -27,28 +37,16 @@ export default function RootLayout({
   return (
     <html
       lang="mn"
-      className={`${geist.variable} ${geistMono.variable} h-full`}
+      className={`${cormorant.variable} ${manrope.variable} ${raleway.variable} h-full`}
       suppressHydrationWarning
     >
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var theme = localStorage.getItem('theme');
-                  if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                    document.documentElement.classList.add('dark');
-                  }
-                } catch(e) {}
-              })();
-            `,
-          }}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=optional"
+          rel="stylesheet"
         />
       </head>
-      <body className="min-h-full flex flex-col bg-surface-primary text-text-primary antialiased">
-        {children}
-      </body>
+      <body className="min-h-full flex flex-col bg-black text-white antialiased">{children}</body>
     </html>
   );
 }

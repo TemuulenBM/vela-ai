@@ -1,7 +1,6 @@
 "use client";
 
 import { cn, formatPrice } from "@/shared/lib/utils";
-import { Badge } from "@/shared/components/ui/badge";
 
 interface ProductCardProps {
   name: string;
@@ -23,35 +22,36 @@ export function ProductCard({
   imageUrl,
 }: ProductCardProps) {
   return (
-    <div className="flex gap-3 rounded-[var(--radius-md)] border border-border-subtle bg-surface-secondary p-2.5">
+    <div className="glass-card rounded-3xl p-3 flex gap-3">
       {/* Thumbnail */}
-      <div className="h-14 w-14 shrink-0 rounded-[var(--radius-sm)] bg-surface-tertiary overflow-hidden">
+      <div className="h-16 w-16 shrink-0 rounded-2xl bg-white/[0.04] overflow-hidden">
         {imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element -- external product image URL
           <img src={imageUrl} alt={name} className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-text-tertiary text-xs">
-            Зураг
+          <div className="flex h-full w-full items-center justify-center text-white/20">
+            <span className="material-symbols-outlined text-[24px]">image</span>
           </div>
         )}
       </div>
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <p className="text-[12px] font-medium text-text-primary leading-tight truncate">{name}</p>
-        <p className="text-[13px] font-semibold text-brand-600 mt-0.5">
+        <p className="text-[12px] font-medium text-white leading-tight truncate">{name}</p>
+        <p className="font-serif italic text-[18px] text-white/90 mt-0.5">
           {formatPrice(Number(price))}
         </p>
-        <div className="flex items-center gap-1.5 mt-1">
-          {category && <Badge size="sm">{category}</Badge>}
+        <div className="flex items-center gap-2 mt-1.5">
+          {category && (
+            <span className="text-[10px] uppercase tracking-widest text-white/40">{category}</span>
+          )}
           {brand && (
-            <Badge size="sm" variant="outline">
-              {brand}
-            </Badge>
+            <span className="text-[10px] uppercase tracking-widest text-white/30">{brand}</span>
           )}
           <span
             className={cn(
-              "text-[10px]",
-              isAvailable && stockQty > 0 ? "text-green-600" : "text-red-500",
+              "text-[10px] uppercase tracking-widest",
+              isAvailable && stockQty > 0 ? "text-success" : "text-error",
             )}
           >
             {isAvailable && stockQty > 0 ? "Байгаа" : "Дууссан"}

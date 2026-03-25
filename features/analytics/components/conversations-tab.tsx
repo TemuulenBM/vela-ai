@@ -20,14 +20,15 @@ export function ConversationsTab({ days }: { days: number }) {
   if (hasError) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <p className="text-sm font-medium text-text-secondary">Өгөгдөл ачаалахад алдаа гарлаа</p>
-        <p className="mt-1 text-xs text-text-tertiary">Дахин оролдоно уу</p>
+        <span className="material-symbols-outlined text-white/20 text-[32px] mb-4">cloud_off</span>
+        <p className="text-sm font-medium text-white/70">Өгөгдөл ачааллахад алдаа гарлаа</p>
+        <p className="mt-1 text-xs text-white/40 font-light">Дахин оролдоно уу</p>
         <button
           onClick={() => {
             summary.refetch();
             stats.refetch();
           }}
-          className="mt-4 rounded-[var(--radius-md)] bg-brand-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-600"
+          className="mt-4 glass-card rounded-full px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-white/[0.08]"
         >
           Дахин оролдох
         </button>
@@ -36,7 +37,7 @@ export function ConversationsTab({ days }: { days: number }) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[280px_1fr]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_1fr]">
       {/* Left: Resolution ring + summary */}
       <ResolutionRing
         total={summary.data?.total ?? 0}

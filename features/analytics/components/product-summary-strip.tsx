@@ -18,11 +18,11 @@ export function ProductSummaryStrip({
 }: ProductSummaryStripProps) {
   if (isLoading) {
     return (
-      <div className="flex gap-8 border-b border-border-default pb-5">
+      <div className="flex gap-4">
         {[0, 1, 2].map((i) => (
-          <div key={i}>
+          <div key={i} className="glass-card rounded-3xl p-8 flex-1">
             <Skeleton className="mb-2 h-3 w-16" />
-            <Skeleton className="h-7 w-12" />
+            <Skeleton className="h-10 w-12" />
           </div>
         ))}
       </div>
@@ -30,23 +30,31 @@ export function ProductSummaryStrip({
   }
 
   const items = [
-    { label: "Нийт бараа", value: totalProducts },
-    { label: "Идэвхтэй", value: activeProducts },
-    { label: "Нөөцгүй", value: outOfStock, warn: outOfStock > 0 },
+    { label: "Нийт бараа", value: totalProducts, icon: "inventory_2" },
+    { label: "Идэвхтэй", value: activeProducts, icon: "check_circle" },
+    { label: "Дууссан", value: outOfStock, warn: outOfStock > 0, icon: "warning" },
   ];
 
   return (
     <FadeIn delay={0.05}>
-      <div className="flex divide-x divide-border-default border-b border-border-default pb-5">
-        {items.map((item, index) => (
-          <div key={item.label} className={cn("pr-8", index > 0 && "pl-8")}>
-            <p className="text-[11px] font-medium uppercase tracking-wider text-text-tertiary">
-              {item.label}
-            </p>
+      <div className="flex gap-4">
+        {items.map((item) => (
+          <div
+            key={item.label}
+            className="glass-card rounded-3xl p-8 flex-1 flex flex-col justify-between"
+          >
+            <div className="flex justify-between items-center">
+              <span className="material-symbols-outlined text-white/40 text-[20px]">
+                {item.icon}
+              </span>
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-white/20">
+                {item.label}
+              </span>
+            </div>
             <p
               className={cn(
-                "mt-1 text-2xl font-semibold leading-none tracking-tight tabular-nums font-[family-name:var(--font-geist)]",
-                item.warn ? "text-[var(--color-warning)]" : "text-text-primary",
+                "mt-4 text-4xl font-serif italic leading-none tabular-nums",
+                item.warn ? "text-[#ffd59e]" : "text-white",
               )}
             >
               <CountUp to={item.value} format={(n) => Math.round(n).toLocaleString()} />

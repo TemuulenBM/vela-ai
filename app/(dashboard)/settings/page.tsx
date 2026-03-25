@@ -1,347 +1,81 @@
 "use client";
 
-import { Key, Plus, Trash2, UserPlus } from "lucide-react";
-import {
-  PageHeader,
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-  Input,
-  Textarea,
-  Button,
-  Badge,
-  Avatar,
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-  ProgressBar,
-  CountUp,
-  FadeIn,
-} from "@/shared/components/ui";
+import { useState } from "react";
+import { FadeIn, PageHeader } from "@/shared/components/ui";
+import { GeneralTab } from "./_components/general-tab";
+import { ApiKeysTab } from "./_components/api-keys-tab";
+import { TeamTab } from "./_components/team-tab";
+import { BillingTab } from "./_components/billing-tab";
+import { ImportTab } from "./_components/import-tab";
 
-const apiKeys = [
-  {
-    id: 1,
-    name: "Үйлдвэрлэлийн түлхүүр",
-    key: "sk_live_4f8a...x9k2",
-    created: "2024-01-15",
-    lastUsed: "2024-03-23",
-  },
-  {
-    id: 2,
-    name: "Тест түлхүүр",
-    key: "sk_test_7b3d...m4p1",
-    created: "2024-02-20",
-    lastUsed: "2024-03-22",
-  },
-  {
-    id: 3,
-    name: "Webhook түлхүүр",
-    key: "sk_live_9e1c...h6j8",
-    created: "2024-03-01",
-    lastUsed: "2024-03-21",
-  },
+type TabKey = "general" | "api-keys" | "team" | "billing" | "import";
+
+const TABS: { key: TabKey; label: string; icon: string }[] = [
+  { key: "general", label: "ЕРӨНХИЙ", icon: "tune" },
+  { key: "api-keys", label: "API ТҮЛХҮҮР", icon: "key" },
+  { key: "team", label: "БАГ", icon: "group" },
+  { key: "billing", label: "ТӨЛБӨР", icon: "account_balance_wallet" },
+  { key: "import", label: "ИМПОРТ", icon: "cloud_download" },
 ];
-
-const teamMembers = [
-  { id: 1, name: "Ганбаатар Эрдэнэ", email: "ganbaatar@velashop.mn", role: "owner" as const },
-  { id: 2, name: "Анхбаяр Мөнхбат", email: "ankhbayar@velashop.mn", role: "admin" as const },
-  { id: 3, name: "Солонго Батболд", email: "solongo@velashop.mn", role: "member" as const },
-  { id: 4, name: "Тэмүүлэн Ганзориг", email: "temuulen@velashop.mn", role: "member" as const },
-];
-
-const roleLabels: Record<string, string> = {
-  owner: "Эзэмшигч",
-  admin: "Админ",
-  member: "Гишүүн",
-};
-
-const roleBadgeVariant: Record<string, "brand" | "info" | "default"> = {
-  owner: "brand",
-  admin: "info",
-  member: "default",
-};
 
 export default function SettingsPage() {
+  const [activeTab, setActiveTab] = useState<TabKey>("billing");
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="px-8 py-10 max-w-[1600px] mx-auto flex flex-col gap-10">
+      {/* Header */}
       <FadeIn>
-        <PageHeader title="Тохиргоо" description="Дэлгүүрийн тохиргоог удирдах" />
+        <PageHeader
+          title="Тохиргоо"
+          description="Дэлгүүрийн тохиргоо, API холболт, төлбөрийн удирдлага"
+        />
       </FadeIn>
 
+      {/* Layout: left tabs + right content */}
       <FadeIn delay={0.05}>
-        <Tabs defaultValue="general">
-          <TabsList>
-            <TabsTrigger value="general">Ерөнхий</TabsTrigger>
-            <TabsTrigger value="api-keys">API түлхүүр</TabsTrigger>
-            <TabsTrigger value="team">Баг</TabsTrigger>
-            <TabsTrigger value="billing">Төлбөр</TabsTrigger>
-          </TabsList>
+        <div className="grid grid-cols-12 gap-8">
+          {/* Left vertical tabs */}
+          <div className="col-span-3">
+            <nav className="flex flex-col gap-2">
+              {TABS.map((tab) => {
+                const isActive = activeTab === tab.key;
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`flex items-center justify-between rounded-3xl px-6 py-3.5 text-left text-[11px] font-semibold uppercase tracking-[0.2em] transition-all duration-300 ${
+                      isActive
+                        ? "bg-white text-black shadow-lg shadow-white/10"
+                        : "glass-card text-white/60 hover:text-white/80"
+                    }`}
+                  >
+                    <span>{tab.label}</span>
+                    <span
+                      className={`material-symbols-outlined text-[20px] ${
+                        isActive ? "text-black/70" : "text-white/40"
+                      }`}
+                    >
+                      {isActive && tab.key !== "general"
+                        ? tab.icon
+                        : tab.key === "general"
+                          ? "chevron_right"
+                          : tab.icon}
+                    </span>
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
 
-          {/* General tab */}
-          <TabsContent value="general">
-            <Card padding="md">
-              <CardHeader>
-                <CardTitle>Дэлгүүрийн мэдээлэл</CardTitle>
-                <CardDescription>Дэлгүүрийн ерөнхий мэдээллийг засварлах</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex max-w-lg flex-col gap-4">
-                  <Input
-                    label="Дэлгүүрийн нэр"
-                    defaultValue="Vela Shop"
-                    placeholder="Дэлгүүрийн нэрийг оруулна уу"
-                  />
-                  <Input label="Slug" defaultValue="vela-shop" placeholder="vela-shop" />
-                  <Textarea
-                    label="Тайлбар"
-                    defaultValue="Монголын шилдэг цахим худалдааны платформ. Cashmere, электроник, хувцас, гэр ахуйн бараа."
-                    placeholder="Дэлгүүрийн тайлбарыг оруулна уу"
-                    rows={3}
-                  />
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button>Хадгалах</Button>
-              </CardFooter>
-            </Card>
-          </TabsContent>
-
-          {/* API Keys tab */}
-          <TabsContent value="api-keys">
-            <Card padding="none">
-              <div className="flex items-center justify-between px-5 pb-0 pt-5">
-                <div className="flex flex-col gap-1.5">
-                  <CardTitle>API түлхүүрүүд</CardTitle>
-                  <CardDescription>
-                    API түлхүүрүүдийг удирдах. Түлхүүрүүдийг нууцаар хадгална уу.
-                  </CardDescription>
-                </div>
-                <Button size="sm">
-                  <Plus className="h-4 w-4" />
-                  Шинэ түлхүүр үүсгэх
-                </Button>
-              </div>
-              <CardContent className="px-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-border-default">
-                        <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
-                          Нэр
-                        </th>
-                        <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
-                          Түлхүүр
-                        </th>
-                        <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
-                          Үүсгэсэн
-                        </th>
-                        <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
-                          Сүүлд ашигласан
-                        </th>
-                        <th className="w-20 px-5 py-2.5" />
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border-default">
-                      {apiKeys.map((apiKey) => (
-                        <tr key={apiKey.id}>
-                          <td className="px-5 py-3">
-                            <div className="flex items-center gap-2">
-                              <Key className="h-4 w-4 text-text-tertiary" />
-                              <span className="text-sm font-medium text-text-primary">
-                                {apiKey.name}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-5 py-3">
-                            <code className="rounded-[var(--radius-sm)] bg-surface-tertiary px-2 py-1 text-xs font-mono text-text-secondary">
-                              {apiKey.key}
-                            </code>
-                          </td>
-                          <td className="px-5 py-3 text-sm text-text-secondary">
-                            {apiKey.created}
-                          </td>
-                          <td className="px-5 py-3 text-sm text-text-secondary">
-                            {apiKey.lastUsed}
-                          </td>
-                          <td className="px-5 py-3">
-                            <Button variant="destructive" size="sm">
-                              <Trash2 className="h-3.5 w-3.5" />
-                              Устгах
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Team tab */}
-          <TabsContent value="team">
-            <Card padding="none">
-              <div className="flex items-center justify-between px-5 pb-0 pt-5">
-                <div className="flex flex-col gap-1.5">
-                  <CardTitle>Багийн гишүүд</CardTitle>
-                  <CardDescription>Дэлгүүрийн удирдлагын багийг удирдах</CardDescription>
-                </div>
-                <Button size="sm">
-                  <UserPlus className="h-4 w-4" />
-                  Гишүүн урих
-                </Button>
-              </div>
-              <CardContent className="px-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-border-default">
-                        <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
-                          Гишүүн
-                        </th>
-                        <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
-                          Имэйл
-                        </th>
-                        <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary">
-                          Үүрэг
-                        </th>
-                        <th className="w-20 px-5 py-2.5" />
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border-default">
-                      {teamMembers.map((member) => (
-                        <tr key={member.id}>
-                          <td className="px-5 py-3">
-                            <div className="flex items-center gap-3">
-                              <Avatar
-                                size="sm"
-                                fallback={member.name.charAt(0)}
-                                alt={member.name}
-                              />
-                              <span className="text-sm font-medium text-text-primary">
-                                {member.name}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-5 py-3 text-sm text-text-secondary">{member.email}</td>
-                          <td className="px-5 py-3">
-                            <Badge variant={roleBadgeVariant[member.role]} size="md">
-                              {roleLabels[member.role]}
-                            </Badge>
-                          </td>
-                          <td className="px-5 py-3">
-                            {member.role !== "owner" && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-red-500 hover:text-red-600"
-                              >
-                                Хасах
-                              </Button>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Billing tab */}
-          <TabsContent value="billing">
-            <div className="flex flex-col gap-6">
-              <Card padding="md" className="border-l-2 border-l-brand-500">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-col gap-1.5">
-                      <CardTitle>Одоогийн багц</CardTitle>
-                      <CardDescription>Таны идэвхтэй захиалгын багц</CardDescription>
-                    </div>
-                    <Badge variant="brand" size="lg">
-                      Pro
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-text-primary">Pro багц</span>
-                      <span className="text-sm font-semibold text-text-primary">99,000₮/сар</span>
-                    </div>
-                    <ul className="flex flex-col gap-1.5">
-                      <li className="text-sm text-text-secondary">1,000 яриа / сар</li>
-                      <li className="text-sm text-text-secondary">500 бараа хүртэл</li>
-                      <li className="text-sm text-text-secondary">Аналитик дашбоард</li>
-                      <li className="text-sm text-text-secondary">Имэйл дэмжлэг</li>
-                      <li className="text-sm text-text-secondary">5 багийн гишүүн</li>
-                    </ul>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button variant="secondary">Шинэчлэх</Button>
-                </CardFooter>
-              </Card>
-
-              <Card padding="md">
-                <CardHeader>
-                  <CardTitle>Ашиглалтын мэдээлэл</CardTitle>
-                  <CardDescription>Энэ сарын ашиглалтын статистик</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col gap-5">
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-text-primary">Яриа ашигласан</span>
-                        <span className="text-sm text-text-secondary tabular-nums">
-                          <CountUp to={847} format={(n) => Math.round(n).toLocaleString()} /> /
-                          1,000
-                        </span>
-                      </div>
-                      <ProgressBar value={84.7} height={8} color="var(--color-brand-500)" />
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-text-primary">Бараа</span>
-                        <span className="text-sm text-text-secondary tabular-nums">
-                          <CountUp to={156} format={(n) => Math.round(n).toLocaleString()} /> / 500
-                        </span>
-                      </div>
-                      <ProgressBar
-                        value={31.2}
-                        height={8}
-                        delay={0.1}
-                        color="var(--color-brand-500)"
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-text-primary">Багийн гишүүн</span>
-                        <span className="text-sm text-text-secondary tabular-nums">
-                          <CountUp to={4} format={(n) => Math.round(n).toLocaleString()} /> / 5
-                        </span>
-                      </div>
-                      <ProgressBar
-                        value={80}
-                        height={8}
-                        delay={0.2}
-                        color="var(--color-brand-500)"
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
+          {/* Right content */}
+          <div className="col-span-9">
+            {activeTab === "general" && <GeneralTab />}
+            {activeTab === "api-keys" && <ApiKeysTab />}
+            {activeTab === "team" && <TeamTab />}
+            {activeTab === "billing" && <BillingTab />}
+            {activeTab === "import" && <ImportTab />}
+          </div>
+        </div>
       </FadeIn>
     </div>
   );

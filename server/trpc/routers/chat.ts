@@ -1,5 +1,6 @@
 import { z } from "zod/v4";
 import { and, eq, desc, count, sql } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../trpc";
 import { db } from "@/server/db/db";
 import { conversations, messages, shoppers } from "@/server/db/schema";
@@ -11,15 +12,22 @@ export const chatRouter = router({
         page: z.number().int().min(1).default(1),
         perPage: z.number().int().min(1).max(50).default(20),
         status: z.enum(["active", "resolved", "abandoned", "escalated"]).optional(),
+        search: z.string().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { page, perPage, status } = input;
+      const { page, perPage, status, search } = input;
       const offset = (page - 1) * perPage;
 
       const conditions = [eq(conversations.tenantId, ctx.tenantId)];
       if (status) {
         conditions.push(eq(conversations.status, status));
+      }
+      const escapedSearch = search?.replace(/[%_\\]/g, "\\$&");
+      if (escapedSearch) {
+        conditions.push(
+          sql`(${shoppers.name} ILIKE ${"%" + escapedSearch + "%"} OR ${shoppers.email} ILIKE ${"%" + escapedSearch + "%"})`,
+        );
       }
 
       const [items, [{ total }]] = await Promise.all([
@@ -39,6 +47,21 @@ export const chatRouter = router({
               FROM ${messages}
               WHERE ${messages.conversationId} = ${conversations.id}
             )`,
+            lastMessage: sql<string | null>`(
+              SELECT ${messages.content}
+              FROM ${messages}
+              WHERE ${messages.conversationId} = ${conversations.id}
+                AND ${messages.role} IN ('user', 'assistant')
+              ORDER BY ${messages.createdAt} DESC
+              LIMIT 1
+            )`,
+            lastMessageAt: sql<Date | null>`(
+              SELECT ${messages.createdAt}
+              FROM ${messages}
+              WHERE ${messages.conversationId} = ${conversations.id}
+              ORDER BY ${messages.createdAt} DESC
+              LIMIT 1
+            )`,
           })
           .from(conversations)
           .leftJoin(shoppers, eq(conversations.shopperId, shoppers.id))
@@ -50,6 +73,7 @@ export const chatRouter = router({
         db
           .select({ total: count() })
           .from(conversations)
+          .leftJoin(shoppers, eq(conversations.shopperId, shoppers.id))
           .where(and(...conditions)),
       ]);
 
@@ -101,6 +125,39 @@ export const chatRouter = router({
       return { ...conversation, messages: msgs };
     }),
 
+  getRecentConversations: protectedProcedure
+    .input(z.object({ limit: z.number().int().min(1).max(20).default(5) }))
+    .query(async ({ ctx, input }) => {
+      return db
+        .select({
+          id: conversations.id,
+          status: conversations.status,
+          shopperName: shoppers.name,
+          shopperEmail: shoppers.email,
+          createdAt: conversations.createdAt,
+          lastMessage: sql<string | null>`(
+            SELECT ${messages.content}
+            FROM ${messages}
+            WHERE ${messages.conversationId} = ${conversations.id}
+              AND ${messages.role} IN ('user', 'assistant')
+            ORDER BY ${messages.createdAt} DESC
+            LIMIT 1
+          )`,
+          lastMessageAt: sql<Date | null>`(
+            SELECT ${messages.createdAt}
+            FROM ${messages}
+            WHERE ${messages.conversationId} = ${conversations.id}
+            ORDER BY ${messages.createdAt} DESC
+            LIMIT 1
+          )`,
+        })
+        .from(conversations)
+        .leftJoin(shoppers, eq(conversations.shopperId, shoppers.id))
+        .where(eq(conversations.tenantId, ctx.tenantId))
+        .orderBy(desc(conversations.createdAt))
+        .limit(input.limit);
+    }),
+
   updateStatus: protectedProcedure
     .input(
       z.object({
@@ -120,5 +177,43 @@ export const chatRouter = router({
         .returning({ id: conversations.id });
 
       return updated ?? null;
+    }),
+
+  sendMessage: protectedProcedure
+    .input(
+      z.object({
+        conversationId: z.string().uuid(),
+        content: z.string().min(1).max(5000),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const [conv] = await db
+        .select({ id: conversations.id })
+        .from(conversations)
+        .where(
+          and(eq(conversations.id, input.conversationId), eq(conversations.tenantId, ctx.tenantId)),
+        )
+        .limit(1);
+
+      if (!conv) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Яриа олдсонгүй" });
+      }
+
+      const [msg] = await db
+        .insert(messages)
+        .values({
+          tenantId: ctx.tenantId,
+          conversationId: input.conversationId,
+          role: "assistant",
+          content: input.content,
+        })
+        .returning({
+          id: messages.id,
+          role: messages.role,
+          content: messages.content,
+          createdAt: messages.createdAt,
+        });
+
+      return msg;
     }),
 });

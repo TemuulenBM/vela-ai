@@ -1,342 +1,378 @@
 "use client";
 
-import { useState } from "react";
-import { Search, Globe, Smartphone, Sparkles } from "lucide-react";
-import { Input, Avatar, Badge, AnimateList, FadeIn } from "@/shared/components/ui";
-import { cn } from "@/shared/lib/utils";
+import { useState, useEffect, useRef } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Input, Avatar, Badge, AnimateList, Button, EmptyState } from "@/shared/components/ui";
+import { cn, formatRelativeTime, formatTime } from "@/shared/lib/utils";
+import { trpc } from "@/shared/lib/trpc";
 
-interface Message {
-  id: number;
-  role: "user" | "assistant";
-  text: string;
-  time: string;
-}
+type ConvStatus = "active" | "resolved" | "abandoned" | "escalated";
 
-interface Conversation {
-  id: number;
-  name: string;
-  lastMessage: string;
-  time: string;
-  status: "active" | "closed";
-  channel: "web" | "mobile";
-  messages: Message[];
-}
-
-const conversations: Conversation[] = [
-  {
-    id: 1,
-    name: "Болд",
-    lastMessage: "Баярлалаа, захиалга өгье!",
-    time: "5 мин",
-    status: "active",
-    channel: "web",
-    messages: [
-      {
-        id: 1,
-        role: "user",
-        text: "Сайн байна уу! Cashmere цамцны талаар мэдээлэл авч болох уу?",
-        time: "14:23",
-      },
-      {
-        id: 2,
-        role: "assistant",
-        text: "Сайн байна уу! Мэдээж болно. Gobi Cashmere-ийн цамц манайд хэд хэдэн загвартай байна. Та эрэгтэй эсвэл эмэгтэй цамц сонирхож байна уу?",
-        time: "14:23",
-      },
-      { id: 3, role: "user", text: "Эрэгтэй, L хэмжээтэй байна уу?", time: "14:24" },
-      {
-        id: 4,
-        role: "assistant",
-        text: "Тийм, L хэмжээ байна. Gobi Cashmere эрэгтэй V хүзүүтэй цамц 289,000₮-ээр, мөн дугуй хүзүүтэй загвар 265,000₮-ээр худалдаалж байна. Аль нь таалагдаж байна?",
-        time: "14:24",
-      },
-      {
-        id: 5,
-        role: "user",
-        text: "V хүзүүтэйг нь авъя. Хүргэлтийн хугацаа хэд хоног вэ?",
-        time: "14:25",
-      },
-      {
-        id: 6,
-        role: "assistant",
-        text: "Маш сайн сонголт! Улаанбаатар хот доторх хүргэлт 1-2 ажлын хоног. Хөдөө орон нутаг руу 3-5 ажлын хоног болно. Захиалга өгөх үү?",
-        time: "14:25",
-      },
-      { id: 7, role: "user", text: "Баярлалаа, захиалга өгье!", time: "14:26" },
-      {
-        id: 8,
-        role: "assistant",
-        text: "Захиалга амжилттай бүртгэгдлээ! Захиалгын дугаар: #VL-20240323-0847. QPay-ээр төлбөр төлнө үү. Баярлалаа!",
-        time: "14:26",
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: "Сарнай",
-    lastMessage: "Ойлголоо, баярлалаа!",
-    time: "12 мин",
-    status: "active",
-    channel: "mobile",
-    messages: [
-      { id: 1, role: "user", text: "Сайн уу, Samsung Galaxy S24-ийн үнэ хэд вэ?", time: "14:10" },
-      {
-        id: 2,
-        role: "assistant",
-        text: "Сайн байна уу! Samsung Galaxy S24 Ultra 256GB загвар 4,560,000₮, 512GB загвар 5,120,000₮-ээр байна.",
-        time: "14:10",
-      },
-      { id: 3, role: "user", text: "Хуваарийн төлбөр боломжтой юу?", time: "14:11" },
-      {
-        id: 4,
-        role: "assistant",
-        text: "Тийм, 6 сар хүртэл хуваарийн төлбөр хийх боломжтой. Хас, Голомт, ХХБ-ны картаар сар бүр 760,000₮ төлөх нөхцөлтэй.",
-        time: "14:12",
-      },
-      { id: 5, role: "user", text: "Ойлголоо, баярлалаа!", time: "14:12" },
-    ],
-  },
-  {
-    id: 3,
-    name: "Батаа",
-    lastMessage: "Маш их баярлалаа!",
-    time: "34 мин",
-    status: "closed",
-    channel: "web",
-    messages: [
-      { id: 1, role: "user", text: "Буцаалтын нөхцөл ямар байдаг вэ?", time: "13:45" },
-      {
-        id: 2,
-        role: "assistant",
-        text: "Бараа хүлээн авснаас хойш 14 хоногийн дотор буцаалт хийх боломжтой. Бараа ашиглаагүй, шошготой байх шаардлагатай.",
-        time: "13:46",
-      },
-      {
-        id: 3,
-        role: "user",
-        text: "Өчигдөр авсан гутлаа буцаах боломжтой юу? Хэмжээ тохирсонгүй.",
-        time: "13:47",
-      },
-      {
-        id: 4,
-        role: "assistant",
-        text: "Мэдээж! Буцаалтын хүсэлт бүртгэлээ. Захиалгын дугаараа оруулна уу, би шалгаад өгье.",
-        time: "13:47",
-      },
-      { id: 5, role: "user", text: "#VL-20240322-0512", time: "13:48" },
-      {
-        id: 6,
-        role: "assistant",
-        text: "Баталгаажлаа! Nike Air Max 90, 43 хэмжээ. Буцаалтын хүсэлт амжилттай илгээгдлээ. 2-3 ажлын хоногт шийдвэрлэнэ.",
-        time: "13:49",
-      },
-      { id: 7, role: "user", text: "Маш их баярлалаа!", time: "13:49" },
-    ],
-  },
-  {
-    id: 4,
-    name: "Оюунаа",
-    lastMessage: "За, дараа дахин ирнэ!",
-    time: "1 цаг",
-    status: "closed",
-    channel: "mobile",
-    messages: [
-      { id: 1, role: "user", text: "Гэрийн тавилгын хөнгөлөлт байна уу?", time: "13:15" },
-      {
-        id: 2,
-        role: "assistant",
-        text: "Одоогоор гэрийн тавилгын ангилалд 10-20% хямдрал зарлаж байна. Буйдан, ширээ, сандал зэрэг бараанууд хамрагдана.",
-        time: "13:16",
-      },
-      { id: 3, role: "user", text: "Буйдангийн загвар юу байна?", time: "13:17" },
-      {
-        id: 4,
-        role: "assistant",
-        text: "Дараах загварууд байна: L хэлбэрийн буйдан 1,890,000₮ → 1,512,000₮, Шулуун буйдан 1,450,000₮ → 1,232,500₮. Хоёулаа өндөр чанарын арьсан бүрээстэй.",
-        time: "13:18",
-      },
-      { id: 5, role: "user", text: "За, дараа дахин ирнэ!", time: "13:20" },
-    ],
-  },
-  {
-    id: 5,
-    name: "Дорж",
-    lastMessage: "Хүлээж байна, баярлалаа.",
-    time: "2 цаг",
-    status: "active",
-    channel: "web",
-    messages: [
-      { id: 1, role: "user", text: "Монгол арьсан гутал захиалсан, хэзээ ирэх вэ?", time: "12:30" },
-      {
-        id: 2,
-        role: "assistant",
-        text: "Захиалгын дугаараа хэлнэ үү, би шалгаад өгье.",
-        time: "12:31",
-      },
-      { id: 3, role: "user", text: "#VL-20240321-0234", time: "12:31" },
-      {
-        id: 4,
-        role: "assistant",
-        text: "Таны захиалга одоогоор бэлтгэгдэж байна. Маргааш хүргэлтэнд гарна. Хүргэлтийн мэдэгдлийг мессежээр илгээнэ.",
-        time: "12:32",
-      },
-      { id: 5, role: "user", text: "Хүлээж байна, баярлалаа.", time: "12:33" },
-    ],
-  },
-  {
-    id: 6,
-    name: "Цэцэгмаа",
-    lastMessage: "Авах болсон, баярлалаа!",
-    time: "3 цаг",
-    status: "closed",
-    channel: "web",
-    messages: [
-      { id: 1, role: "user", text: "Ноосон хөнжил нөөцөд байна уу?", time: "11:45" },
-      {
-        id: 2,
-        role: "assistant",
-        text: "Уучлаарай, одоогоор ноосон хөнжил (2 хүний) нөөцөнд байхгүй байна. Дахин нийлүүлэлт ирэхэд мэдэгдэл авах уу?",
-        time: "11:46",
-      },
-      { id: 3, role: "user", text: "Нэг хүний нь яаж байна?", time: "11:47" },
-      {
-        id: 4,
-        role: "assistant",
-        text: "Нэг хүний ноосон хөнжил байгаа шүү! 280,000₮-ээр. 100% монгол ноосон, маш зөөлөн чанартай.",
-        time: "11:48",
-      },
-      { id: 5, role: "user", text: "Авах болсон, баярлалаа!", time: "11:49" },
-    ],
-  },
+const STATUS_OPTIONS: { value: ConvStatus | "all"; label: string }[] = [
+  { value: "all", label: "Бүгд" },
+  { value: "active", label: "Идэвхтэй" },
+  { value: "resolved", label: "Шийдсэн" },
+  { value: "escalated", label: "Дамжуулсан" },
+  { value: "abandoned", label: "Орхисон" },
 ];
 
-export default function ConversationsPage() {
-  const [selectedId, setSelectedId] = useState(conversations[0].id);
-  const [searchQuery, setSearchQuery] = useState("");
+const STATUS_BADGE: Record<
+  ConvStatus,
+  { variant: "success" | "default" | "warning" | "error"; label: string }
+> = {
+  active: { variant: "success", label: "Идэвхтэй" },
+  resolved: { variant: "default", label: "Шийдсэн" },
+  escalated: { variant: "warning", label: "Дамжуулсан" },
+  abandoned: { variant: "default", label: "Орхисон" },
+};
 
-  const selected = conversations.find((c) => c.id === selectedId)!;
-  const activeCount = conversations.filter((c) => c.status === "active").length;
+export default function ConversationsPage() {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<ConvStatus | "all">("all");
+  const [page, setPage] = useState(1);
+  const [messageInput, setMessageInput] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const utils = trpc.useUtils();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setPage(1);
+  };
+
+  const handleStatusChange = (value: ConvStatus | "all") => {
+    setStatusFilter(value);
+    setPage(1);
+  };
+
+  const listQuery = trpc.chat.listConversations.useQuery({
+    page,
+    perPage: 20,
+    status: statusFilter === "all" ? undefined : statusFilter,
+    search: debouncedSearch || undefined,
+  });
+
+  const items = listQuery.data?.items ?? [];
+  const effectiveSelectedId =
+    selectedId && items.some((c) => c.id === selectedId) ? selectedId : (items[0]?.id ?? null);
+
+  const sendMessageMutation = trpc.chat.sendMessage.useMutation({
+    onSuccess: () => {
+      setMessageInput("");
+      if (effectiveSelectedId) {
+        utils.chat.getConversation.invalidate({ id: effectiveSelectedId });
+        utils.chat.listConversations.invalidate();
+      }
+    },
+  });
+
+  const updateStatusMutation = trpc.chat.updateStatus.useMutation({
+    onSuccess: () => {
+      if (effectiveSelectedId) {
+        utils.chat.getConversation.invalidate({ id: effectiveSelectedId });
+      }
+      utils.chat.listConversations.invalidate();
+    },
+  });
+
+  const handleSend = () => {
+    const trimmed = messageInput.trim();
+    if (!trimmed || !effectiveSelectedId || sendMessageMutation.isPending) return;
+    sendMessageMutation.mutate({ conversationId: effectiveSelectedId, content: trimmed });
+  };
+
+  const detailQuery = trpc.chat.getConversation.useQuery(
+    { id: effectiveSelectedId! },
+    { enabled: !!effectiveSelectedId },
+  );
+  const totalPages = listQuery.data?.totalPages ?? 1;
+  const total = listQuery.data?.total ?? 0;
+  const activeCount = items.filter((c) => c.status === "active").length;
+  const selected = detailQuery.data;
+  const visibleMessages =
+    selected?.messages.filter((m) => m.role === "user" || m.role === "assistant") ?? [];
+  const isResolved = selected?.status === "resolved" || selected?.status === "abandoned";
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [visibleMessages.length]);
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex h-[calc(100vh-theme(spacing.32))] overflow-hidden rounded-[var(--radius-lg)] border border-border-default bg-surface-primary shadow-xs">
-        {/* Left panel - conversation list */}
-        <div className="flex w-80 shrink-0 flex-col border-r border-border-default">
-          {/* List header */}
-          <div className="flex items-center justify-between border-b border-border-default px-4 py-3">
-            <div>
-              <h2 className="text-sm font-semibold text-text-primary">Яриа</h2>
-              <p className="text-[11px] text-text-tertiary">
-                {activeCount} идэвхтэй / {conversations.length} нийт
-              </p>
-            </div>
-          </div>
+    <div className="flex h-[calc(100vh-64px)] gap-0 overflow-hidden">
+      {/* Left panel — conversation list */}
+      <div className="flex w-96 shrink-0 flex-col border-r border-white/[0.04]">
+        <div className="px-6 pt-8 pb-4">
+          <h2 className="text-4xl font-headline italic tracking-tight text-white">Яриа</h2>
+          <p className="mt-1 text-[10px] font-semibold uppercase tracking-widest text-white/30">
+            {listQuery.isLoading ? "..." : `${activeCount} идэвхтэй сешн`}
+          </p>
+        </div>
 
-          <div className="p-3">
-            <Input
-              placeholder="Яриа хайх..."
-              icon={<Search className="h-4 w-4" />}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-
-          <div className="flex-1 overflow-y-auto">
-            <AnimateList stagger={0.04}>
-              {conversations.map((conv) => (
-                <button
-                  key={conv.id}
-                  onClick={() => setSelectedId(conv.id)}
-                  className={cn(
-                    "flex w-full items-start gap-3 px-3 py-3 text-left transition-colors",
-                    "hover:bg-surface-secondary",
-                    conv.id === selectedId
-                      ? "border-l-2 border-brand-500 bg-surface-secondary"
-                      : "border-l-2 border-transparent",
-                  )}
-                >
-                  <Avatar size="sm" fallback={conv.name.charAt(0)} alt={conv.name} />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1.5 truncate">
-                        <span className="truncate text-sm font-medium text-text-primary">
-                          {conv.name}
-                        </span>
-                        {conv.channel === "mobile" ? (
-                          <Smartphone className="h-3 w-3 shrink-0 text-text-tertiary" />
-                        ) : (
-                          <Globe className="h-3 w-3 shrink-0 text-text-tertiary" />
-                        )}
-                        <Badge variant={conv.status === "active" ? "success" : "default"} size="sm">
-                          {conv.status === "active" ? "Идэвхтэй" : "Хаагдсан"}
-                        </Badge>
-                      </div>
-                      <span className="shrink-0 text-[11px] text-text-tertiary">{conv.time}</span>
-                    </div>
-                    <p className="mt-0.5 truncate text-xs text-text-secondary">
-                      {conv.lastMessage}
-                    </p>
-                  </div>
-                </button>
-              ))}
-            </AnimateList>
+        <div className="space-y-3 px-4 pb-3">
+          <Input
+            placeholder="Яриа хайх..."
+            icon={<span className="material-symbols-outlined text-[18px]">search</span>}
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+          />
+          <div className="flex flex-wrap gap-1.5">
+            {STATUS_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => handleStatusChange(opt.value)}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider transition-colors",
+                  statusFilter === opt.value
+                    ? "bg-white/[0.12] text-white"
+                    : "bg-white/[0.04] text-white/40 hover:bg-white/[0.08] hover:text-white/60",
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Right panel - conversation detail */}
-        <div className="flex flex-1 flex-col">
-          {/* Header — simplified */}
-          <div className="flex items-center gap-3 border-b border-border-default px-5 py-3">
-            <Avatar size="sm" fallback={selected.name.charAt(0)} alt={selected.name} />
-            <div>
-              <span className="text-sm font-semibold text-text-primary">{selected.name}</span>
-              <p className="text-[11px] text-text-tertiary">
-                {selected.channel === "web" ? "Вэб" : "Мобайл"} / {selected.messages.length} мессеж
-              </p>
+        <div className="flex-1 overflow-y-auto px-3">
+          {listQuery.isLoading ? (
+            <div className="space-y-2 p-1">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="h-20 animate-pulse rounded-2xl bg-white/[0.05]" />
+              ))}
             </div>
-          </div>
-
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-5 py-4">
-            <AnimateList key={selectedId} stagger={0.03} className="flex flex-col gap-3">
-              {selected.messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={cn(
-                    "flex gap-2",
-                    msg.role === "user" ? "justify-end" : "justify-start",
-                  )}
-                >
-                  {/* Bot avatar for assistant messages */}
-                  {msg.role === "assistant" && (
-                    <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-600">
-                      <Sparkles className="h-3 w-3 text-white" />
-                    </div>
-                  )}
-
-                  <div
+          ) : items.length === 0 ? (
+            <EmptyState
+              icon={<span className="material-symbols-outlined text-[20px]">forum</span>}
+              title="Яриа алга"
+              description="Виджетээр дамжуулан яриа эхлэх боломжтой"
+              className="p-8"
+            />
+          ) : (
+            <AnimateList stagger={0.04}>
+              {items.map((conv) => {
+                const name = conv.shopperName ?? conv.shopperEmail ?? "Зочин";
+                const isActive = conv.id === effectiveSelectedId;
+                return (
+                  <button
+                    key={conv.id}
+                    onClick={() => setSelectedId(conv.id)}
                     className={cn(
-                      "max-w-[70%] rounded-[var(--radius-lg)] px-4 py-2.5",
-                      msg.role === "user"
-                        ? "rounded-br-[var(--radius-sm)] border border-brand-100 bg-brand-50 text-text-primary"
-                        : "rounded-bl-[var(--radius-sm)] bg-surface-tertiary text-text-primary",
+                      "flex w-full items-start gap-3 rounded-[2rem] px-5 py-4 text-left transition-all duration-200",
+                      isActive
+                        ? "bg-white/[0.1] border-l-4 border-white"
+                        : "bg-white/[0.02] hover:bg-white/[0.06]",
                     )}
                   >
-                    <p className="text-sm leading-relaxed">{msg.text}</p>
-                    <p
-                      className={cn(
-                        "mt-1 text-[11px]",
-                        msg.role === "user" ? "text-right text-brand-600/60" : "text-text-tertiary",
-                      )}
-                    >
-                      {msg.time}
-                    </p>
+                    <Avatar size="sm" fallback={name.charAt(0)} alt={name} />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-semibold text-white truncate">{name}</span>
+                        <span className="shrink-0 text-[10px] text-white/30 uppercase tracking-wider">
+                          {formatRelativeTime(conv.lastMessageAt ?? conv.createdAt)}
+                        </span>
+                      </div>
+                      <p className="mt-1 truncate text-xs text-white/50 font-light">
+                        {conv.lastMessage ?? conv.summary ?? "Мессеж алга"}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </AnimateList>
+          )}
+        </div>
+
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-white/[0.04]">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+              className="rounded-full p-1.5 text-white/40 hover:bg-white/[0.05] disabled:opacity-30"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <span className="text-xs text-white/30 tabular-nums">
+              {page} / {totalPages}
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages}
+              className="rounded-full p-1.5 text-white/40 hover:bg-white/[0.05] disabled:opacity-30"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Right panel — conversation detail */}
+      <div className="flex flex-1 flex-col">
+        {!effectiveSelectedId || !selected ? (
+          <div className="flex flex-1 items-center justify-center">
+            <EmptyState
+              icon={<span className="material-symbols-outlined text-[20px]">forum</span>}
+              title={detailQuery.isLoading ? "Ачааллаж байна..." : "Яриа сонгоно уу"}
+            />
+          </div>
+        ) : (
+          <>
+            {/* Chat header */}
+            <div className="flex items-center justify-between px-8 py-5 border-b border-white/[0.04]">
+              <div className="flex items-center gap-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-sm font-semibold text-white">
+                  {(selected.shopperName ?? selected.shopperEmail ?? "G").charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">
+                    {selected.shopperName ?? selected.shopperEmail ?? "Зочин"}
+                  </h3>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <div className="flex items-center gap-1.5">
+                      <div
+                        className={cn(
+                          "h-1.5 w-1.5 rounded-full",
+                          selected.status === "active"
+                            ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]"
+                            : "bg-white/30",
+                        )}
+                      />
+                      <span className="text-[10px] text-white/40 uppercase tracking-wider">
+                        {STATUS_BADGE[selected.status as ConvStatus]?.label ?? selected.status}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </AnimateList>
-          </div>
-        </div>
+              </div>
+              <Button
+                variant="glass"
+                size="md"
+                disabled={isResolved || updateStatusMutation.isPending}
+                onClick={() => {
+                  if (!effectiveSelectedId) return;
+                  updateStatusMutation.mutate({ id: effectiveSelectedId, status: "resolved" });
+                }}
+              >
+                {updateStatusMutation.isPending
+                  ? "Шийдэж байна..."
+                  : isResolved
+                    ? "Шийдсэн"
+                    : "Шийдэх"}
+              </Button>
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto px-8 py-6">
+              <AnimateList key={effectiveSelectedId} stagger={0.03} className="flex flex-col gap-4">
+                {visibleMessages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={cn(
+                      "flex gap-3",
+                      msg.role === "user" ? "justify-end" : "justify-start",
+                    )}
+                  >
+                    {msg.role === "assistant" && (
+                      <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/[0.08]">
+                        <span className="material-symbols-outlined text-[16px] text-white/60">
+                          auto_awesome
+                        </span>
+                      </div>
+                    )}
+                    <div
+                      className={cn(
+                        "max-w-[65%] px-5 py-3.5 hover:scale-[1.01] transition-transform duration-200",
+                        msg.role === "user"
+                          ? "rounded-t-3xl rounded-bl-3xl bg-white text-black"
+                          : "rounded-t-3xl rounded-br-3xl bg-white/[0.05] glass-glint",
+                      )}
+                    >
+                      <p
+                        className={cn(
+                          "text-sm leading-relaxed",
+                          msg.role === "user" ? "text-black" : "text-white",
+                        )}
+                      >
+                        {msg.content}
+                      </p>
+                      <p
+                        className={cn(
+                          "mt-2 text-[10px]",
+                          msg.role === "user" ? "text-right text-black/40" : "text-white/30",
+                        )}
+                      >
+                        {formatTime(msg.createdAt)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </AnimateList>
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input footer */}
+            {isResolved ? (
+              <div className="px-8 py-4 border-t border-white/[0.04] text-center">
+                <p className="text-xs text-white/30">Энэ яриа шийдэгдсэн байна</p>
+              </div>
+            ) : (
+              <div className="px-8 py-4 border-t border-white/[0.04]">
+                <div className="flex items-center gap-3">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      placeholder="Мессеж бичих..."
+                      value={messageInput}
+                      onChange={(e) => setMessageInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSend();
+                        }
+                      }}
+                      className="w-full h-12 rounded-3xl bg-white/[0.05] border-none px-5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:bg-white/[0.08] transition-all"
+                    />
+                  </div>
+                  <button
+                    onClick={handleSend}
+                    disabled={!messageInput.trim() || sendMessageMutation.isPending}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-black hover:bg-white/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">send</span>
+                  </button>
+                </div>
+                {/* Quick replies */}
+                <div className="flex gap-2 mt-3">
+                  {["Юугаар тусалж болох вэ?", "Захиалгын төлөв", "Буцаалтын бодлого"].map(
+                    (text) => (
+                      <button
+                        key={text}
+                        onClick={() => {
+                          if (!effectiveSelectedId || sendMessageMutation.isPending) return;
+                          sendMessageMutation.mutate({
+                            conversationId: effectiveSelectedId,
+                            content: text,
+                          });
+                        }}
+                        disabled={sendMessageMutation.isPending}
+                        className="rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-[11px] text-white/50 hover:bg-white/[0.06] hover:text-white/70 transition-colors disabled:opacity-40"
+                      >
+                        {text}
+                      </button>
+                    ),
+                  )}
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

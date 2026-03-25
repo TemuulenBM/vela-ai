@@ -2,8 +2,7 @@
 
 import { trpc } from "@/shared/lib/trpc";
 import { formatDay } from "@/shared/lib/utils";
-import { HeroMetric } from "./hero-metric";
-import { MetricPair } from "./metric-pair";
+import { MetricCard } from "./metric-card";
 import { ConversionFunnel } from "./conversion-funnel";
 import { EventAreaChart } from "./event-area-chart";
 import { EventBreakdown } from "./event-breakdown";
@@ -29,24 +28,25 @@ export function OverviewTab({ days }: { days: number }) {
   // Conversion funnel stages
   const funnelStages = [
     { label: "Хуудас үзэлт", value: stats.data?.pageViews ?? 0 },
-    { label: "Сагс нэмэлт", value: stats.data?.addToCarts ?? 0 },
+    { label: "Сагсанд нэмсэн", value: stats.data?.addToCarts ?? 0 },
     { label: "Захиалга", value: stats.data?.checkouts ?? 0 },
   ];
 
   if (hasError) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <p className="text-sm font-medium text-text-secondary">Өгөгдөл ачаалахад алдаа гарлаа</p>
-        <p className="mt-1 text-xs text-text-tertiary">Дахин оролдоно уу</p>
+        <span className="material-symbols-outlined text-white/20 text-[32px] mb-4">cloud_off</span>
+        <p className="text-sm font-medium text-white/70">Мэдээлэл ачаалахад алдаа гарлаа</p>
+        <p className="mt-1 text-xs text-white/40 font-light">Дахин оролдоно уу</p>
         <button
           onClick={() => {
             stats.refetch();
             eventsOverTime.refetch();
             eventTypeCounts.refetch();
           }}
-          className="mt-4 rounded-[var(--radius-md)] bg-brand-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-600"
+          className="mt-4 glass-card rounded-full px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-white/[0.08]"
         >
-          Дахин оролдох
+          Дахин
         </button>
       </div>
     );
@@ -55,58 +55,64 @@ export function OverviewTab({ days }: { days: number }) {
   const isLoading = stats.isLoading || eventsOverTime.isLoading;
 
   return (
-    <div className="flex flex-col gap-8">
-      {/* Row 1+2: Bento grid — hero metric + funnel + metric pair */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1.4fr]">
-        {/* Left column: Hero + MetricPair stacked */}
-        <div className="flex flex-col gap-0">
-          <HeroMetric
-            label="Хуудас үзэлт"
-            value={stats.data?.pageViews ?? 0}
-            trend={
-              stats.data
-                ? {
-                    value: Math.abs(stats.data.pageViewsTrend),
-                    isPositive: stats.data.pageViewsTrend >= 0,
-                  }
-                : undefined
-            }
-            sparklineData={pageViewSeries}
-            isLoading={isLoading}
-          />
-
-          <MetricPair
-            metrics={[
-              {
-                label: "Чат харилцаа",
-                value: stats.data?.chatInteractions ?? 0,
-                trend: stats.data
-                  ? {
-                      value: Math.abs(stats.data.chatInteractionsTrend),
-                      isPositive: stats.data.chatInteractionsTrend >= 0,
-                    }
-                  : undefined,
-                sparklineData: chatSeries,
-              },
-              {
-                label: "Сагс нэмэлт",
-                value: stats.data?.addToCarts ?? 0,
-                trend: stats.data
-                  ? {
-                      value: Math.abs(stats.data.addToCartsTrend),
-                      isPositive: stats.data.addToCartsTrend >= 0,
-                    }
-                  : undefined,
-                sparklineData: cartSeries,
-              },
-            ]}
-            isLoading={isLoading}
-          />
-        </div>
-
-        {/* Right column: Conversion Funnel */}
-        <ConversionFunnel stages={funnelStages} isLoading={isLoading} />
+    <div className="flex flex-col gap-6">
+      {/* Row 1: 3 equal metric cards */}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <MetricCard
+          label="Хуудас үзэлт"
+          value={stats.data?.pageViews ?? 0}
+          trend={
+            stats.data
+              ? {
+                  value: Math.abs(stats.data.pageViewsTrend),
+                  isPositive: stats.data.pageViewsTrend >= 0,
+                }
+              : undefined
+          }
+          sparklineData={pageViewSeries}
+          icon="visibility"
+          accentColor="#22c55e"
+          delay={0.05}
+          isLoading={isLoading}
+        />
+        <MetricCard
+          label="Чат харилцаа"
+          value={stats.data?.chatInteractions ?? 0}
+          trend={
+            stats.data
+              ? {
+                  value: Math.abs(stats.data.chatInteractionsTrend),
+                  isPositive: stats.data.chatInteractionsTrend >= 0,
+                }
+              : undefined
+          }
+          sparklineData={chatSeries}
+          icon="forum"
+          accentColor="#38bdf8"
+          delay={0.1}
+          isLoading={isLoading}
+        />
+        <MetricCard
+          label="Сагсанд нэмэлт"
+          value={stats.data?.addToCarts ?? 0}
+          trend={
+            stats.data
+              ? {
+                  value: Math.abs(stats.data.addToCartsTrend),
+                  isPositive: stats.data.addToCartsTrend >= 0,
+                }
+              : undefined
+          }
+          sparklineData={cartSeries}
+          icon="add_shopping_cart"
+          accentColor="#fbbf24"
+          delay={0.15}
+          isLoading={isLoading}
+        />
       </div>
+
+      {/* Row 2: Conversion funnel full width */}
+      <ConversionFunnel stages={funnelStages} isLoading={isLoading} />
 
       {/* Row 3: Area chart + Event breakdown */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">

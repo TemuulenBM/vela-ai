@@ -47,3 +47,27 @@ export interface OrderStatusResult {
   estimatedDelivery: string;
   message: string;
 }
+
+export interface GetRecommendationResult {
+  recommendations: {
+    id: string;
+    name: string;
+    description: string | null;
+    price: string;
+    category: string | null;
+    brand: string | null;
+    confidence?: string;
+  }[];
+  source?: "cross_sell" | "similarity";
+  message?: string;
+}
+
+export interface InitiateReturnResult {
+  returnId: string;
+  orderId: string;
+  reason: string;
+  status: "pending";
+  statusText: string;
+  instructions: string[];
+  message: string;
+}

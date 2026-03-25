@@ -14,7 +14,7 @@ interface ProgressBarProps {
 
 function ProgressBar({
   value,
-  color = "var(--color-brand-500)",
+  color,
   height = 6,
   animated = true,
   delay = 0,
@@ -24,12 +24,12 @@ function ProgressBar({
 
   return (
     <div
-      className={cn("w-full overflow-hidden rounded-full bg-surface-tertiary", className)}
+      className={cn("w-full overflow-hidden rounded-full bg-white/[0.05]", className)}
       style={{ height }}
     >
       <motion.div
-        className="h-full rounded-full"
-        style={{ backgroundColor: color }}
+        className="h-full rounded-full bg-white"
+        style={color ? { backgroundColor: color } : undefined}
         initial={animated ? { width: 0 } : { width: `${clampedValue}%` }}
         animate={{ width: `${clampedValue}%` }}
         transition={

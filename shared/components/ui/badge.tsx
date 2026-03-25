@@ -1,28 +1,31 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/shared/lib/utils";
 
-const badgeVariants = cva("inline-flex items-center font-medium transition-colors select-none", {
-  variants: {
-    variant: {
-      default: "bg-surface-tertiary text-text-secondary",
-      brand: "bg-brand-50 text-brand-700",
-      success: "bg-success-light text-green-700",
-      warning: "bg-warning-light text-amber-700",
-      error: "bg-error-light text-red-700",
-      info: "bg-info-light text-blue-700",
-      outline: "border border-border-default text-text-secondary",
+const badgeVariants = cva(
+  "inline-flex items-center font-semibold transition-colors select-none uppercase tracking-wider",
+  {
+    variants: {
+      variant: {
+        default: "bg-white/[0.08] text-white/70",
+        brand: "bg-white/[0.1] text-white",
+        success: "bg-[#a8e6cf]/15 text-[#a8e6cf]",
+        warning: "bg-[#ffd59e]/15 text-[#ffd59e]",
+        error: "bg-[#ffb4ab]/15 text-[#ffb4ab]",
+        info: "bg-[#90caf9]/15 text-[#90caf9]",
+        outline: "border border-white/10 text-white/45",
+      },
+      size: {
+        sm: "px-2 py-0.5 text-[9px] rounded-full",
+        md: "px-2.5 py-0.5 text-[10px] rounded-full",
+        lg: "px-3 py-1 text-[10px] rounded-full",
+      },
     },
-    size: {
-      sm: "px-1.5 py-0.5 text-[10px] rounded-[4px]",
-      md: "px-2 py-0.5 text-xs rounded-[var(--radius-sm)]",
-      lg: "px-2.5 py-1 text-xs rounded-[var(--radius-sm)]",
+    defaultVariants: {
+      variant: "default",
+      size: "md",
     },
   },
-  defaultVariants: {
-    variant: "default",
-    size: "md",
-  },
-});
+);
 
 export interface BadgeProps
   extends React.HTMLAttributes<HTMLSpanElement>, VariantProps<typeof badgeVariants> {}

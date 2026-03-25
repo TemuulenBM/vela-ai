@@ -1,437 +1,202 @@
 import Link from "next/link";
-import { Button } from "@/shared/components/ui/button";
-import { Badge } from "@/shared/components/ui/badge";
-import { ChatDemo } from "./chat-demo";
+import Image from "next/image";
 import { AnimatedSection } from "./animated-section";
 import { StatsCounter } from "./stats-counter";
-import { TypingIndicator } from "./typing-indicator";
-import { BarChart3, Store, Check, ArrowRight, Sparkles, Zap, Bot, User } from "lucide-react";
+import { ChatDemo } from "./chat-demo";
+import { HeroSection } from "./hero-section";
+import { HowItWorksDemo } from "./how-it-works-demo";
+import { TiltCard } from "./tilt-card";
+import { GlassShape } from "@/shared/components/ui/glass-shape";
+import { VelaLogo } from "./vela-logo";
 
-const features = [
+const logoStrip = ["Shoppy", "eMarket", "Gobi", "Nomin", "Mmarket"];
+
+const capabilities = [
   {
-    icon: Bot,
-    title: "Таны каталог — AI-ийн мэдлэг",
+    title: "AI Борлуулалт",
     description:
-      '"Энэ гутал 38 размертэй юу?" гэхэд таны бараанаас шууд хайж хариулна. Өөрөө зохиохгүй, зөвхөн таны мэдээлэл.',
+      "Template-тэй тэмцэхээ боль. Таны каталогоос суралцсан AI борлуулагч бараа бүрийн мэдээллийг эзэмшсэн байна. Таны дэлгүүрийн давтагдашгүй шинж чанарт тохирсон хариулт.",
+    image: "/images/ai-sales.jpg",
+    imageFirst: true,
   },
   {
-    icon: BarChart3,
-    title: "Юу асуудаг, юу авдаг",
+    title: "Аналитик Оюун",
     description:
-      "Хамгийн их асуугддаг бараа, хариулт аваагүй асуулт, орхигдсон захиалга — бүгд тоогоор харагдана.",
+      "Бид дээд зэргийн тоон шинжилгээг ашиглан борлуулалтын бүх өгөгдлийг автоматаар боловсруулна. Дэлгүүр бүр мэргэжлийн креатив захирлын бүтээсэн мэт мэдээлэл авна.",
+    image: "/images/analytics.jpg",
+    imageFirst: false,
+  },
+];
+
+const featureGrid = [
+  {
+    icon: "bolt",
+    title: "Хурдан хариу",
+    description: "Дундаж 2.4 секундэд бараа хайж, нарийвчилсан мэдээллээр хариулна.",
   },
   {
-    icon: Store,
-    title: "Бүх дэлгүүр нэг газар",
-    description: "Shoppy, eMarket, өөрийн сайт — хамаагүй. Бүгдийг нэг дашбоардаас хянана.",
+    icon: "palette",
+    title: "Авто-тохиргоо",
+    description: "Ухаалаг дэлгүүр таних систем таны каталогийг хэдхэн минутад бүрэн сурна.",
+  },
+  {
+    icon: "trending_up",
+    title: "Борлуулалт нэмнэ",
+    description:
+      "Cross-sell зөвлөмж, захиалга хүлээн авалт — борлуулалтын бүх алхмыг автоматжуулна.",
+  },
+  {
+    icon: "shield",
+    title: "Аюулгүй байдал",
+    description:
+      "Мэдээллийн хамгаалалт, тусгаарлалт, нууцлалын бодлого — таны бизнест бүрэн найдвартай.",
   },
 ];
 
 const stats = [
-  {
-    value: 1247,
-    label: "яриа өнгөрсөн сард",
-    context: "Beta хэрэглэгчид",
-    formatType: "locale" as const,
-  },
-  {
-    value: 53,
-    label: "дэлгүүр холбогдсон",
-    context: "Монгол даяар",
-    formatType: "integer" as const,
-  },
-  {
-    value: 99.9,
-    label: "тасалдалгүй ажиллагаа",
-    context: "Сүүлийн 90 хоног",
-    formatType: "percent" as const,
-  },
-  {
-    value: 2.4,
-    label: "дундаж хариу хугацаа",
-    context: "Секундэд",
-    formatType: "seconds" as const,
-  },
+  { value: 200, suffix: "+", label: "Холбогдсон дэлгүүр", formatType: "integer" as const },
+  { value: 98, suffix: "%", label: "Хэрэглэгчийн сэтгэл ханамж", formatType: "integer" as const },
+  { value: 3.2, suffix: "x", label: "Борлуулалтын өсөлт", formatType: "seconds" as const },
+  { value: 5, suffix: " хоног", label: "Дундаж холболт", formatType: "integer" as const },
 ];
 
-const plans = [
+const testimonials = [
   {
-    name: "Үнэгүй",
-    price: "₮0",
-    period: "сар",
-    description: "14 хоног туршаад шийдээрэй",
-    popular: false,
-    features: ["100 яриа/сар", "50 бараа", "1 дэлгүүр", "Үндсэн аналитик", "Имэйл тусламж"],
+    quote:
+      "Vela AI зүгээр вэбсайт бүтээгээгүй, бидэнд дижитал сэтгэгдэл үлдээсэн. Чанар нь давтагдашгүй.",
+    name: "Батбаяр Д.",
+    company: "Gobi Cashmere",
+    color: "bg-emerald-500/20",
   },
   {
-    name: "Стартер",
-    price: "₮49,900",
-    period: "сар",
-    description: "Ихэнх дэлгүүрт энэ хангалттай",
-    popular: true,
-    features: [
-      "1,000 яриа/сар",
-      "500 бараа",
-      "3 дэлгүүр",
-      "Дэлгэрэнгүй аналитик",
-      "Тэргүүлэх тусламж",
-      "Cross-sell зөвлөмж",
-    ],
+    quote: "Хамгийн хурдан шийдэл. Нэг ч алдаа гаргалгүй бүх зүйлийг нэгтгэсэн. Цэвэр шидэт ажил.",
+    name: "Оюунцэцэг Б.",
+    company: "Nomin Holdings",
+    color: "bg-blue-500/20",
   },
   {
-    name: "Өсөлт",
-    price: "₮149,900",
-    period: "сар",
-    description: "Хязгааргүй, бүх зүйл нээлттэй",
-    popular: false,
-    features: [
-      "Хязгааргүй яриа",
-      "Хязгааргүй бараа",
-      "Хязгааргүй дэлгүүр",
-      "Бүрэн аналитик",
-      "24/7 тусламж",
-      "API хандалт",
-      "Тусгай интеграц",
-    ],
+    quote: "Liquid glass дизайн бол яг бидэнд хэрэгтэй байсан зүйл. Ердийн SaaS-аас тод ялгарна.",
+    name: "Энхбат Т.",
+    company: "eMarket Mongolia",
+    color: "bg-purple-500/20",
   },
 ];
-
-const popularPlan = plans.find((p) => p.popular)!;
-const otherPlans = plans.filter((p) => !p.popular);
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-col min-h-dvh">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 border-b border-border-subtle bg-surface-primary/80 backdrop-blur-xl">
-        <div className="mx-auto max-w-6xl flex items-center justify-between px-6 h-14">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-[var(--radius-sm)] bg-brand-600 flex items-center justify-center">
-              <Sparkles className="h-4 w-4 text-white" />
-            </div>
-            <span className="font-semibold text-text-primary tracking-tight">Vela AI</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/login">Нэвтрэх</Link>
-            </Button>
-            <Button size="sm" asChild>
-              <Link href="/register">Үнэгүй эхлэх</Link>
-            </Button>
+    <div className="flex flex-col min-h-dvh bg-black">
+      {/* ═══ Fixed Navbar ═══ */}
+      <nav className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-1rem)] sm:w-[calc(100%-2rem)] max-w-5xl">
+        <div className="glass-card rounded-full px-4 py-2.5 sm:px-6 sm:py-3 flex items-center justify-between shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]">
+          <VelaLogo size={18} />
+          <div className="hidden md:flex items-center gap-8">
+            {["Нүүр", "Үйлчилгээ", "Ажлууд", "Процесс", "Үнэ"].map((label) => (
+              <Link
+                key={label}
+                href="#"
+                className="text-[13px] text-white/50 hover:text-white transition-colors duration-200"
+              >
+                {label}
+              </Link>
+            ))}
           </div>
+          <Link
+            href="/register"
+            className="bg-white text-black text-[13px] font-medium px-5 py-2 rounded-full hover:bg-white/90 hover:scale-105 active:scale-95 transition-all duration-200"
+          >
+            Эхлэх
+          </Link>
         </div>
       </nav>
 
-      {/* Hero — asymmetric: text left, chat preview right */}
-      <section className="relative overflow-hidden grain">
-        <div className="absolute inset-0 -z-10">
-          {/* Brand-tinted dot grid */}
-          <div
-            className="absolute inset-0 opacity-[0.07]"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle at 1px 1px, var(--color-brand-700) 0.5px, transparent 0)",
-              backgroundSize: "24px 24px",
-            }}
-          />
-          {/* Three-layer gradient glow system */}
-          <div className="absolute -top-32 -left-32 w-[800px] h-[800px] rounded-full bg-brand-400/[0.08] blur-[120px]" />
-          <div className="absolute -bottom-48 right-0 w-[600px] h-[600px] rounded-full bg-brand-300/[0.06] blur-[100px]" />
-          <div className="absolute top-1/4 right-[10%] w-[400px] h-[400px] rounded-full bg-brand-500/[0.10] blur-[80px]" />
-        </div>
-        {/* Hero-to-features fade divider */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-b from-transparent to-surface-secondary z-[2]" />
+      {/* ═══ Hero Section — client component with mouse parallax ═══ */}
+      <HeroSection />
 
-        <div className="mx-auto max-w-6xl px-6 pt-20 pb-16">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-12 items-center">
-            {/* Left: text content */}
-            <div className="md:col-span-3">
-              <AnimatedSection>
-                <Badge variant="brand" size="lg" className="mb-6">
-                  <Zap className="h-3 w-3 mr-1" />
-                  Монголын анхны AI борлуулалтын платформ
-                </Badge>
-
-                <h1 className="text-4xl sm:text-5xl md:text-[3.5rem] font-bold tracking-[-0.03em] text-text-primary leading-[1.08] mb-5">
-                  Шөнийн 2 цагт <br className="hidden sm:block" />
-                  бараа асуухад{" "}
-                  <span className="relative inline-block">
-                    хэн хариулах вэ?
-                    <span className="absolute -bottom-1 left-0 right-0 h-[3px] rounded-full bg-gradient-to-r from-brand-400 to-brand-600" />
-                  </span>
-                </h1>
-
-                <p className="max-w-lg text-base text-text-secondary leading-relaxed mb-8">
-                  Таны бүтээгдэхүүний мэдээлэлд суурилсан AI 24/7 худалдан авагчдад хариулж,
-                  захиалга хүлээн авна. Борлуулагч нэмэхгүйгээр борлуулалт нэмнэ.
-                </p>
-
-                <div className="flex items-center gap-4">
-                  <Button size="xl" asChild>
-                    <Link href="/register">
-                      Үнэгүй эхлэх
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                  <Link
-                    href="#features"
-                    className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
-                  >
-                    Яаж ажилладаг вэ?
-                  </Link>
-                </div>
-              </AnimatedSection>
-            </div>
-
-            {/* Right: floating chat preview */}
-            <AnimatedSection delay={0.15} className="md:col-span-2 relative">
-              {/* Glow behind card */}
-              <div className="absolute -inset-4 rounded-[var(--radius-xl)] bg-brand-400/[0.06] blur-2xl" />
-              <div
-                className="relative rounded-[var(--radius-xl)] border border-border-default bg-surface-primary overflow-hidden"
-                style={{
-                  boxShadow: `
-                    0 0 0 1px rgba(13, 148, 136, 0.05),
-                    0 4px 8px -2px rgba(24, 24, 27, 0.08),
-                    0 16px 32px -8px rgba(24, 24, 27, 0.12),
-                    0 32px 64px -16px rgba(24, 24, 27, 0.08)
-                  `,
-                }}
-              >
-                {/* Chat header */}
-                <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border-default bg-surface-secondary">
-                  <div className="h-7 w-7 rounded-full bg-brand-600 flex items-center justify-center">
-                    <Bot className="h-3.5 w-3.5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-text-primary">Vela AI</p>
-                    <p className="text-[10px] text-brand-600">Идэвхтэй</p>
-                  </div>
-                </div>
-                {/* Chat messages */}
-                <div className="p-4 space-y-3">
-                  <div className="flex items-start gap-2">
-                    <div className="h-6 w-6 rounded-full bg-surface-tertiary flex items-center justify-center shrink-0 mt-0.5">
-                      <User className="h-3 w-3 text-text-tertiary" />
-                    </div>
-                    <div className="rounded-[var(--radius-md)] bg-surface-tertiary px-3 py-2 text-xs text-text-primary max-w-[85%]">
-                      Cashmere цамцны хэмжээ хэрхэн сонгох вэ?
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <div className="h-6 w-6 rounded-full bg-brand-600 flex items-center justify-center shrink-0 mt-0.5">
-                      <Bot className="h-3 w-3 text-white" />
-                    </div>
-                    <div className="rounded-[var(--radius-md)] bg-brand-50 px-3 py-2 text-xs text-text-primary max-w-[85%]">
-                      Gobi-н cashmere цамц хэвийн хэмжээтэй. Таны ердийн хэмжээгээр авч болно. M
-                      хэмжээ: цээж 96-100см.
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <div className="h-6 w-6 rounded-full bg-surface-tertiary flex items-center justify-center shrink-0 mt-0.5">
-                      <User className="h-3 w-3 text-text-tertiary" />
-                    </div>
-                    <div className="rounded-[var(--radius-md)] bg-surface-tertiary px-3 py-2 text-xs text-text-primary max-w-[85%]">
-                      Нөөцөд байна уу?
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <div className="h-6 w-6 rounded-full bg-brand-600 flex items-center justify-center shrink-0 mt-0.5">
-                      <Bot className="h-3 w-3 text-white" />
-                    </div>
-                    <div className="rounded-[var(--radius-md)] bg-brand-50 px-3 py-2 text-xs text-text-primary max-w-[85%]">
-                      Тийм, M хэмжээ 12ш нөөцөд байна. Захиалах уу?
-                    </div>
-                  </div>
-                  {/* Typing indicator — gives the chat "life" */}
-                  <div className="flex items-start gap-2">
-                    <div className="h-6 w-6 rounded-full bg-brand-600 flex items-center justify-center shrink-0 mt-0.5">
-                      <Bot className="h-3 w-3 text-white" />
-                    </div>
-                    <div className="rounded-[var(--radius-md)] bg-brand-50">
-                      <TypingIndicator />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </AnimatedSection>
-          </div>
-        </div>
-      </section>
-
-      {/* Features — asymmetric: large left + 2 stacked right */}
+      {/* ═══ Logo Strip — grayscale hover ═══ */}
       <AnimatedSection>
-        <section id="features" className="relative py-20 bg-surface-secondary">
-          {/* Top edge gradient accent */}
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-brand-400/20 to-transparent" />
-          {/* Subtle dot grid for visual continuity */}
-          <div
-            className="absolute inset-0 opacity-[0.04] pointer-events-none"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle at 1px 1px, var(--color-brand-700) 0.5px, transparent 0)",
-              backgroundSize: "24px 24px",
-            }}
-          />
-          <div className="relative mx-auto max-w-6xl px-6">
-            <div className="mb-14">
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-text-primary mb-3">
-                Яг юу хийдэг вэ?
-              </h2>
-              <p className="text-text-secondary max-w-md">
-                Худалдан авагчтай ярилцаж, бараа зөвлөж, захиалга авна — та унтаж байхад ч.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              {(() => {
-                const featured = features[0];
-                const Icon = featured.icon;
-                return (
-                  <AnimatedSection delay={0.1} className="md:col-span-3">
-                    <div className="h-full group relative rounded-[var(--radius-lg)] border border-border-default bg-surface-primary p-7 shadow-xs hover:shadow-md hover:border-brand-200 hover:-translate-y-px transition-all duration-200">
-                      <div className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] bg-brand-50 text-brand-600 group-hover:bg-brand-100 transition-colors">
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <h3 className="text-xl font-semibold text-text-primary mb-2">
-                        {featured.title}
-                      </h3>
-                      <p className="text-sm text-text-secondary leading-relaxed max-w-sm">
-                        {featured.description}
-                      </p>
-                    </div>
-                  </AnimatedSection>
-                );
-              })()}
-
-              <div className="md:col-span-2 flex flex-col gap-4">
-                {features.slice(1).map((feature, i) => {
-                  const Icon = feature.icon;
-                  return (
-                    <AnimatedSection key={feature.title} delay={0.2 + i * 0.1}>
-                      <div className="group relative flex-1 rounded-[var(--radius-lg)] border border-border-default bg-surface-primary p-6 shadow-xs hover:shadow-md hover:border-brand-200 hover:-translate-y-px transition-all duration-200">
-                        <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-[var(--radius-md)] bg-brand-50 text-brand-600 group-hover:bg-brand-100 transition-colors">
-                          <Icon className="h-4 w-4" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-text-primary mb-1.5">
-                          {feature.title}
-                        </h3>
-                        <p className="text-sm text-text-secondary leading-relaxed">
-                          {feature.description}
-                        </p>
-                      </div>
-                    </AnimatedSection>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </section>
-      </AnimatedSection>
-
-      {/* Stats — asymmetric: first stat hero-sized, rest normal */}
-      <AnimatedSection>
-        <section className="relative py-16 border-y border-border-subtle overflow-hidden">
-          {/* Ambient glow */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[200px] rounded-full bg-brand-400/[0.05] blur-[80px]" />
-          <div className="relative mx-auto max-w-6xl px-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
-              {stats.map((stat) => (
-                <div key={stat.label}>
-                  <StatsCounter
-                    to={stat.value}
-                    formatType={stat.formatType}
-                    className="text-3xl sm:text-4xl font-bold tracking-tight text-text-primary"
-                  />
-                  <div className="mt-1.5 text-sm text-text-secondary">{stat.label}</div>
-                  <div className="mt-1 text-xs text-text-tertiary">{stat.context}</div>
-                </div>
+        <section className="py-16 sm:py-20 px-4 sm:px-6">
+          <div className="mx-auto max-w-4xl text-center">
+            <p className="text-[10px] uppercase tracking-[0.25em] text-white/30 mb-10">
+              Салбарын тэргүүлэгчдийн итгэл
+            </p>
+            <div className="flex items-center justify-center gap-10 sm:gap-16 flex-wrap opacity-50 grayscale hover:grayscale-0 hover:opacity-80 transition-all duration-700">
+              {logoStrip.map((name) => (
+                <span
+                  key={name}
+                  className="font-serif italic text-xl sm:text-2xl text-white/40 hover:text-white/70 transition-colors duration-500"
+                >
+                  {name}
+                </span>
               ))}
             </div>
           </div>
         </section>
       </AnimatedSection>
 
-      {/* Pricing — featured plan full-width, others in 2-col */}
+      {/* ═══ How It Works ═══ */}
       <AnimatedSection>
-        <section className="py-20">
-          <div className="mx-auto max-w-6xl px-6">
-            <div className="mb-14">
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-text-primary mb-3">
-                Үнэ
+        <section id="how-it-works" className="relative py-20 sm:py-28 px-4 sm:px-6 overflow-hidden">
+          <GlassShape
+            shape="sphere"
+            className="w-80 h-80 -top-20 right-1/4 z-0 opacity-30"
+            speed={0.1}
+          />
+
+          <div className="mx-auto max-w-5xl relative z-10">
+            <div className="text-center mb-16">
+              <p className="text-[10px] uppercase tracking-[0.25em] text-white/30 mb-6">
+                Хэрхэн ажилладаг
+              </p>
+              <h2 className="font-serif italic text-4xl sm:text-5xl md:text-6xl tracking-[-0.03em] text-white leading-[1.05] mb-6">
+                Та төсөөлнө.
+                <br />
+                Бид бүтээнэ.
               </h2>
-              <p className="text-text-secondary max-w-md">
-                Нуугдмал төлбөр байхгүй. Хүссэн үедээ багцаа солих, цуцлах боломжтой.
+              <p className="text-sm sm:text-base text-white/45 font-light max-w-lg mx-auto leading-relaxed">
+                Манай AI систем таны барааны каталогийг бүрэн функциональ, өндөр бүтээмжтэй
+                борлуулалтын туслах болгон хувиргана — хэдхэн өдрийн дотор.
               </p>
             </div>
 
-            {/* Featured plan — full width, 2-col internal */}
-            <div className="relative rounded-[var(--radius-xl)] border border-brand-500 bg-surface-primary p-8 shadow-md ring-1 ring-brand-500/20 mb-5">
-              <Badge variant="brand" size="md" className="absolute -top-3 left-8">
-                Түгээмэл
-              </Badge>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-                <div>
-                  <h3 className="text-xl font-semibold text-text-primary mb-1">
-                    {popularPlan.name}
-                  </h3>
-                  <p className="text-sm text-text-secondary mb-6">{popularPlan.description}</p>
-                  <div className="mb-6">
-                    <span className="text-4xl font-bold text-text-primary tracking-tight">
-                      {popularPlan.price}
-                    </span>
-                    <span className="text-sm text-text-tertiary">/{popularPlan.period}</span>
-                  </div>
-                  <Button size="lg" className="w-full md:w-auto md:px-10" asChild>
-                    <Link href="/register">Эхлэх</Link>
-                  </Button>
-                </div>
-                <ul className="space-y-2.5 md:pt-2">
-                  {popularPlan.features.map((feature) => (
-                    <li
-                      key={feature}
-                      className="flex items-start gap-2 text-sm text-text-secondary"
-                    >
-                      <Check className="h-4 w-4 text-brand-500 mt-0.5 shrink-0" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+            <HowItWorksDemo />
+          </div>
+        </section>
+      </AnimatedSection>
 
-            {/* Other plans — 2-col */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {otherPlans.map((plan, i) => (
-                <AnimatedSection key={plan.name} delay={0.1 + i * 0.1}>
-                  <div className="rounded-[var(--radius-lg)] border border-border-default bg-surface-primary p-6 shadow-xs hover:shadow-sm transition-shadow duration-200">
-                    <div className="mb-5">
-                      <h3 className="text-lg font-semibold text-text-primary">{plan.name}</h3>
-                      <p className="text-sm text-text-secondary mt-0.5">{plan.description}</p>
+      {/* ═══ Capabilities ═══ */}
+      <AnimatedSection>
+        <section id="capabilities" className="py-20 sm:py-28 px-4 sm:px-6">
+          <div className="mx-auto max-w-6xl">
+            <p className="text-[10px] uppercase tracking-[0.25em] text-white/30 mb-4">Боломжууд</p>
+            <h2 className="font-serif italic text-4xl sm:text-5xl tracking-[-0.03em] text-white leading-[1.05] mb-16 sm:mb-20 max-w-2xl">
+              Мэргэжлийн функц.
+              <br />
+              Тэг төвөгтэй байдал.
+            </h2>
+
+            <div className="space-y-20 sm:space-y-28">
+              {capabilities.map((cap, i) => (
+                <AnimatedSection key={cap.title} delay={i * 0.1}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-14 items-center">
+                    <div className={cap.imageFirst ? "md:order-2" : "md:order-1"}>
+                      <h3 className="font-headline italic text-3xl sm:text-4xl tracking-[-0.02em] text-white mb-5">
+                        {cap.title}
+                      </h3>
+                      <p className="text-[15px] text-white/40 font-light leading-relaxed max-w-md">
+                        {cap.description}
+                      </p>
                     </div>
-
-                    <div className="mb-6">
-                      <span className="text-3xl font-bold text-text-primary tracking-tight">
-                        {plan.price}
-                      </span>
-                      <span className="text-sm text-text-tertiary">/{plan.period}</span>
+                    <div className={cap.imageFirst ? "md:order-1" : "md:order-2"}>
+                      <div className="rounded-2xl aspect-video overflow-hidden group">
+                        <Image
+                          src={cap.image}
+                          alt={cap.title}
+                          width={1024}
+                          height={576}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                      </div>
                     </div>
-
-                    <Button variant="secondary" size="lg" className="w-full mb-6" asChild>
-                      <Link href="/register">Эхлэх</Link>
-                    </Button>
-
-                    <ul className="space-y-2.5">
-                      {plan.features.map((feature) => (
-                        <li
-                          key={feature}
-                          className="flex items-start gap-2 text-sm text-text-secondary"
-                        >
-                          <Check className="h-4 w-4 text-brand-500 mt-0.5 shrink-0" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
                   </div>
                 </AnimatedSection>
               ))}
@@ -440,57 +205,275 @@ export default function LandingPage() {
         </section>
       </AnimatedSection>
 
-      {/* CTA — asymmetric: text left, button right */}
+      {/* ═══ Feature Grid — 3D Tilt Cards ═══ */}
       <AnimatedSection>
-        <section className="relative py-20 bg-brand-50 overflow-hidden">
-          {/* Decorative glows */}
-          <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full bg-brand-300/[0.10] blur-[100px]" />
-          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] rounded-full bg-brand-400/[0.08] blur-[80px]" />
-          <div className="relative mx-auto max-w-6xl px-6 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <div>
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-text-primary mb-3">
-                10 минутад холбогдоно
-              </h2>
-              <p className="text-text-secondary max-w-md">
-                Бүртгүүлж, барааны каталогоо оруулаад л болоо. Код бичих шаардлагагүй.
-              </p>
+        <section className="relative py-20 sm:py-28 px-4 sm:px-6 overflow-hidden">
+          <GlassShape
+            shape="torus"
+            className="w-72 h-72 -bottom-20 -left-20 z-0 opacity-30"
+            speed={-0.15}
+          />
+
+          <div className="mx-auto max-w-6xl relative z-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+              {featureGrid.map((feature, i) => (
+                <AnimatedSection key={feature.title} delay={i * 0.08}>
+                  <TiltCard className="rounded-2xl border border-white/[0.06] p-5 sm:p-7 h-full">
+                    <div className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white/[0.08]">
+                      <span className="material-symbols-outlined text-[20px] text-white/50">
+                        {feature.icon}
+                      </span>
+                    </div>
+                    <h3 className="font-headline italic text-xl text-white mb-2">
+                      {feature.title}
+                    </h3>
+                    <p className="text-[14px] text-white/40 font-light leading-relaxed">
+                      {feature.description}
+                    </p>
+                  </TiltCard>
+                </AnimatedSection>
+              ))}
             </div>
-            <Button size="xl" className="shrink-0" asChild>
-              <Link href="/register">
-                Үнэгүй эхлэх
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
           </div>
         </section>
       </AnimatedSection>
 
-      {/* Footer */}
-      <footer className="border-t border-border-subtle py-8">
-        <div className="mx-auto max-w-6xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded-[4px] bg-brand-600 flex items-center justify-center">
-              <Sparkles className="h-3.5 w-3.5 text-white" />
+      {/* ═══ Stats Strip ═══ */}
+      <AnimatedSection>
+        <section id="stats" className="relative py-16 sm:py-20 px-4 sm:px-6 overflow-hidden">
+          <GlassShape
+            shape="sphere"
+            className="w-48 h-48 bottom-10 right-1/4 z-0 opacity-40"
+            speed={0.15}
+          />
+
+          <div className="mx-auto max-w-5xl relative z-10">
+            <div className="rounded-2xl border border-white/[0.06] px-5 py-8 sm:px-8 sm:py-12 md:px-12">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-12 text-center">
+                {stats.map((stat) => (
+                  <div key={stat.label}>
+                    <div className="flex items-baseline justify-center gap-0.5">
+                      <StatsCounter
+                        to={stat.value}
+                        formatType={stat.formatType}
+                        className="font-headline italic text-3xl sm:text-4xl md:text-5xl text-white"
+                      />
+                      <span className="font-headline italic text-3xl sm:text-4xl md:text-5xl text-white">
+                        {stat.suffix}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-[11px] uppercase tracking-[0.15em] text-white/40">
+                      {stat.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
-            <span className="text-sm font-medium text-text-primary">Vela AI</span>
           </div>
-          <div className="flex items-center gap-6">
-            <Link
-              href="#"
-              className="text-sm text-text-tertiary hover:text-text-secondary transition-colors"
-            >
-              Нууцлалын бодлого
-            </Link>
-            <Link
-              href="#"
-              className="text-sm text-text-tertiary hover:text-text-secondary transition-colors"
-            >
-              Үйлчилгээний нөхцөл
-            </Link>
+        </section>
+      </AnimatedSection>
+
+      {/* ═══ Testimonials — 3D Tilt Cards ═══ */}
+      <AnimatedSection>
+        <section className="py-20 sm:py-28 px-4 sm:px-6">
+          <div className="mx-auto max-w-6xl">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+              {testimonials.map((t, i) => (
+                <AnimatedSection key={t.name} delay={i * 0.1}>
+                  <TiltCard className="rounded-2xl border border-white/[0.06] p-7 h-full flex flex-col justify-between">
+                    <p className="font-serif italic text-lg text-white/80 leading-relaxed mb-8">
+                      &ldquo;{t.quote}&rdquo;
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`h-9 w-9 rounded-full ${t.color} flex items-center justify-center`}
+                      >
+                        <span className="text-xs font-medium text-white/80">
+                          {t.name.charAt(0)}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-white/80">{t.name}</p>
+                        <p className="text-xs text-white/45">{t.company}</p>
+                      </div>
+                    </div>
+                  </TiltCard>
+                </AnimatedSection>
+              ))}
+            </div>
           </div>
-          <p className="text-xs text-text-tertiary">
-            &copy; {new Date().getFullYear()} Vela AI. Бүх эрх хуулиар хамгаалагдсан.
-          </p>
+        </section>
+      </AnimatedSection>
+
+      {/* ═══ CTA Section ═══ */}
+      <AnimatedSection>
+        <section className="relative py-20 sm:py-32 px-4 sm:px-6 text-center overflow-hidden">
+          <GlassShape
+            shape="sphere"
+            className="w-96 h-96 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-0 opacity-20"
+            speed={0.05}
+          />
+
+          <div className="mx-auto max-w-3xl relative z-10">
+            <h2 className="font-serif italic text-4xl sm:text-5xl md:text-6xl tracking-[-0.03em] text-white leading-[1.05] mb-10">
+              <span className="shimmer-text">Таны дараагийн</span>
+              <br />
+              <span className="text-white/40">борлуулалт эндээс.</span>
+            </h2>
+            <div className="flex items-center justify-center gap-4 flex-wrap">
+              <Link
+                href="/register"
+                className="bg-white text-black text-sm font-medium px-8 py-3.5 rounded-full hover:bg-white/90 hover:scale-105 active:scale-95 transition-all duration-200"
+              >
+                Одоо эхлэх
+              </Link>
+              <Link
+                href="#"
+                className="glass-card glass-glint text-sm text-white/70 font-medium px-8 py-3.5 rounded-full hover:text-white hover:scale-105 active:scale-95 transition-all duration-200"
+              >
+                Демо авах
+              </Link>
+            </div>
+          </div>
+        </section>
+      </AnimatedSection>
+
+      {/* ═══ Footer ═══ */}
+      <footer className="relative py-12 sm:py-16 px-4 sm:px-6 overflow-hidden border-t border-white/[0.06]">
+        <div className="absolute inset-0 bg-gradient-to-t from-white/[0.02] to-transparent" />
+        <div className="mx-auto max-w-6xl relative z-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+            {/* Column 1: Logo + description + social */}
+            <div className="sm:col-span-2 lg:col-span-1">
+              <VelaLogo size={18} />
+              <p className="text-sm text-white/40 font-light mt-4 mb-6 leading-relaxed">
+                Монголын e-commerce-д зориулсан AI борлуулалтын ухаалаг шийдэл.
+              </p>
+              <div className="flex items-center gap-3">
+                {/* Facebook */}
+                <a
+                  href="#"
+                  className="text-white/30 hover:text-white/60 transition-colors"
+                  aria-label="Facebook"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                  </svg>
+                </a>
+                {/* Instagram */}
+                <a
+                  href="#"
+                  className="text-white/30 hover:text-white/60 transition-colors"
+                  aria-label="Instagram"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                  </svg>
+                </a>
+                {/* LinkedIn */}
+                <a
+                  href="#"
+                  className="text-white/30 hover:text-white/60 transition-colors"
+                  aria-label="LinkedIn"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                  </svg>
+                </a>
+                {/* X (Twitter) */}
+                <a
+                  href="#"
+                  className="text-white/30 hover:text-white/60 transition-colors"
+                  aria-label="X"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            {/* Column 2: Бүтээгдэхүүн */}
+            <div>
+              <h4 className="text-xs uppercase tracking-[0.15em] text-white/60 font-medium mb-4">
+                Бүтээгдэхүүн
+              </h4>
+              <ul className="space-y-2.5">
+                {["AI Борлуулагч", "Аналитик", "Каталог удирдлага", "Chat Widget", "API"].map(
+                  (link) => (
+                    <li key={link}>
+                      <Link
+                        href="#"
+                        className="text-sm text-white/35 hover:text-white/60 transition-colors"
+                      >
+                        {link}
+                      </Link>
+                    </li>
+                  ),
+                )}
+              </ul>
+            </div>
+
+            {/* Column 3: Компани */}
+            <div>
+              <h4 className="text-xs uppercase tracking-[0.15em] text-white/60 font-medium mb-4">
+                Компани
+              </h4>
+              <ul className="space-y-2.5">
+                {["Бидний тухай", "Блог", "Ажлын байр", "Түншлэл"].map((link) => (
+                  <li key={link}>
+                    <Link
+                      href="#"
+                      className="text-sm text-white/35 hover:text-white/60 transition-colors"
+                    >
+                      {link}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Column 4: Холбоо барих */}
+            <div>
+              <h4 className="text-xs uppercase tracking-[0.15em] text-white/60 font-medium mb-4">
+                Холбоо барих
+              </h4>
+              <ul className="space-y-3">
+                <li className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[16px] text-white/35">mail</span>
+                  <span className="text-sm text-white/35">hello@vela.mn</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[16px] text-white/35">phone</span>
+                  <span className="text-sm text-white/35">+976 7700 0000</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="material-symbols-outlined text-[16px] text-white/35 mt-0.5">
+                    location_on
+                  </span>
+                  <span className="text-sm text-white/35">Улаанбаатар, Монгол</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div className="border-t border-white/[0.06] pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-xs text-white/20">
+              &copy; {new Date().getFullYear()} Vela AI. Бүх эрх хуулиар хамгаалагдсан.
+            </p>
+            <div className="flex items-center gap-6">
+              {["Нууцлалын бодлого", "Үйлчилгээний нөхцөл"].map((text) => (
+                <Link
+                  key={text}
+                  href="#"
+                  className="text-xs text-white/20 hover:text-white/40 transition-colors"
+                >
+                  {text}
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
       </footer>
 
