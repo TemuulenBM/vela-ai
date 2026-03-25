@@ -87,7 +87,7 @@ export default function LoginPage() {
                 label="НУУЦ ҮГ"
                 labelRight={
                   <Link
-                    href="#"
+                    href="/forgot-password"
                     className="text-[10px] font-semibold uppercase tracking-widest text-white/40 hover:text-white/70 transition-colors"
                   >
                     Мартсан?

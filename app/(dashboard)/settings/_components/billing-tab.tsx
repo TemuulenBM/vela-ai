@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CountUp, ProgressBar } from "@/shared/components/ui";
 import { trpc } from "@/shared/lib/trpc";
 import { PLAN_LIMITS, PLAN_LABELS, PLAN_PRICES } from "./constants";
@@ -9,8 +9,14 @@ import { PaymentHistory } from "./payment-history";
 
 export function BillingTab() {
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(true);
   const storeQuery = trpc.tenants.getStore.useQuery();
   const usageQuery = trpc.tenants.getUsage.useQuery();
+  const subQuery = trpc.payments.getActiveSubscription.useQuery();
+
+  useEffect(() => {
+    setBannerDismissed(localStorage.getItem("upgrade-banner-dismissed") === "true");
+  }, []);
 
   const plan = storeQuery.data?.plan ?? "free";
   const limits = PLAN_LIMITS[plan] ?? PLAN_LIMITS.free;
@@ -39,18 +45,41 @@ export function BillingTab() {
           </div>
         </div>
 
-        {/* Payment Method */}
+        {/* Subscription Status */}
         <div className="col-span-4 glass-card rounded-3xl p-8 flex flex-col justify-between">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
-            ТӨЛБӨРИЙН АРГА
+            ЗАХИАЛГА
           </p>
-          <div className="mt-3 flex items-center gap-3">
-            <span className="material-symbols-outlined text-[24px] text-white/50">credit_card</span>
-            <span className="font-mono text-lg text-white tracking-wider">•••• 8821</span>
-          </div>
-          <p className="mt-2 text-[10px] font-semibold uppercase tracking-widest text-white/30">
-            ХҮЧИНТЭЙ 09/27
-          </p>
+          {subQuery.data ? (
+            <>
+              <div className="mt-3 flex items-center gap-3">
+                <span className="material-symbols-outlined text-[24px] text-emerald-400">
+                  verified
+                </span>
+                <span className="text-lg font-medium text-white">
+                  {PLAN_LABELS[subQuery.data.plan] ?? subQuery.data.plan}
+                </span>
+              </div>
+              <p className="mt-2 text-[10px] font-semibold uppercase tracking-widest text-white/30">
+                Хүчинтэй: {new Date(subQuery.data.periodEnd).toLocaleDateString("mn-MN")} хүртэл
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="mt-3 flex items-center gap-3">
+                <span className="material-symbols-outlined text-[24px] text-white/30">
+                  credit_card_off
+                </span>
+                <span className="text-sm text-white/50">Идэвхтэй захиалга алга</span>
+              </div>
+              <button
+                onClick={() => setShowUpgrade(true)}
+                className="mt-3 text-[10px] font-semibold uppercase tracking-widest text-white/50 hover:text-white/70 transition-colors"
+              >
+                Багц сонгох →
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -139,28 +168,38 @@ export function BillingTab() {
       <PaymentHistory />
 
       {/* Upgrade banner */}
-      <div className="glass-card rounded-3xl p-8 flex items-start gap-5">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/[0.06]">
-          <span className="material-symbols-outlined text-[24px] text-white/60">auto_awesome</span>
-        </div>
-        <div className="flex-1">
-          <h3 className="text-lg font-semibold text-white">Багцаа шинэчлэх үү?</h3>
-          <p className="mt-1 text-sm text-white/40">
-            Таны одоогийн ашиглалт сарын хязгаартаа ойртож байна. Жилээр төлснөөр 20% хэмнэнэ.
-          </p>
-          <div className="mt-4 flex items-center gap-3">
-            <button
-              onClick={() => setShowUpgrade(true)}
-              className="rounded-full bg-white px-5 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-black transition-all hover:bg-white/90"
-            >
-              Багц харах
-            </button>
-            <button className="text-sm text-white/40 transition-colors hover:text-white/60">
-              Хаах
-            </button>
+      {!bannerDismissed && (
+        <div className="glass-card rounded-3xl p-8 flex items-start gap-5">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/[0.06]">
+            <span className="material-symbols-outlined text-[24px] text-white/60">
+              auto_awesome
+            </span>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-white">Багцаа шинэчлэх үү?</h3>
+            <p className="mt-1 text-sm text-white/40">
+              Таны одоогийн ашиглалт сарын хязгаартаа ойртож байна. Жилээр төлснөөр 20% хэмнэнэ.
+            </p>
+            <div className="mt-4 flex items-center gap-3">
+              <button
+                onClick={() => setShowUpgrade(true)}
+                className="rounded-full bg-white px-5 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-black transition-all hover:bg-white/90"
+              >
+                Багц харах
+              </button>
+              <button
+                onClick={() => {
+                  setBannerDismissed(true);
+                  localStorage.setItem("upgrade-banner-dismissed", "true");
+                }}
+                className="text-sm text-white/40 transition-colors hover:text-white/60"
+              >
+                Хаах
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

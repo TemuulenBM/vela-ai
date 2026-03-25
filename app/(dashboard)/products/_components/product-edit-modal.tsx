@@ -19,17 +19,19 @@ import {
   Switch,
 } from "@/shared/components/ui";
 
+interface ProductData {
+  id: string;
+  name: string;
+  description: string | null;
+  price: string;
+  category: string | null;
+  brand: string | null;
+  stockQty: number;
+  isAvailable: boolean;
+}
+
 interface ProductEditModalProps {
-  product: {
-    id: string;
-    name: string;
-    description: string | null;
-    price: string;
-    category: string | null;
-    brand: string | null;
-    stockQty: number;
-    isAvailable: boolean;
-  } | null;
+  product: ProductData | null;
   isPending: boolean;
   onClose: () => void;
   onSubmit: (data: {
@@ -42,9 +44,29 @@ interface ProductEditModalProps {
     stockQty: number;
     isAvailable: boolean;
   }) => void;
+  mode?: "edit" | "create";
+  onCreate?: (data: {
+    name: string;
+    description?: string;
+    price: string;
+    category?: string;
+    brand?: string;
+    stockQty: number;
+    isAvailable: boolean;
+  }) => void;
 }
 
-export function ProductEditModal({ product, isPending, onClose, onSubmit }: ProductEditModalProps) {
+export function ProductEditModal({
+  product,
+  isPending,
+  onClose,
+  onSubmit,
+  mode = "edit",
+  onCreate,
+}: ProductEditModalProps) {
+  const isCreate = mode === "create";
+  const isOpen = isCreate ? !product && !!onCreate : !!product;
+
   const [form, setForm] = useState(() => ({
     name: product?.name ?? "",
     description: product?.description ?? "",
@@ -56,9 +78,7 @@ export function ProductEditModal({ product, isPending, onClose, onSubmit }: Prod
   }));
 
   const handleSubmit = () => {
-    if (!product) return;
-    onSubmit({
-      id: product.id,
+    const data = {
       name: form.name,
       description: form.description || undefined,
       price: form.price,
@@ -66,15 +86,23 @@ export function ProductEditModal({ product, isPending, onClose, onSubmit }: Prod
       brand: form.brand || undefined,
       stockQty: form.stockQty,
       isAvailable: form.isAvailable,
-    });
+    };
+
+    if (isCreate && onCreate) {
+      onCreate(data);
+    } else if (product) {
+      onSubmit({ id: product.id, ...data });
+    }
   };
 
   return (
-    <Modal open={!!product} onOpenChange={(open) => !open && onClose()}>
+    <Modal open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <ModalContent className="max-w-lg">
         <ModalHeader>
-          <ModalTitle>Бараа засах</ModalTitle>
-          <ModalDescription>Барааны мэдээллийг шинэчлэх</ModalDescription>
+          <ModalTitle>{isCreate ? "Бараа нэмэх" : "Бараа засах"}</ModalTitle>
+          <ModalDescription>
+            {isCreate ? "Шинэ барааны мэдээлэл оруулах" : "Барааны мэдээллийг шинэчлэх"}
+          </ModalDescription>
         </ModalHeader>
 
         <div className="mt-4 flex flex-col gap-4">
@@ -156,7 +184,13 @@ export function ProductEditModal({ product, isPending, onClose, onSubmit }: Prod
             Болих
           </Button>
           <Button disabled={isPending || !form.name || !form.price} onClick={handleSubmit}>
-            {isPending ? "Хадгалж байна..." : "Хадгалах"}
+            {isPending
+              ? isCreate
+                ? "Нэмж байна..."
+                : "Хадгалж байна..."
+              : isCreate
+                ? "Нэмэх"
+                : "Хадгалах"}
           </Button>
         </ModalFooter>
       </ModalContent>

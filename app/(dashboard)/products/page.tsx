@@ -84,6 +84,7 @@ export default function ProductsPage() {
 
   const [editingProduct, setEditingProduct] = useState<(typeof items)[number] | null>(null);
   const [deletingProduct, setDeletingProduct] = useState<(typeof items)[number] | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const utils = trpc.useUtils();
 
@@ -110,11 +111,35 @@ export default function ProductsPage() {
   const createMutation = trpc.products.create.useMutation({
     onSuccess: () => {
       utils.products.list.invalidate();
+      setShowCreateModal(false);
     },
     onError: (err) => {
-      setError(`Duplicate error: ${err.message}`);
+      setError(`Бараа нэмэхэд алдаа: ${err.message}`);
     },
   });
+
+  const handleExportCSV = () => {
+    if (items.length === 0) return;
+    const headers = ["Нэр", "Ангилал", "Брэнд", "Үнэ", "Нөөц", "Төлөв"];
+    const rows = items.map((p) => [
+      p.name,
+      p.category ?? "",
+      p.brand ?? "",
+      p.price,
+      String(p.stockQty),
+      p.isAvailable ? "Идэвхтэй" : "Идэвхгүй",
+    ]);
+    const csv = [headers, ...rows]
+      .map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `products-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const handleDuplicate = (product: (typeof items)[number]) => {
     createMutation.mutate({
@@ -135,11 +160,16 @@ export default function ProductsPage() {
         <div className="flex items-end justify-between mb-10">
           <h1 className="text-5xl font-headline italic tracking-tighter text-white">Бараа</h1>
           <div className="flex items-center gap-3">
-            <Button variant="glass" size="md">
+            <Button
+              variant="glass"
+              size="md"
+              onClick={handleExportCSV}
+              disabled={items.length === 0}
+            >
               <span className="material-symbols-outlined text-[18px]">download</span>
               CSV татах
             </Button>
-            <Button size="md">
+            <Button size="md" onClick={() => setShowCreateModal(true)}>
               <span className="material-symbols-outlined text-[18px]">add</span>
               Бараа нэмэх
             </Button>
@@ -404,6 +434,19 @@ export default function ProductsPage() {
         onClose={() => setEditingProduct(null)}
         onSubmit={(data) => updateMutation.mutate(data)}
       />
+
+      {/* Create modal */}
+      {showCreateModal && (
+        <ProductEditModal
+          key="create"
+          product={null}
+          mode="create"
+          isPending={createMutation.isPending}
+          onClose={() => setShowCreateModal(false)}
+          onSubmit={() => {}}
+          onCreate={(data) => createMutation.mutate(data)}
+        />
+      )}
     </div>
   );
 }

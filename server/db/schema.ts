@@ -72,6 +72,21 @@ export const memberRoleEnum = pgEnum("member_role", ["owner", "admin", "member",
 
 export const messageRoleEnum = pgEnum("message_role", ["user", "assistant", "system", "tool"]);
 
+export const orderStatusEnum = pgEnum("order_status", [
+  "pending",
+  "processing",
+  "shipped",
+  "delivered",
+  "cancelled",
+]);
+
+export const returnStatusEnum = pgEnum("return_status", [
+  "pending",
+  "approved",
+  "rejected",
+  "completed",
+]);
+
 // ─── CORE ──────────────────────────────────────────────────────
 export const tenants = pgTable("tenants", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -380,4 +395,67 @@ export const usageLogs = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [uniqueIndex("usage_logs_tenant_month_idx").on(table.tenantId, table.periodMonth)],
+);
+
+// ─── ORDERS ───────────────────────────────────────────────────
+export const orders = pgTable(
+  "orders",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id),
+    shopperId: uuid("shopper_id")
+      .notNull()
+      .references(() => shoppers.id),
+    orderNumber: varchar("order_number", { length: 50 }).notNull().unique(),
+    status: orderStatusEnum("status").notNull().default("pending"),
+    totalAmount: numeric("total_amount", { precision: 12, scale: 2 }).notNull(),
+    shippingAddress: jsonb("shipping_address"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("orders_tenant_id_idx").on(table.tenantId),
+    index("orders_order_number_idx").on(table.orderNumber),
+  ],
+);
+
+export const orderItems = pgTable("order_items", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  orderId: uuid("order_id")
+    .notNull()
+    .references(() => orders.id),
+  productId: uuid("product_id")
+    .notNull()
+    .references(() => products.id),
+  tenantId: uuid("tenant_id")
+    .notNull()
+    .references(() => tenants.id),
+  quantity: integer("quantity").notNull().default(1),
+  unitPrice: numeric("unit_price", { precision: 12, scale: 2 }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ─── RETURNS ──────────────────────────────────────────────────
+export const returns = pgTable(
+  "returns",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id),
+    orderId: uuid("order_id")
+      .notNull()
+      .references(() => orders.id),
+    returnNumber: varchar("return_number", { length: 50 }).notNull().unique(),
+    reason: text("reason").notNull(),
+    status: returnStatusEnum("status").notNull().default("pending"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("returns_tenant_id_idx").on(table.tenantId),
+    index("returns_return_number_idx").on(table.returnNumber),
+  ],
 );

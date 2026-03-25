@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Input, Avatar, Badge, AnimateList, Button } from "@/shared/components/ui";
 import { cn, formatRelativeTime, formatTime } from "@/shared/lib/utils";
@@ -32,6 +32,9 @@ export default function ConversationsPage() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<ConvStatus | "all">("all");
   const [page, setPage] = useState(1);
+  const [messageInput, setMessageInput] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const utils = trpc.useUtils();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -61,6 +64,31 @@ export default function ConversationsPage() {
   const effectiveSelectedId =
     selectedId && items.some((c) => c.id === selectedId) ? selectedId : (items[0]?.id ?? null);
 
+  const sendMessageMutation = trpc.chat.sendMessage.useMutation({
+    onSuccess: () => {
+      setMessageInput("");
+      if (effectiveSelectedId) {
+        utils.chat.getConversation.invalidate({ id: effectiveSelectedId });
+        utils.chat.listConversations.invalidate();
+      }
+    },
+  });
+
+  const updateStatusMutation = trpc.chat.updateStatus.useMutation({
+    onSuccess: () => {
+      if (effectiveSelectedId) {
+        utils.chat.getConversation.invalidate({ id: effectiveSelectedId });
+      }
+      utils.chat.listConversations.invalidate();
+    },
+  });
+
+  const handleSend = () => {
+    const trimmed = messageInput.trim();
+    if (!trimmed || !effectiveSelectedId || sendMessageMutation.isPending) return;
+    sendMessageMutation.mutate({ conversationId: effectiveSelectedId, content: trimmed });
+  };
+
   const detailQuery = trpc.chat.getConversation.useQuery(
     { id: effectiveSelectedId! },
     { enabled: !!effectiveSelectedId },
@@ -71,6 +99,11 @@ export default function ConversationsPage() {
   const selected = detailQuery.data;
   const visibleMessages =
     selected?.messages.filter((m) => m.role === "user" || m.role === "assistant") ?? [];
+  const isResolved = selected?.status === "resolved" || selected?.status === "abandoned";
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [visibleMessages.length]);
 
   return (
     <div className="flex h-[calc(100vh-64px)] gap-0 overflow-hidden">
@@ -204,16 +237,35 @@ export default function ConversationsPage() {
                   </h3>
                   <div className="flex items-center gap-2 mt-0.5">
                     <div className="flex items-center gap-1.5">
-                      <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]" />
+                      <div
+                        className={cn(
+                          "h-1.5 w-1.5 rounded-full",
+                          selected.status === "active"
+                            ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]"
+                            : "bg-white/30",
+                        )}
+                      />
                       <span className="text-[10px] text-white/40 uppercase tracking-wider">
-                        Идэвхтэй
+                        {STATUS_BADGE[selected.status as ConvStatus]?.label ?? selected.status}
                       </span>
                     </div>
                   </div>
                 </div>
               </div>
-              <Button variant="glass" size="md">
-                Шийдэх
+              <Button
+                variant="glass"
+                size="md"
+                disabled={isResolved || updateStatusMutation.isPending}
+                onClick={() => {
+                  if (!effectiveSelectedId) return;
+                  updateStatusMutation.mutate({ id: effectiveSelectedId, status: "resolved" });
+                }}
+              >
+                {updateStatusMutation.isPending
+                  ? "Шийдэж байна..."
+                  : isResolved
+                    ? "Шийдсэн"
+                    : "Шийдэх"}
               </Button>
             </div>
 
@@ -263,37 +315,63 @@ export default function ConversationsPage() {
                   </div>
                 ))}
               </AnimateList>
+              <div ref={messagesEndRef} />
             </div>
 
             {/* Input footer */}
-            <div className="px-8 py-4 border-t border-white/[0.04]">
-              <div className="flex items-center gap-3">
-                <button className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/[0.05] text-white/40 hover:text-white/70 transition-colors">
-                  <span className="material-symbols-outlined text-[20px]">attach_file</span>
-                </button>
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    placeholder="Мессеж бичих..."
-                    className="w-full h-12 rounded-3xl bg-white/[0.05] border-none px-5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:bg-white/[0.08] transition-all"
-                  />
-                </div>
-                <button className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-black hover:bg-white/90 transition-colors">
-                  <span className="material-symbols-outlined text-[20px]">send</span>
-                </button>
+            {isResolved ? (
+              <div className="px-8 py-4 border-t border-white/[0.04] text-center">
+                <p className="text-xs text-white/30">Энэ яриа шийдэгдсэн байна</p>
               </div>
-              {/* Quick replies */}
-              <div className="flex gap-2 mt-3">
-                {["Юугаар тусалж болох вэ?", "Захиалгын төлөв", "Буцаалтын бодлого"].map((text) => (
+            ) : (
+              <div className="px-8 py-4 border-t border-white/[0.04]">
+                <div className="flex items-center gap-3">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      placeholder="Мессеж бичих..."
+                      value={messageInput}
+                      onChange={(e) => setMessageInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSend();
+                        }
+                      }}
+                      className="w-full h-12 rounded-3xl bg-white/[0.05] border-none px-5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:bg-white/[0.08] transition-all"
+                    />
+                  </div>
                   <button
-                    key={text}
-                    className="rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-[11px] text-white/50 hover:bg-white/[0.06] hover:text-white/70 transition-colors"
+                    onClick={handleSend}
+                    disabled={!messageInput.trim() || sendMessageMutation.isPending}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-black hover:bg-white/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    {text}
+                    <span className="material-symbols-outlined text-[20px]">send</span>
                   </button>
-                ))}
+                </div>
+                {/* Quick replies */}
+                <div className="flex gap-2 mt-3">
+                  {["Юугаар тусалж болох вэ?", "Захиалгын төлөв", "Буцаалтын бодлого"].map(
+                    (text) => (
+                      <button
+                        key={text}
+                        onClick={() => {
+                          if (!effectiveSelectedId || sendMessageMutation.isPending) return;
+                          sendMessageMutation.mutate({
+                            conversationId: effectiveSelectedId,
+                            content: text,
+                          });
+                        }}
+                        disabled={sendMessageMutation.isPending}
+                        className="rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-[11px] text-white/50 hover:bg-white/[0.06] hover:text-white/70 transition-colors disabled:opacity-40"
+                      >
+                        {text}
+                      </button>
+                    ),
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </>
         )}
       </div>

@@ -26,7 +26,29 @@ export function PaymentHistory() {
       {/* Header */}
       <div className="flex items-center justify-between px-8 pt-8 pb-6">
         <h2 className="font-headline text-2xl italic text-white">Төлбөрийн түүх</h2>
-        <button className="text-[10px] font-semibold uppercase tracking-widest text-white/40 transition-colors hover:text-white/60">
+        <button
+          disabled={!history || history.length === 0}
+          onClick={() => {
+            if (!history || history.length === 0) return;
+            const headers = ["Огноо", "Гүйлгээний ID", "Төлбөрийн систем", "Дүн (₮)", "Төлөв"];
+            const rows = history.map((log) => [
+              new Date(log.createdAt).toLocaleDateString("mn-MN"),
+              `VLA-${log.id.slice(0, 5).toUpperCase()}-QP`,
+              "QPay",
+              String(Number(log.amount)),
+              STATUS_MAP[log.status]?.label ?? log.status,
+            ]);
+            const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(",")).join("\n");
+            const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `payments-${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }}
+          className="text-[10px] font-semibold uppercase tracking-widest text-white/40 transition-colors hover:text-white/60 disabled:opacity-30"
+        >
           CSV ТАТАХ
         </button>
       </div>
