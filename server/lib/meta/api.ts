@@ -1,24 +1,28 @@
-const GRAPH_API_BASE = "https://graph.facebook.com/v21.0";
+const FB_GRAPH_API_BASE = "https://graph.facebook.com/v21.0";
+export const IG_GRAPH_API_BASE = "https://graph.instagram.com/v21.0";
 const MESSENGER_MAX_LENGTH = 2000;
 const INSTAGRAM_MAX_LENGTH = 1000;
 
 /**
  * Meta Send API-аар хариу илгээх.
  * Урт текстийг platform-ийн дагуу хэсэглэж илгээнэ.
+ * apiBase: Instagram Login token → graph.instagram.com, бусад → graph.facebook.com
  */
 export async function sendMetaMessage(params: {
   recipientId: string;
   text: string;
   pageAccessToken: string;
   platform: "messenger" | "instagram";
+  apiBase?: string;
 }): Promise<void> {
-  const { recipientId, text, pageAccessToken, platform } = params;
+  const { recipientId, text, pageAccessToken, platform, apiBase } = params;
   const maxLength = platform === "instagram" ? INSTAGRAM_MAX_LENGTH : MESSENGER_MAX_LENGTH;
+  const base = apiBase || FB_GRAPH_API_BASE;
 
   const chunks = splitMessage(text, maxLength);
 
   for (const chunk of chunks) {
-    await sendSingleMessage(recipientId, chunk, pageAccessToken);
+    await sendSingleMessage(recipientId, chunk, pageAccessToken, base);
   }
 }
 
@@ -26,8 +30,9 @@ async function sendSingleMessage(
   recipientId: string,
   text: string,
   pageAccessToken: string,
+  apiBase: string = FB_GRAPH_API_BASE,
 ): Promise<void> {
-  const response = await fetch(`${GRAPH_API_BASE}/me/messages`, {
+  const response = await fetch(`${apiBase}/me/messages`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -90,7 +95,7 @@ export async function getMetaUserProfile(
   pageAccessToken: string,
 ): Promise<{ name?: string; profilePic?: string }> {
   try {
-    const response = await fetch(`${GRAPH_API_BASE}/${userId}?fields=name,profile_pic`, {
+    const response = await fetch(`${FB_GRAPH_API_BASE}/${userId}?fields=name,profile_pic`, {
       headers: { Authorization: `Bearer ${pageAccessToken}` },
     });
     if (!response.ok) return {};
