@@ -1,33 +1,36 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { z } from "zod/v4";
 
-/** Zod schema — webhook payload runtime validation */
-const metaMessagingEventSchema = z.object({
-  sender: z.object({ id: z.string() }),
-  recipient: z.object({ id: z.string() }),
-  timestamp: z.number(),
+/**
+ * Zod schema — webhook payload runtime validation.
+ * Meta нь message, delivery, read, postback зэрэг олон event type илгээдэг
+ * тул z.looseObject() ашиглаж шаардлагатай field-ийг л шалгана.
+ */
+const metaMessagingEventSchema = z.looseObject({
+  sender: z.looseObject({ id: z.string() }),
+  recipient: z.looseObject({ id: z.string() }),
+  timestamp: z.number().optional(),
   message: z
-    .object({
+    .looseObject({
       mid: z.string(),
       text: z.string().optional(),
       is_echo: z.boolean().optional(),
-      attachments: z
-        .array(z.object({ type: z.string(), payload: z.object({ url: z.string() }) }))
-        .optional(),
     })
     .optional(),
-  postback: z.object({ title: z.string(), payload: z.string() }).optional(),
+  postback: z.looseObject({ title: z.string(), payload: z.string() }).optional(),
 });
 
 const metaWebhookPayloadSchema = z.object({
   object: z.enum(["page", "instagram"]),
-  entry: z.array(
-    z.object({
-      id: z.string(),
-      time: z.number(),
-      messaging: z.array(metaMessagingEventSchema).max(100).optional(),
-    }),
-  ),
+  entry: z
+    .array(
+      z.looseObject({
+        id: z.string(),
+        time: z.number().optional(),
+        messaging: z.array(metaMessagingEventSchema).max(100).optional(),
+      }),
+    )
+    .max(100),
 });
 
 export type MetaWebhookPayload = z.infer<typeof metaWebhookPayloadSchema>;
