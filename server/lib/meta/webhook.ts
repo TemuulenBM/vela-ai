@@ -30,20 +30,29 @@ export interface MetaWebhookPayload {
 /**
  * X-Hub-Signature-256 header-аар webhook payload-ийг verify хийх.
  * Meta нь sha256=<hex> форматаар илгээдэг.
+ * Facebook app болон Instagram app аль алиных нь secret-ээр шалгана.
  */
 export function verifyWebhookSignature(rawBody: string, signature: string | null): boolean {
   if (!signature) return false;
 
-  const appSecret = process.env.META_APP_SECRET;
-  if (!appSecret) throw new Error("META_APP_SECRET тохируулаагүй байна");
+  const secrets = [process.env.META_APP_SECRET, process.env.META_IG_APP_SECRET].filter(
+    Boolean,
+  ) as string[];
 
-  const expected = "sha256=" + createHmac("sha256", appSecret).update(rawBody).digest("hex");
+  if (secrets.length === 0) throw new Error("META_APP_SECRET тохируулаагүй байна");
 
-  try {
-    return timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
-  } catch {
-    return false;
+  for (const secret of secrets) {
+    const expected = "sha256=" + createHmac("sha256", secret).update(rawBody).digest("hex");
+    try {
+      if (timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) {
+        return true;
+      }
+    } catch {
+      continue;
+    }
   }
+
+  return false;
 }
 
 /**
