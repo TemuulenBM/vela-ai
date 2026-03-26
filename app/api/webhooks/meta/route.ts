@@ -76,11 +76,16 @@ export async function GET(request: NextRequest) {
  * 200 шууд буцааж, processing-ийг after()-аар async хийнэ.
  */
 export async function POST(request: NextRequest) {
-  // 1. Signature verify (rate limit-ийн ӨМНӨ — зөвхөн verified request тоолно)
+  // 0. Бүх incoming request лог (signature verify-ийн ӨМНӨ)
   const rawBody = await request.text();
   const signature = request.headers.get("x-hub-signature-256");
+  console.log(
+    `[WH-RAW] len=${rawBody.length} sig=${signature ? "yes" : "no"} body=${rawBody.slice(0, 200)}`,
+  );
 
+  // 1. Signature verify (rate limit-ийн ӨМНӨ — зөвхөн verified request тоолно)
   if (!verifyWebhookSignature(rawBody, signature)) {
+    console.warn(`[WH-RAW] SIGNATURE FAILED`);
     return NextResponse.json({ error: "Invalid signature" }, { status: 403 });
   }
 
