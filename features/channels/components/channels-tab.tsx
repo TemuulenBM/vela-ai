@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { Badge, Button, Card } from "@/shared/components/ui";
 import {
@@ -51,12 +51,15 @@ export function ChannelsTab() {
     { enabled: !!pagesData },
   );
 
-  // OAuth callback-аас pages data ирсэн бол dialog нээх
+  // OAuth callback-аас pages data ирсэн бол dialog нээх (нэг удаа л ажиллана)
+  const processedRef = useRef(false);
   useEffect(() => {
+    if (processedRef.current) return;
     const metaPages = searchParams.get("meta_pages");
     const metaError = searchParams.get("meta_error");
 
     if (!metaPages && !metaError) return;
+    processedRef.current = true;
 
     // URL-аас query params устгах
     const url = new URL(window.location.href);
@@ -71,8 +74,11 @@ export function ChannelsTab() {
     }
 
     if (metaPages) {
-      setPagesData(metaPages);
-      setShowPageSelect(true);
+      // queueMicrotask avoids synchronous setState in effect body
+      queueMicrotask(() => {
+        setPagesData(metaPages);
+        setShowPageSelect(true);
+      });
     }
   }, [searchParams]);
 

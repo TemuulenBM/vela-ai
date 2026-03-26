@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { FadeIn, PageHeader } from "@/shared/components/ui";
 import { GeneralTab } from "./_components/general-tab";
@@ -31,13 +31,10 @@ export default function SettingsPage() {
 
 function SettingsContent() {
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState<TabKey>("billing");
-
-  // OAuth callback-аас tab=channels query param ирвэл суваг tab-руу шилжих
-  useEffect(() => {
-    const tab = searchParams.get("tab");
-    if (tab === "channels") setActiveTab("channels");
-  }, [searchParams]);
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState<TabKey>(
+    tabParam === "channels" ? "channels" : "billing",
+  );
 
   return (
     <div className="px-8 py-10 max-w-[1600px] mx-auto flex flex-col gap-10">
