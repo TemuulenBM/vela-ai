@@ -318,8 +318,8 @@ export const channelsRouter = router({
     .mutation(async ({ ctx, input }) => {
       const parsed = decryptInstagramPayload(input.igData, ctx.tenantId);
 
-      // Subscribe IG account to webhooks
-      await subscribeInstagramToWebhook(parsed.igUserId, parsed.accessToken);
+      // Subscribe IG account to webhooks (Instagram Login token → graph.instagram.com)
+      await subscribeInstagramToWebhook(parsed.igUserId, parsed.accessToken, true);
 
       const connectionId = await upsertConnection({
         tenantId: ctx.tenantId,
