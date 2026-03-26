@@ -58,10 +58,9 @@ export async function GET(request: NextRequest) {
       new URL(`/settings?ig_data=${encodeURIComponent(igData)}&tab=channels`, origin),
     );
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.error("[Instagram OAuth Callback] Error:", message);
+    console.error("[Instagram OAuth Callback] Error:", err);
     return NextResponse.redirect(
-      new URL(`/settings?ig_error=${encodeURIComponent(message)}&tab=channels`, origin),
+      new URL("/settings?ig_error=exchange_failed&tab=channels", origin),
     );
   }
 }

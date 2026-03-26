@@ -46,8 +46,8 @@ export function parseOAuthState(state: string): { tenantId: string } {
   const decrypted = decryptToken(state);
   const parsed = JSON.parse(decrypted) as { tenantId: string; ts: number };
 
-  // 10 минутын дотор байх ёстой
-  if (Date.now() - parsed.ts > 10 * 60_000) {
+  // 30 минутын дотор байх ёстой (permission review хийхэд хангалттай)
+  if (Date.now() - parsed.ts > 30 * 60_000) {
     throw new Error("OAuth state expired");
   }
 

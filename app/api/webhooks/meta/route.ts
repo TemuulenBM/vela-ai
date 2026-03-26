@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { eq, and } from "drizzle-orm";
 import { db } from "@/server/db/db";
 import { channelConnections, tenants, products, events } from "@/server/db/schema";
@@ -6,7 +6,7 @@ import {
   verifyWebhookSignature,
   verifyWebhookSubscription,
   extractTextMessages,
-  type MetaWebhookPayload,
+  parseWebhookPayload,
 } from "@/server/lib/meta/webhook";
 import { sendMetaMessage, IG_GRAPH_API_BASE } from "@/server/lib/meta/api";
 import { decryptToken } from "@/server/lib/meta/crypto";
@@ -19,9 +19,27 @@ import {
 } from "@/features/chat/lib/persistence";
 import type { UIMessage } from "ai";
 
+export const maxDuration = 60;
+
 // Mid-based deduplication (prevent processing Meta retries)
 const processedMids = new Map<string, number>();
-const DEDUP_TTL = 5 * 60_000; // 5 минут
+const DEDUP_TTL = 5 * 60_000;
+
+// Rate limiting — per IP, 60 req/min (зөвхөн verified request тоолно)
+const webhookRateMap = new Map<string, { count: number; resetAt: number }>();
+const WEBHOOK_RATE_WINDOW = 60_000;
+const WEBHOOK_RATE_LIMIT = 60;
+
+function isWebhookRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = webhookRateMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    webhookRateMap.set(ip, { count: 1, resetAt: now + WEBHOOK_RATE_WINDOW });
+    return false;
+  }
+  entry.count++;
+  return entry.count > WEBHOOK_RATE_LIMIT;
+}
 
 // Cleanup stale entries periodically
 if (typeof globalThis !== "undefined") {
@@ -29,6 +47,9 @@ if (typeof globalThis !== "undefined") {
     const now = Date.now();
     for (const [mid, ts] of processedMids) {
       if (now - ts > DEDUP_TTL) processedMids.delete(mid);
+    }
+    for (const [key, val] of webhookRateMap) {
+      if (now > val.resetAt) webhookRateMap.delete(key);
     }
   }, 60_000).unref?.();
 }
@@ -52,10 +73,10 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST — Meta incoming messages webhook.
- * 200 шууд буцааж, processing-ийг async хийнэ.
+ * 200 шууд буцааж, processing-ийг after()-аар async хийнэ.
  */
 export async function POST(request: NextRequest) {
-  // 1. Raw body авах + signature verify
+  // 1. Signature verify (rate limit-ийн ӨМНӨ — зөвхөн verified request тоолно)
   const rawBody = await request.text();
   const signature = request.headers.get("x-hub-signature-256");
 
@@ -63,35 +84,44 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 403 });
   }
 
-  const payload = JSON.parse(rawBody) as MetaWebhookPayload;
+  // 2. Rate limit (signature verify-ийн ДАРАА)
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  if (isWebhookRateLimited(ip)) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
+  // 3. Payload parse + validate
+  const payload = parseWebhookPayload(rawBody);
+  if (!payload) {
+    return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+  }
   console.log("[Meta Webhook] object:", payload.object, "entries:", payload.entry?.length);
 
-  // 2. Text messages-ийг ялгаж авах
+  // 4. Text messages + dedup
   const textMessages = extractTextMessages(payload);
-  console.log(
-    "[Meta Webhook] textMessages:",
-    textMessages.length,
-    textMessages.map((m) => ({
-      platform: m.platform,
-      pageId: m.pageId,
-      text: m.text?.slice(0, 50),
-    })),
-  );
-
-  // 3. Fire-and-forget async processing — 200 шууд буцаана
-  for (const msg of textMessages) {
-    // Deduplication check
-    if (processedMids.has(msg.messageId)) continue;
+  const messagesToProcess = textMessages.filter((msg) => {
+    if (processedMids.has(msg.messageId)) return false;
     processedMids.set(msg.messageId, Date.now());
+    return true;
+  });
 
-    // Async process (don't await — Meta needs 200 within 5s)
-    processIncomingMessage(msg).catch((err) => {
-      console.error("[Meta Webhook] Processing error:", err);
+  // 5. after() — response буцаасны дараа background-д processing үргэлжилнэ
+  if (messagesToProcess.length > 0) {
+    after(async () => {
+      for (const msg of messagesToProcess) {
+        try {
+          await processIncomingMessage(msg);
+        } catch (err) {
+          console.error("[Meta Webhook] Processing error:", err);
+        }
+      }
     });
   }
 
   return NextResponse.json({ status: "ok" });
 }
+
+// ─── Types ──────────────────────────────────────────────────────────
 
 interface IncomingMessage {
   platform: "messenger" | "instagram";
@@ -101,9 +131,10 @@ interface IncomingMessage {
   text: string;
 }
 
+// ─── Connection helpers ─────────────────────────────────────────────
+
 /** pageId (Messenger) эсвэл igAccountId (Instagram)-аар active connection олох. */
 async function findActiveConnection(msg: IncomingMessage) {
-  // Instagram webhook-д entry.id нь IG Account ID байдаг
   const idColumn =
     msg.platform === "instagram" ? channelConnections.igAccountId : channelConnections.pageId;
 
@@ -114,6 +145,7 @@ async function findActiveConnection(msg: IncomingMessage) {
       accessToken: channelConnections.accessToken,
       platform: channelConnections.platform,
       metadata: channelConnections.metadata,
+      tokenExpiresAt: channelConnections.tokenExpiresAt,
     })
     .from(channelConnections)
     .where(
@@ -128,6 +160,48 @@ async function findActiveConnection(msg: IncomingMessage) {
   return connection ?? null;
 }
 
+type ActiveConnection = NonNullable<Awaited<ReturnType<typeof findActiveConnection>>>;
+
+/** Token expire болсон эсэхийг шалгаж, expire бол status update хийнэ. */
+async function validateToken(connection: ActiveConnection): Promise<string | null> {
+  if (connection.tokenExpiresAt) {
+    const now = new Date();
+    if (now > connection.tokenExpiresAt) {
+      console.warn(`[Meta Webhook] Token expired for tenantId=${connection.tenantId}`);
+      await db
+        .update(channelConnections)
+        .set({ status: "token_expired" })
+        .where(eq(channelConnections.id, connection.id));
+      return null;
+    }
+    const daysLeft = (connection.tokenExpiresAt.getTime() - now.getTime()) / 86_400_000;
+    if (daysLeft < 7) {
+      console.warn(
+        `[Meta Webhook] Token expires in ${Math.round(daysLeft)}d, tenant=${connection.tenantId}`,
+      );
+    }
+  }
+
+  try {
+    return decryptToken(connection.accessToken);
+  } catch (err) {
+    console.error(`[Meta Webhook] Decrypt failed for tenantId=${connection.tenantId}:`, err);
+    return null;
+  }
+}
+
+/** Connection metadata-аас authType-ийг аюулгүй задлах. */
+function getApiBase(metadata: unknown): string | undefined {
+  if (metadata && typeof metadata === "object" && "authType" in metadata) {
+    return (metadata as { authType: string }).authType === "instagram_login"
+      ? IG_GRAPH_API_BASE
+      : undefined;
+  }
+  return undefined;
+}
+
+// ─── Chat helpers ───────────────────────────────────────────────────
+
 /** Conversation history-г UIMessage[] руу хөрвүүлэх. */
 function toUIMessages(history: Awaited<ReturnType<typeof getConversationMessages>>): UIMessage[] {
   return history
@@ -141,8 +215,8 @@ function toUIMessages(history: Awaited<ReturnType<typeof getConversationMessages
     }));
 }
 
-/** Tenant-ийн нэр + бүтээгдэхүүний ангилал авах. */
-async function getTenantContext(tenantId: string) {
+/** RAG pipeline ажиллуулж хариу авах. */
+async function generateResponse(tenantId: string, conversationId: string) {
   const [tenant] = await db
     .select({ name: tenants.name })
     .from(tenants)
@@ -154,24 +228,39 @@ async function getTenantContext(tenantId: string) {
     .from(products)
     .where(eq(products.tenantId, tenantId));
 
-  return {
+  const history = await getConversationMessages(conversationId, tenantId);
+
+  const result = await executeChatPipeline({
+    tenantId,
     tenantName: tenant?.name ?? "Дэлгүүр",
     productCategories: categories.map((c) => c.category).filter((c): c is string => c !== null),
-  };
+    messages: toUIMessages(history),
+  });
+
+  const text = await result.text;
+  const usage = await result.totalUsage;
+  console.log(
+    `[Meta Webhook] Pipeline done: len=${text?.length ?? 0}, tokens=${usage?.totalTokens}`,
+  );
+
+  return { text, tokensUsed: usage?.totalTokens };
 }
 
+// ─── Main processing ────────────────────────────────────────────────
+
 async function processIncomingMessage(msg: IncomingMessage) {
-  // 1. Connection олох
+  // 1. Connection + token
   const connection = await findActiveConnection(msg);
   if (!connection) {
-    console.warn(`[Meta Webhook] No active connection for pageId=${msg.pageId}`);
+    console.warn(`[Meta Webhook] No connection: pageId=${msg.pageId}, platform=${msg.platform}`);
     return;
   }
 
   const { tenantId } = connection;
-  const pageAccessToken = decryptToken(connection.accessToken);
+  const pageAccessToken = await validateToken(connection);
+  if (!pageAccessToken) return;
 
-  // 2. Shopper + conversation
+  // 2. Shopper + conversation + user message хадгалах
   const shopperId = await createOrGetMetaShopper(tenantId, msg.platform, msg.senderId);
   const conversationId = await createOrGetConversation(
     tenantId,
@@ -179,52 +268,36 @@ async function processIncomingMessage(msg: IncomingMessage) {
     undefined,
     msg.platform,
   );
-
-  // 3. User message хадгалах + history авах
   await saveMessage({ tenantId, conversationId, role: "user", content: msg.text });
-  const history = await getConversationMessages(conversationId, tenantId);
 
-  // 4. RAG pipeline
-  const { tenantName, productCategories } = await getTenantContext(tenantId);
-  const result = await executeChatPipeline({
-    tenantId,
-    tenantName,
-    productCategories,
-    messages: toUIMessages(history),
-  });
+  // 3. RAG pipeline → хариу
+  const { text: responseText, tokensUsed } = await generateResponse(tenantId, conversationId);
 
-  const responseText = await result.text;
-  const usage = await result.totalUsage;
-
-  // 5. Хариу хадгалах + илгээх
   if (responseText) {
     await saveMessage({
       tenantId,
       conversationId,
       role: "assistant",
       content: responseText,
-      tokensUsed: usage?.totalTokens,
+      tokensUsed,
     });
   }
 
-  // Instagram Login token → graph.instagram.com, бусад → graph.facebook.com
-  const metadata = connection.metadata as Record<string, unknown> | null;
-  const apiBase = metadata?.authType === "instagram_login" ? IG_GRAPH_API_BASE : undefined;
-
+  // 4. Meta API-аар хариу илгээх
   await sendMetaMessage({
     recipientId: msg.senderId,
     text: responseText || "Уучлаарай, хариулж чадахгүй байна.",
     pageAccessToken,
     platform: msg.platform,
-    apiBase,
+    apiBase: getApiBase(connection.metadata),
   });
 
-  // 6. Analytics event
+  // 5. Analytics
   await db.insert(events).values({
     tenantId,
     shopperId,
     conversationId,
     eventType: "chat_interaction",
-    metadata: { channel: msg.platform, tokensUsed: usage?.totalTokens },
+    metadata: { channel: msg.platform, tokensUsed },
   });
 }
