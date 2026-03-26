@@ -99,6 +99,9 @@ export async function POST(request: NextRequest) {
 
   // 4. Text messages + dedup
   const textMessages = extractTextMessages(payload);
+  console.log(
+    `[Meta Webhook] extracted=${textMessages.length}, entries=${payload.entry.length}, raw_messaging=${JSON.stringify(payload.entry.map((e) => ({ id: e.id, messaging_count: e.messaging?.length, first_event: e.messaging?.[0] })))}`,
+  );
   const messagesToProcess = textMessages.filter((msg) => {
     if (processedMids.has(msg.messageId)) return false;
     processedMids.set(msg.messageId, Date.now());
