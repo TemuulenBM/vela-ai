@@ -175,19 +175,18 @@ export async function subscribePageToWebhook(
 
 /**
  * Instagram Business Account-г webhook-д subscribe хийх.
- * Page access token ашиглана (IG account нь Page-тэй linked байх ёстой).
+ * useIgApi=true бол graph.instagram.com ашиглана (Instagram Login token-д).
  */
 export async function subscribeInstagramToWebhook(
   igAccountId: string,
-  pageAccessToken: string,
+  accessToken: string,
+  useIgApi: boolean = false,
 ): Promise<void> {
-  const res = await fetch(
-    `${GRAPH_API_BASE}/${igAccountId}/subscribed_apps?subscribed_fields=messages`,
-    {
-      method: "POST",
-      headers: { Authorization: `Bearer ${pageAccessToken}` },
-    },
-  );
+  const base = useIgApi ? IG_GRAPH_API_BASE : GRAPH_API_BASE;
+  const res = await fetch(`${base}/${igAccountId}/subscribed_apps?subscribed_fields=messages`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`Failed to subscribe Instagram account: ${err}`);
