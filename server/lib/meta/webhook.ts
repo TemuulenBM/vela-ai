@@ -3,38 +3,39 @@ import { z } from "zod/v4";
 
 /**
  * Zod schema — webhook payload runtime validation.
- * Meta нь message, delivery, read, postback зэрэг олон event type илгээдэг
- * тул z.looseObject() ашиглаж шаардлагатай field-ийг л шалгана.
+ * Meta нь message, delivery, read, postback, reaction, referral, optin
+ * зэрэг олон event type илгээдэг тул schema маш уян байх ёстой.
+ * Top-level-д зөвхөн object + entry шалгаж, бодит field шүүлт
+ * extractTextMessages()-д хийгдэнэ.
  */
-const metaMessagingEventSchema = z.looseObject({
-  sender: z.looseObject({ id: z.string() }),
-  recipient: z.looseObject({ id: z.string() }),
-  timestamp: z.number().optional(),
-  message: z
-    .looseObject({
-      mid: z.string(),
-      text: z.string().optional(),
-      is_echo: z.boolean().optional(),
-    })
-    .optional(),
-  postback: z.looseObject({ title: z.string(), payload: z.string() }).optional(),
-});
-
-const metaWebhookPayloadSchema = z.object({
-  object: z.enum(["page", "instagram"]),
+const metaWebhookPayloadSchema = z.looseObject({
+  object: z.string(),
   entry: z
     .array(
       z.looseObject({
         id: z.string(),
         time: z.number().optional(),
-        messaging: z.array(metaMessagingEventSchema).max(100).optional(),
+        messaging: z.array(z.looseObject({})).optional(),
       }),
     )
     .max(100),
 });
 
 export type MetaWebhookPayload = z.infer<typeof metaWebhookPayloadSchema>;
-export type MetaMessagingEvent = z.infer<typeof metaMessagingEventSchema>;
+
+/** Messaging event — extractTextMessages() дотор runtime шалгалттай ашиглана. */
+export interface MetaMessagingEvent {
+  sender?: { id: string };
+  recipient?: { id: string };
+  timestamp?: number;
+  message?: {
+    mid: string;
+    text?: string;
+    is_echo?: boolean;
+  };
+  postback?: { title: string; payload: string };
+  [key: string]: unknown;
+}
 
 /**
  * Raw body-г JSON parse + Zod validate хийх.
@@ -45,7 +46,7 @@ export function parseWebhookPayload(rawBody: string): MetaWebhookPayload | null 
     const json = JSON.parse(rawBody);
     const result = metaWebhookPayloadSchema.safeParse(json);
     if (!result.success) {
-      console.warn("[Meta Webhook] Invalid payload, issues:", result.error.issues.length);
+      console.warn("[Meta Webhook] Invalid payload:", JSON.stringify(result.error.issues));
       return null;
     }
     return result.data;
@@ -118,11 +119,14 @@ export function extractTextMessages(payload: MetaWebhookPayload): TextMessage[] 
 
   for (const entry of payload.entry) {
     if (!entry.messaging) continue;
-    for (const event of entry.messaging) {
+    for (const raw of entry.messaging) {
+      const event = raw as MetaMessagingEvent;
+      // Шаардлагатай field байхгүй event-ийг skip
+      if (!event.sender?.id || !event.message) continue;
       // Echo messages skip (бот өөрийнхөө илгээсэн мессежийг дахин боловсруулахгүй)
-      if (event.message?.is_echo) continue;
+      if (event.message.is_echo) continue;
       if (event.sender.id === entry.id) continue;
-      if (event.message?.text) {
+      if (event.message.text && event.message.mid) {
         results.push({
           platform,
           pageId: entry.id,
