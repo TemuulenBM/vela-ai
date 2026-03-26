@@ -1,6 +1,7 @@
 import { encryptToken, decryptToken } from "./crypto";
 
 const GRAPH_API_BASE = "https://graph.facebook.com/v21.0";
+const IG_GRAPH_API_BASE = "https://graph.instagram.com";
 
 interface MetaPage {
   id: string;
@@ -170,4 +171,131 @@ export async function subscribePageToWebhook(
     const err = await res.text();
     throw new Error(`Failed to subscribe page: ${err}`);
   }
+}
+
+/**
+ * Instagram Business Account-г webhook-д subscribe хийх.
+ * Page access token ашиглана (IG account нь Page-тэй linked байх ёстой).
+ */
+export async function subscribeInstagramToWebhook(
+  igAccountId: string,
+  pageAccessToken: string,
+): Promise<void> {
+  const res = await fetch(
+    `${GRAPH_API_BASE}/${igAccountId}/subscribed_apps?subscribed_fields=messages`,
+    {
+      method: "POST",
+      headers: { Authorization: `Bearer ${pageAccessToken}` },
+    },
+  );
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Failed to subscribe Instagram account: ${err}`);
+  }
+}
+
+// ─────────────────────────────────────────────
+// Instagram Login OAuth (IG-only дэлгүүрүүдэд)
+// ─────────────────────────────────────────────
+
+/**
+ * Instagram Login OAuth URL үүсгэх.
+ */
+export function buildInstagramOAuthUrl(tenantId: string, redirectUri: string): string {
+  const appId = process.env.META_IG_APP_ID;
+  if (!appId) throw new Error("META_IG_APP_ID тохируулаагүй байна");
+
+  const state = encryptToken(JSON.stringify({ tenantId, ts: Date.now() }));
+
+  const params = new URLSearchParams({
+    client_id: appId,
+    redirect_uri: redirectUri,
+    scope: "instagram_business_basic,instagram_business_manage_messages",
+    response_type: "code",
+    state,
+  });
+
+  return `https://api.instagram.com/oauth/authorize?${params.toString()}`;
+}
+
+/**
+ * Instagram OAuth code → short-lived access token.
+ * Instagram API нь form-urlencoded body хүлээн авдаг.
+ */
+export async function exchangeInstagramCode(
+  code: string,
+  redirectUri: string,
+): Promise<{ accessToken: string; userId: string }> {
+  const appId = process.env.META_IG_APP_ID;
+  const appSecret = process.env.META_IG_APP_SECRET;
+  if (!appId || !appSecret) throw new Error("META_IG_APP_ID/SECRET тохируулаагүй");
+
+  const body = new URLSearchParams({
+    client_id: appId,
+    client_secret: appSecret,
+    grant_type: "authorization_code",
+    redirect_uri: redirectUri,
+    code,
+  });
+
+  const res = await fetch("https://api.instagram.com/oauth/access_token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: body.toString(),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Instagram token exchange failed: ${err}`);
+  }
+
+  const data = (await res.json()) as { access_token: string; user_id: number };
+  return { accessToken: data.access_token, userId: String(data.user_id) };
+}
+
+/**
+ * Instagram short-lived token → long-lived token (60 хоног).
+ */
+export async function exchangeInstagramLongLivedToken(shortToken: string): Promise<{
+  accessToken: string;
+  expiresIn: number;
+}> {
+  const appSecret = process.env.META_IG_APP_SECRET;
+  if (!appSecret) throw new Error("META_IG_APP_SECRET тохируулаагүй");
+
+  const params = new URLSearchParams({
+    grant_type: "ig_exchange_token",
+    client_secret: appSecret,
+    access_token: shortToken,
+  });
+
+  const res = await fetch(`${IG_GRAPH_API_BASE}/access_token?${params.toString()}`);
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Instagram long-lived token exchange failed: ${err}`);
+  }
+
+  const data = (await res.json()) as { access_token: string; expires_in: number };
+  return { accessToken: data.access_token, expiresIn: data.expires_in };
+}
+
+/**
+ * Instagram user мэдээлэл авах (user_id, username).
+ */
+export async function getInstagramUserInfo(
+  accessToken: string,
+): Promise<{ userId: string; username: string }> {
+  const params = new URLSearchParams({
+    fields: "user_id,username",
+    access_token: accessToken,
+  });
+
+  const res = await fetch(`${IG_GRAPH_API_BASE}/me?${params.toString()}`);
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Failed to fetch Instagram user info: ${err}`);
+  }
+
+  const data = (await res.json()) as { user_id: string; username: string };
+  return { userId: data.user_id, username: data.username };
 }

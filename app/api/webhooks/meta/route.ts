@@ -8,7 +8,7 @@ import {
   extractTextMessages,
   type MetaWebhookPayload,
 } from "@/server/lib/meta/webhook";
-import { sendMetaMessage } from "@/server/lib/meta/api";
+import { sendMetaMessage, IG_GRAPH_API_BASE } from "@/server/lib/meta/api";
 import { decryptToken } from "@/server/lib/meta/crypto";
 import { executeChatPipeline } from "@/features/chat/lib/pipeline";
 import {
@@ -91,19 +91,24 @@ interface IncomingMessage {
   text: string;
 }
 
-/** pageId + platform-аар active connection олох. */
+/** pageId (Messenger) эсвэл igAccountId (Instagram)-аар active connection олох. */
 async function findActiveConnection(msg: IncomingMessage) {
+  // Instagram webhook-д entry.id нь IG Account ID байдаг
+  const idColumn =
+    msg.platform === "instagram" ? channelConnections.igAccountId : channelConnections.pageId;
+
   const [connection] = await db
     .select({
       id: channelConnections.id,
       tenantId: channelConnections.tenantId,
       accessToken: channelConnections.accessToken,
       platform: channelConnections.platform,
+      metadata: channelConnections.metadata,
     })
     .from(channelConnections)
     .where(
       and(
-        eq(channelConnections.pageId, msg.pageId),
+        eq(idColumn, msg.pageId),
         eq(channelConnections.platform, msg.platform),
         eq(channelConnections.status, "active"),
       ),
@@ -192,11 +197,16 @@ async function processIncomingMessage(msg: IncomingMessage) {
     });
   }
 
+  // Instagram Login token → graph.instagram.com, бусад → graph.facebook.com
+  const metadata = connection.metadata as Record<string, unknown> | null;
+  const apiBase = metadata?.authType === "instagram_login" ? IG_GRAPH_API_BASE : undefined;
+
   await sendMetaMessage({
     recipientId: msg.senderId,
     text: responseText || "Уучлаарай, хариулж чадахгүй байна.",
     pageAccessToken,
     platform: msg.platform,
+    apiBase,
   });
 
   // 6. Analytics event

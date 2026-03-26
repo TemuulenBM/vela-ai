@@ -12,6 +12,10 @@ export function useChannels() {
     onSuccess: () => utils.channels.listConnections.invalidate(),
   });
 
+  const connectInstagram = trpc.channels.connectInstagram.useMutation({
+    onSuccess: () => utils.channels.listConnections.invalidate(),
+  });
+
   const syncCatalog = trpc.channels.syncCatalog.useMutation({
     onSuccess: () => utils.channels.listConnections.invalidate(),
   });
@@ -20,6 +24,7 @@ export function useChannels() {
     connections: connectionsQuery.data ?? [],
     isLoading: connectionsQuery.isLoading,
     connectPage,
+    connectInstagram,
     disconnect,
     syncCatalog,
   };

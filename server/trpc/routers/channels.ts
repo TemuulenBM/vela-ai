@@ -5,7 +5,12 @@ import { router, protectedProcedure } from "../trpc";
 import { db } from "@/server/db/db";
 import { channelConnections } from "@/server/db/schema";
 import { encryptToken, decryptToken } from "@/server/lib/meta/crypto";
-import { buildOAuthUrl, subscribePageToWebhook } from "@/server/lib/meta/oauth";
+import {
+  buildOAuthUrl,
+  buildInstagramOAuthUrl,
+  subscribePageToWebhook,
+  subscribeInstagramToWebhook,
+} from "@/server/lib/meta/oauth";
 import { getPageCatalogs, syncCatalogProducts } from "@/server/lib/meta/catalog";
 
 /** Encrypted pages data-г задалж parsed object буцаана. */
@@ -45,6 +50,7 @@ async function upsertConnection(params: {
   igUsername?: string;
   encryptedToken: string;
   tokenExpiresAt: Date;
+  metadata?: Record<string, unknown>;
 }) {
   const [conn] = await db
     .insert(channelConnections)
@@ -57,6 +63,7 @@ async function upsertConnection(params: {
       igUsername: params.igUsername,
       accessToken: params.encryptedToken,
       tokenExpiresAt: params.tokenExpiresAt,
+      metadata: params.metadata,
       status: "active",
     })
     .onConflictDoUpdate({
@@ -67,6 +74,7 @@ async function upsertConnection(params: {
         tokenExpiresAt: params.tokenExpiresAt,
         igAccountId: params.igAccountId,
         igUsername: params.igUsername,
+        metadata: params.metadata,
         status: "active",
         disconnectedAt: null,
         updatedAt: new Date(),
@@ -75,6 +83,28 @@ async function upsertConnection(params: {
     .returning({ id: channelConnections.id });
 
   return conn.id;
+}
+
+/** Instagram callback encrypted data задлах + tenant шалгах. */
+interface ParsedInstagramData {
+  tenantId: string;
+  igUserId: string;
+  igUsername: string;
+  accessToken: string;
+  tokenExpiresAt: string;
+}
+
+function decryptInstagramPayload(igData: string, tenantId: string): ParsedInstagramData {
+  let parsed: ParsedInstagramData;
+  try {
+    parsed = JSON.parse(decryptToken(igData));
+  } catch {
+    throw new TRPCError({ code: "BAD_REQUEST", message: "Буруу Instagram data" });
+  }
+  if (parsed.tenantId !== tenantId) {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Tenant таарахгүй байна" });
+  }
+  return parsed;
 }
 
 /** Connection олох + tenant verify. */
@@ -197,6 +227,9 @@ export const channelsRouter = router({
       // Instagram connection (if opted in + IG account exists)
       let igConnectionId: string | null = null;
       if (input.connectInstagram && selectedPage.igAccountId) {
+        // Subscribe IG account to webhooks for DM messages
+        await subscribeInstagramToWebhook(selectedPage.igAccountId, selectedPage.pageAccessToken);
+
         igConnectionId = await upsertConnection({
           ...common,
           platform: "instagram",
@@ -252,6 +285,55 @@ export const channelsRouter = router({
         .where(eq(channelConnections.id, input.connectionId));
 
       return result;
+    }),
+
+  // ─────────────────────────────────────────────
+  // Instagram Login OAuth (IG-only дэлгүүрүүдэд)
+  // ─────────────────────────────────────────────
+
+  /**
+   * Instagram Login OAuth URL авах.
+   */
+  getInstagramOAuthUrl: protectedProcedure
+    .input(z.object({ redirectUri: z.string().url() }))
+    .query(({ ctx, input }) => {
+      return { url: buildInstagramOAuthUrl(ctx.tenantId, input.redirectUri) };
+    }),
+
+  /**
+   * Instagram callback-аас ирсэн encrypted data задлах.
+   */
+  decryptInstagramData: protectedProcedure
+    .input(z.object({ igData: z.string() }))
+    .query(({ ctx, input }) => {
+      const parsed = decryptInstagramPayload(input.igData, ctx.tenantId);
+      return { igUserId: parsed.igUserId, igUsername: parsed.igUsername };
+    }),
+
+  /**
+   * Instagram Login-аар холбох (IG-only, Facebook Page шаардахгүй).
+   */
+  connectInstagram: protectedProcedure
+    .input(z.object({ igData: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const parsed = decryptInstagramPayload(input.igData, ctx.tenantId);
+
+      // Subscribe IG account to webhooks
+      await subscribeInstagramToWebhook(parsed.igUserId, parsed.accessToken);
+
+      const connectionId = await upsertConnection({
+        tenantId: ctx.tenantId,
+        platform: "instagram",
+        pageId: parsed.igUserId,
+        pageName: `@${parsed.igUsername}`,
+        igAccountId: parsed.igUserId,
+        igUsername: parsed.igUsername,
+        encryptedToken: encryptToken(parsed.accessToken),
+        tokenExpiresAt: new Date(parsed.tokenExpiresAt),
+        metadata: { authType: "instagram_login" },
+      });
+
+      return { connectionId, igUsername: parsed.igUsername };
     }),
 
   /**
