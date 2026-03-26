@@ -50,6 +50,7 @@ async function sendSingleMessage(
     console.error("[Meta Send API] Error:", response.status, error);
     throw new Error(`Meta Send API failed: ${response.status}`);
   }
+  console.log(`[Meta Send API] Sent to: ...${recipientId.slice(-4)} via ${apiBase}`);
 }
 
 /**

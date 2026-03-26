@@ -1,30 +1,55 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { z } from "zod/v4";
 
-/** Meta webhook entry-ийн бүтэц */
-export interface MetaWebhookEntry {
-  id: string; // Page ID or IG account ID
-  time: number;
-  messaging: MetaMessagingEvent[];
-}
+/** Zod schema — webhook payload runtime validation */
+const metaMessagingEventSchema = z.object({
+  sender: z.object({ id: z.string() }),
+  recipient: z.object({ id: z.string() }),
+  timestamp: z.number(),
+  message: z
+    .object({
+      mid: z.string(),
+      text: z.string().optional(),
+      is_echo: z.boolean().optional(),
+      attachments: z
+        .array(z.object({ type: z.string(), payload: z.object({ url: z.string() }) }))
+        .optional(),
+    })
+    .optional(),
+  postback: z.object({ title: z.string(), payload: z.string() }).optional(),
+});
 
-export interface MetaMessagingEvent {
-  sender: { id: string };
-  recipient: { id: string };
-  timestamp: number;
-  message?: {
-    mid: string;
-    text?: string;
-    attachments?: { type: string; payload: { url: string } }[];
-  };
-  postback?: {
-    title: string;
-    payload: string;
-  };
-}
+const metaWebhookPayloadSchema = z.object({
+  object: z.enum(["page", "instagram"]),
+  entry: z.array(
+    z.object({
+      id: z.string(),
+      time: z.number(),
+      messaging: z.array(metaMessagingEventSchema).max(100).optional(),
+    }),
+  ),
+});
 
-export interface MetaWebhookPayload {
-  object: "page" | "instagram";
-  entry: MetaWebhookEntry[];
+export type MetaWebhookPayload = z.infer<typeof metaWebhookPayloadSchema>;
+export type MetaMessagingEvent = z.infer<typeof metaMessagingEventSchema>;
+
+/**
+ * Raw body-г JSON parse + Zod validate хийх.
+ * Амжилтгүй бол null буцаана.
+ */
+export function parseWebhookPayload(rawBody: string): MetaWebhookPayload | null {
+  try {
+    const json = JSON.parse(rawBody);
+    const result = metaWebhookPayloadSchema.safeParse(json);
+    if (!result.success) {
+      console.warn("[Meta Webhook] Invalid payload, issues:", result.error.issues.length);
+      return null;
+    }
+    return result.data;
+  } catch {
+    console.warn("[Meta Webhook] Failed to parse JSON");
+    return null;
+  }
 }
 
 /**
@@ -91,6 +116,9 @@ export function extractTextMessages(payload: MetaWebhookPayload): TextMessage[] 
   for (const entry of payload.entry) {
     if (!entry.messaging) continue;
     for (const event of entry.messaging) {
+      // Echo messages skip (бот өөрийнхөө илгээсэн мессежийг дахин боловсруулахгүй)
+      if (event.message?.is_echo) continue;
+      if (event.sender.id === entry.id) continue;
       if (event.message?.text) {
         results.push({
           platform,
