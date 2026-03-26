@@ -98,10 +98,23 @@ export async function POST(request: NextRequest) {
   console.log("[Meta Webhook] object:", payload.object, "entries:", payload.entry?.length);
 
   // 4. Text messages + dedup
+  for (const entry of payload.entry) {
+    const evtCount = entry.messaging?.length ?? 0;
+    console.log(`[WH] entry=${entry.id} msgs=${evtCount}`);
+    if (entry.messaging) {
+      for (const raw of entry.messaging) {
+        const keys = Object.keys(raw as Record<string, unknown>);
+        console.log(`[WH] evt keys=${keys.join(",")}`);
+        const e = raw as Record<string, unknown>;
+        if (e.sender) console.log(`[WH] sender=${JSON.stringify(e.sender)}`);
+        if (e.message) console.log(`[WH] message=${JSON.stringify(e.message)}`);
+        if (!e.sender) console.log(`[WH] NO SENDER in event`);
+        if (!e.message) console.log(`[WH] NO MESSAGE field`);
+      }
+    }
+  }
   const textMessages = extractTextMessages(payload);
-  console.log(
-    `[Meta Webhook] extracted=${textMessages.length}, entries=${payload.entry.length}, raw_messaging=${JSON.stringify(payload.entry.map((e) => ({ id: e.id, messaging_count: e.messaging?.length, first_event: e.messaging?.[0] })))}`,
-  );
+  console.log(`[WH] extracted=${textMessages.length}`);
   const messagesToProcess = textMessages.filter((msg) => {
     if (processedMids.has(msg.messageId)) return false;
     processedMids.set(msg.messageId, Date.now());
