@@ -64,9 +64,19 @@ export async function POST(request: NextRequest) {
   }
 
   const payload = JSON.parse(rawBody) as MetaWebhookPayload;
+  console.log("[Meta Webhook] object:", payload.object, "entries:", payload.entry?.length);
 
   // 2. Text messages-ийг ялгаж авах
   const textMessages = extractTextMessages(payload);
+  console.log(
+    "[Meta Webhook] textMessages:",
+    textMessages.length,
+    textMessages.map((m) => ({
+      platform: m.platform,
+      pageId: m.pageId,
+      text: m.text?.slice(0, 50),
+    })),
+  );
 
   // 3. Fire-and-forget async processing — 200 шууд буцаана
   for (const msg of textMessages) {
