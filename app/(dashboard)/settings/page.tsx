@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { FadeIn, PageHeader } from "@/shared/components/ui";
 import { GeneralTab } from "./_components/general-tab";
@@ -22,6 +22,14 @@ const TABS: { key: TabKey; label: string; icon: string }[] = [
 ];
 
 export default function SettingsPage() {
+  return (
+    <Suspense>
+      <SettingsContent />
+    </Suspense>
+  );
+}
+
+function SettingsContent() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<TabKey>("billing");
 
