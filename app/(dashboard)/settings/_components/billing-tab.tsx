@@ -24,6 +24,7 @@ export function BillingTab() {
     if (typeof window === "undefined") return true;
     return localStorage.getItem("upgrade-banner-dismissed") === "true";
   });
+
   const storeQuery = trpc.tenants.getStore.useQuery();
   const usageQuery = trpc.tenants.getUsage.useQuery();
   const subQuery = trpc.payments.getActiveSubscription.useQuery();

@@ -1,25 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { FadeIn, PageHeader } from "@/shared/components/ui";
 import { GeneralTab } from "./_components/general-tab";
 import { ApiKeysTab } from "./_components/api-keys-tab";
 import { TeamTab } from "./_components/team-tab";
 import { BillingTab } from "./_components/billing-tab";
 import { ImportTab } from "./_components/import-tab";
+import { ChannelsTab } from "@/features/channels/components/channels-tab";
 
-type TabKey = "general" | "api-keys" | "team" | "billing" | "import";
+type TabKey = "general" | "api-keys" | "team" | "billing" | "import" | "channels";
 
 const TABS: { key: TabKey; label: string; icon: string }[] = [
   { key: "general", label: "ЕРӨНХИЙ", icon: "tune" },
   { key: "api-keys", label: "API ТҮЛХҮҮР", icon: "key" },
+  { key: "channels", label: "СУВАГ", icon: "forum" },
   { key: "team", label: "БАГ", icon: "group" },
   { key: "billing", label: "ТӨЛБӨР", icon: "account_balance_wallet" },
   { key: "import", label: "ИМПОРТ", icon: "cloud_download" },
 ];
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<TabKey>("billing");
+  return (
+    <Suspense>
+      <SettingsContent />
+    </Suspense>
+  );
+}
+
+function SettingsContent() {
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState<TabKey>(
+    tabParam === "channels" ? "channels" : "billing",
+  );
 
   return (
     <div className="px-8 py-10 max-w-[1600px] mx-auto flex flex-col gap-10">
@@ -71,6 +86,7 @@ export default function SettingsPage() {
           <div className="col-span-9">
             {activeTab === "general" && <GeneralTab />}
             {activeTab === "api-keys" && <ApiKeysTab />}
+            {activeTab === "channels" && <ChannelsTab />}
             {activeTab === "team" && <TeamTab />}
             {activeTab === "billing" && <BillingTab />}
             {activeTab === "import" && <ImportTab />}

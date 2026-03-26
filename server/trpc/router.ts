@@ -5,6 +5,7 @@ import { chatRouter } from "./routers/chat";
 import { tenantsRouter } from "./routers/tenants";
 import { paymentsRouter } from "./routers/payments";
 import { crawlerRouter } from "./routers/crawler";
+import { channelsRouter } from "./routers/channels";
 
 export const appRouter = router({
   analytics: analyticsRouter,
@@ -13,6 +14,7 @@ export const appRouter = router({
   tenants: tenantsRouter,
   payments: paymentsRouter,
   crawler: crawlerRouter,
+  channels: channelsRouter,
 });
 
 export type AppRouter = typeof appRouter;

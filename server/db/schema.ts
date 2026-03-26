@@ -43,7 +43,7 @@ export const eventTypeEnum = pgEnum("event_type_enum", [
   "search_query",
 ]);
 
-export const channelEnum = pgEnum("channel_enum", ["web", "messenger", "email"]);
+export const channelEnum = pgEnum("channel_enum", ["web", "messenger", "instagram", "email"]);
 
 export const convStatusEnum = pgEnum("conv_status_enum", [
   "active",
@@ -94,6 +94,14 @@ export const crawlStatusEnum = pgEnum("crawl_status_enum", [
   "embedding",
   "completed",
   "failed",
+]);
+
+export const channelPlatformEnum = pgEnum("channel_platform", ["messenger", "instagram"]);
+
+export const channelConnectionStatusEnum = pgEnum("channel_connection_status", [
+  "active",
+  "disconnected",
+  "token_expired",
 ]);
 
 // ─── CORE ──────────────────────────────────────────────────────
@@ -479,6 +487,40 @@ export const crawlJobs = pgTable(
 );
 
 // ─── RETURNS ──────────────────────────────────────────────────
+// ─── CHANNELS ────────────────────────────────────────────────
+export const channelConnections = pgTable(
+  "channel_connections",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id),
+    platform: channelPlatformEnum("platform").notNull(),
+    pageId: varchar("page_id", { length: 255 }).notNull(),
+    pageName: varchar("page_name", { length: 500 }),
+    igAccountId: varchar("ig_account_id", { length: 255 }),
+    igUsername: varchar("ig_username", { length: 255 }),
+    accessToken: text("access_token").notNull(),
+    tokenExpiresAt: timestamp("token_expires_at", { withTimezone: true }),
+    catalogId: varchar("catalog_id", { length: 255 }),
+    lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
+    status: channelConnectionStatusEnum("status").notNull().default("active"),
+    metadata: jsonb("metadata"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    disconnectedAt: timestamp("disconnected_at", { withTimezone: true }),
+  },
+  (table) => [
+    index("channel_connections_tenant_idx").on(table.tenantId),
+    uniqueIndex("channel_connections_tenant_page_platform_uniq").on(
+      table.tenantId,
+      table.pageId,
+      table.platform,
+    ),
+    index("channel_connections_page_id_idx").on(table.pageId),
+  ],
+);
+
 export const returns = pgTable(
   "returns",
   {
