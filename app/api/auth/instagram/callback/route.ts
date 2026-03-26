@@ -27,10 +27,13 @@ export async function GET(request: NextRequest) {
   try {
     // 1. State-аас tenantId задлах
     const { tenantId } = parseOAuthState(state);
+    console.log("[Instagram OAuth] tenantId:", tenantId);
 
     // 2. Code → short-lived token + user_id
     const redirectUri = `${origin}/api/auth/instagram/callback`;
+    console.log("[Instagram OAuth] redirectUri:", redirectUri);
     const { accessToken: shortToken, userId } = await exchangeInstagramCode(code, redirectUri);
+    console.log("[Instagram OAuth] got short token for userId:", userId);
 
     // 3. Short → long-lived token (60 хоног)
     const { accessToken: longLivedToken, expiresIn } =
@@ -55,7 +58,7 @@ export async function GET(request: NextRequest) {
       new URL(`/settings?ig_data=${encodeURIComponent(igData)}&tab=channels`, origin),
     );
   } catch (err) {
-    console.error("[Instagram OAuth Callback] Error:", err);
+    console.error("[Instagram OAuth Callback] Error:", err instanceof Error ? err.message : err);
     return NextResponse.redirect(
       new URL("/settings?ig_error=exchange_failed&tab=channels", origin),
     );
