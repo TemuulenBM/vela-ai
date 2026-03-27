@@ -28,20 +28,20 @@ export function HeroSection() {
           <AnimatedSection>
             {/* Eyebrow */}
             <p className="text-[11px] uppercase tracking-[0.25em] text-white/30 font-body mb-8">
-              AI Борлуулалтын Платформ
+              Онлайн бизнесүүдэд зориулсан
             </p>
 
             {/* Heading — Cormorant serif italic */}
             <h1 className="font-headline italic text-[2.25rem] sm:text-5xl lg:text-[3.25rem] xl:text-[3.75rem] tracking-[-0.02em] text-white leading-[1.12] mb-7">
-              Таны бүтээгдэхүүнийг
+              Чатбот биш.
               <br />
-              <span className="text-white/30">мэддэг AI.</span>
+              <span className="text-white/30">Борлуулагч.</span>
             </h1>
 
             {/* Subtitle */}
             <p className="text-[15px] sm:text-base text-white/40 font-light max-w-md leading-relaxed mb-10">
-              Vela AI нь таны каталогоос суралцсан AI борлуулагчийг ажиллуулж, 24/7 худалдан
-              авагчдад хариулна.
+              Таны бараа бүрийн үнэ, размер, өнгийг мэддэг AI. Худалдан авагч асуухад шууд хариулна
+              — шөнийн 3 цагт ч гэсэн.
             </p>
 
             {/* CTA */}
