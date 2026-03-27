@@ -1,7 +1,7 @@
 import { after, NextRequest, NextResponse } from "next/server";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { db } from "@/server/db/db";
-import { channelConnections, tenants, products, events } from "@/server/db/schema";
+import { channelConnections, tenants, products, events, messages } from "@/server/db/schema";
 import {
   verifyWebhookSignature,
   verifyWebhookSubscription,
@@ -281,7 +281,19 @@ async function processIncomingMessage(msg: IncomingMessage) {
   const pageAccessToken = await validateToken(connection);
   if (!pageAccessToken) return;
 
-  // 2. Shopper + conversation + user message хадгалах
+  // 2. DB-level dedup — ижил meta mid аль хэдийн боловсруулагдсан эсэхийг шалгах
+  const [existing] = await db
+    .select({ id: messages.id })
+    .from(messages)
+    .where(sql`${messages.metadata}->>'metaMid' = ${msg.messageId}`)
+    .limit(1);
+
+  if (existing) {
+    console.log(`[Meta Webhook] Duplicate mid=${msg.messageId}, skipping`);
+    return;
+  }
+
+  // 3. Shopper + conversation + user message хадгалах
   const shopperId = await createOrGetMetaShopper(tenantId, msg.platform, msg.senderId);
   const conversationId = await createOrGetConversation(
     tenantId,
@@ -289,9 +301,15 @@ async function processIncomingMessage(msg: IncomingMessage) {
     undefined,
     msg.platform,
   );
-  await saveMessage({ tenantId, conversationId, role: "user", content: msg.text });
+  await saveMessage({
+    tenantId,
+    conversationId,
+    role: "user",
+    content: msg.text,
+    metadata: { metaMid: msg.messageId },
+  });
 
-  // 3. RAG pipeline → хариу
+  // 4. RAG pipeline → хариу
   const { text: responseText, tokensUsed } = await generateResponse(tenantId, conversationId);
 
   if (responseText) {
