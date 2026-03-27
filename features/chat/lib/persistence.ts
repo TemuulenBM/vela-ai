@@ -146,6 +146,7 @@ export async function saveMessage(params: {
   content: string | null;
   toolCalls?: unknown[];
   tokensUsed?: number;
+  metadata?: Record<string, unknown>;
 }): Promise<string> {
   const [msg] = await db
     .insert(messages)
@@ -156,6 +157,7 @@ export async function saveMessage(params: {
       content: params.content,
       toolCalls: params.toolCalls ?? null,
       tokensUsed: params.tokensUsed ?? null,
+      metadata: params.metadata ?? null,
     })
     .returning({ id: messages.id });
 
