@@ -63,6 +63,10 @@ export async function fetchInstagramMediaBatch(
 
 /** Нэг page fetch хийх (error handling-тай) */
 async function fetchMediaPage(url: string): Promise<IGMediaPage> {
+  // Log URL without access_token for debugging
+  const safeUrl = url.replace(/access_token=[^&]+/, "access_token=***");
+  console.log(`[IG Media] Fetching: ${safeUrl}`);
+
   const response = await fetch(url);
 
   if (!response.ok) {
@@ -82,7 +86,9 @@ async function fetchMediaPage(url: string): Promise<IGMediaPage> {
     throw new Error(`Instagram API error: ${response.status}`);
   }
 
-  return (await response.json()) as IGMediaPage;
+  const data = (await response.json()) as IGMediaPage;
+  console.log(`[IG Media] Got ${data.data?.length ?? 0} items, has next: ${!!data.paging?.next}`);
+  return data;
 }
 
 /**
