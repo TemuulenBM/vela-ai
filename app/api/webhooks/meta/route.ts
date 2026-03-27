@@ -1,7 +1,15 @@
 import { after, NextRequest, NextResponse } from "next/server";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, gte, count } from "drizzle-orm";
 import { db } from "@/server/db/db";
-import { channelConnections, tenants, products, events, messages } from "@/server/db/schema";
+import {
+  channelConnections,
+  tenants,
+  products,
+  events,
+  messages,
+  conversations,
+} from "@/server/db/schema";
+import { PLAN_LIMITS, OVERAGE_PRICE_MNT, OVERAGE_CAP_MNT } from "@/shared/lib/plan-config";
 import {
   verifyWebhookSignature,
   verifyWebhookSubscription,
@@ -239,7 +247,7 @@ function toUIMessages(history: Awaited<ReturnType<typeof getConversationMessages
 /** RAG pipeline ажиллуулж хариу авах. */
 async function generateResponse(tenantId: string, conversationId: string) {
   const [tenant] = await db
-    .select({ name: tenants.name })
+    .select({ name: tenants.name, plan: tenants.plan })
     .from(tenants)
     .where(eq(tenants.id, tenantId))
     .limit(1);
@@ -256,6 +264,7 @@ async function generateResponse(tenantId: string, conversationId: string) {
     tenantName: tenant?.name ?? "Дэлгүүр",
     productCategories: categories.map((c) => c.category).filter((c): c is string => c !== null),
     messages: toUIMessages(history),
+    plan: tenant?.plan ?? "trial",
   });
 
   const text = await result.text;
@@ -309,7 +318,55 @@ async function processIncomingMessage(msg: IncomingMessage) {
     metadata: { metaMid: msg.messageId },
   });
 
-  // 4. RAG pipeline → хариу
+  // 4. Conversation limit шалгах
+  const monthStart = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1));
+  const [tenant] = await db
+    .select({ plan: tenants.plan })
+    .from(tenants)
+    .where(eq(tenants.id, tenantId))
+    .limit(1);
+
+  const plan = tenant?.plan ?? "trial";
+  const planLimit = PLAN_LIMITS[plan]?.conversations ?? 0;
+  const overagePrice = OVERAGE_PRICE_MNT[plan] ?? 0;
+
+  const [convCount] = await db
+    .select({ value: count() })
+    .from(conversations)
+    .where(and(eq(conversations.tenantId, tenantId), gte(conversations.createdAt, monthStart)));
+
+  const currentCount = convCount?.value ?? 0;
+
+  if (currentCount >= planLimit) {
+    if (overagePrice === 0) {
+      // Trial/Solo/Plus — hard block
+      console.log(`[Meta Webhook] Conversation limit reached: tenant=${tenantId}, plan=${plan}`);
+      await sendMetaMessage({
+        recipientId: msg.senderId,
+        text: "Уучлаарай, сарын ярианы хязгаар дууссан байна. Дэлгүүрийн эзэнтэй холбогдоно уу.",
+        pageAccessToken,
+        platform: msg.platform,
+        apiBase: getApiBase(connection.metadata),
+      });
+      return;
+    }
+    // Max plan — overage cap шалгах
+    const overageCount = currentCount - planLimit;
+    const overageSpent = overageCount * overagePrice;
+    if (overageSpent >= OVERAGE_CAP_MNT) {
+      console.log(`[Meta Webhook] Overage cap reached: tenant=${tenantId}`);
+      await sendMetaMessage({
+        recipientId: msg.senderId,
+        text: "Уучлаарай, нэмэлт ярианы хязгаар хүрсэн байна. Дараа сард үргэлжлүүлнэ.",
+        pageAccessToken,
+        platform: msg.platform,
+        apiBase: getApiBase(connection.metadata),
+      });
+      return;
+    }
+  }
+
+  // 5. RAG pipeline → хариу
   const { text: responseText, tokensUsed } = await generateResponse(tenantId, conversationId);
 
   if (responseText) {
@@ -322,7 +379,7 @@ async function processIncomingMessage(msg: IncomingMessage) {
     });
   }
 
-  // 4. Meta API-аар хариу илгээх
+  // 6. Meta API-аар хариу илгээх
   await sendMetaMessage({
     recipientId: msg.senderId,
     text: responseText || "Уучлаарай, хариулж чадахгүй байна.",
@@ -331,7 +388,7 @@ async function processIncomingMessage(msg: IncomingMessage) {
     apiBase: getApiBase(connection.metadata),
   });
 
-  // 5. Analytics
+  // 7. Analytics
   await db.insert(events).values({
     tenantId,
     shopperId,

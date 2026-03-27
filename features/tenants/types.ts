@@ -1,4 +1,4 @@
-export type PlanType = "free" | "starter" | "growth" | "pro";
+export type PlanType = "trial" | "solo" | "plus" | "max";
 export type MemberRole = "owner" | "admin" | "member" | "viewer";
 
 export interface Tenant {

@@ -39,8 +39,8 @@ export function BillingTab() {
     },
   });
 
-  const plan = storeQuery.data?.plan ?? "free";
-  const limits = PLAN_LIMITS[plan] ?? PLAN_LIMITS.free;
+  const plan = storeQuery.data?.plan ?? "trial";
+  const limits = PLAN_LIMITS[plan] ?? PLAN_LIMITS.trial;
   const usage = usageQuery.data;
 
   return (
@@ -74,23 +74,34 @@ export function BillingTab() {
           {subQuery.data ? (
             <>
               <div className="mt-3 flex items-center gap-3">
-                <span className="material-symbols-outlined text-[24px] text-emerald-400">
-                  verified
+                <span
+                  className={`material-symbols-outlined text-[24px] ${subQuery.data.canceledAt ? "text-amber-400" : "text-emerald-400"}`}
+                >
+                  {subQuery.data.canceledAt ? "schedule" : "verified"}
                 </span>
                 <span className="text-lg font-medium text-white">
                   {PLAN_LABELS[subQuery.data.plan] ?? subQuery.data.plan}
                 </span>
+                {subQuery.data.canceledAt && (
+                  <span className="rounded-full bg-amber-400/10 px-3 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-amber-400">
+                    Цуцлагдсан
+                  </span>
+                )}
               </div>
               <div className="mt-2 flex items-center justify-between">
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-white/30">
-                  Хүчинтэй: {new Date(subQuery.data.periodEnd).toLocaleDateString("mn-MN")} хүртэл
+                  {subQuery.data.canceledAt
+                    ? `${new Date(subQuery.data.periodEnd).toLocaleDateString("mn-MN")} хүртэл идэвхтэй`
+                    : `Хүчинтэй: ${new Date(subQuery.data.periodEnd).toLocaleDateString("mn-MN")} хүртэл`}
                 </p>
-                <button
-                  onClick={() => setShowCancelConfirm(true)}
-                  className="text-[10px] font-semibold uppercase tracking-widest text-white/30 hover:text-[#ffb4ab] transition-colors"
-                >
-                  Цуцлах
-                </button>
+                {!subQuery.data.canceledAt && (
+                  <button
+                    onClick={() => setShowCancelConfirm(true)}
+                    className="text-[10px] font-semibold uppercase tracking-widest text-white/30 hover:text-[#ffb4ab] transition-colors"
+                  >
+                    Цуцлах
+                  </button>
+                )}
               </div>
             </>
           ) : (
@@ -193,22 +204,26 @@ export function BillingTab() {
               />
             </div>
 
-            {/* Team Members */}
+            {/* Channels */}
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-semibold uppercase tracking-widest text-white/40">
-                  БАГИЙН ГИШҮҮД
+                  СУВАГ
                 </span>
                 <span className="text-sm text-white/50 tabular-nums">
                   <CountUp
-                    to={usage?.members ?? 0}
+                    to={usage?.channels ?? 0}
                     format={(n) => Math.round(n).toLocaleString()}
                   />{" "}
-                  / {limits.members}
+                  / {limits.channels === 999 ? "∞" : limits.channels}
                 </span>
               </div>
               <ProgressBar
-                value={Math.min(((usage?.members ?? 0) / limits.members) * 100, 100)}
+                value={
+                  limits.channels === 999
+                    ? 0
+                    : Math.min(((usage?.channels ?? 0) / limits.channels) * 100, 100)
+                }
                 height={6}
                 delay={0.2}
                 color="rgba(255,255,255,0.20)"

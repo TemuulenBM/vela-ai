@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { db } from "@/server/db/db";
 import { users, tenants, tenantMembers, subscriptions } from "@/server/db/schema";
+import { TRIAL_DAYS } from "@/shared/lib/plan-config";
 
 // ---------------------------------------------------------------------------
 // Slug generation — Mongolian-safe
@@ -71,7 +72,7 @@ export async function registerUser(input: RegisterInput): Promise<RegisterResult
       .values({
         name: input.organizationName,
         slug: generateSlug(input.organizationName),
-        plan: "free",
+        plan: "trial",
       })
       .returning({ id: tenants.id });
     tenantId = tenant.id;
@@ -84,17 +85,17 @@ export async function registerUser(input: RegisterInput): Promise<RegisterResult
       role: "owner",
     });
 
-    // Create free subscription (1 year)
+    // Create trial subscription (7 days)
     const now = new Date();
-    const oneYearLater = new Date(now);
-    oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
+    const trialEnd = new Date(now);
+    trialEnd.setDate(trialEnd.getDate() + TRIAL_DAYS);
 
     await db.insert(subscriptions).values({
       tenantId: tenant.id,
-      plan: "free",
-      status: "active",
+      plan: "trial",
+      status: "trialing",
       periodStart: now,
-      periodEnd: oneYearLater,
+      periodEnd: trialEnd,
     });
 
     return { success: true };

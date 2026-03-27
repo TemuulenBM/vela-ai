@@ -22,8 +22,8 @@ async function seed() {
   const [tenant1, tenant2] = await db
     .insert(tenants)
     .values([
-      { name: "Гоо Сайхан Дэлгүүр", slug: "goo-saikhan", plan: "starter" },
-      { name: "Электроник Шоп", slug: "elektronik-shop", plan: "growth" },
+      { name: "Гоо Сайхан Дэлгүүр", slug: "goo-saikhan", plan: "solo" },
+      { name: "Электроник Шоп", slug: "elektronik-shop", plan: "plus" },
     ])
     .returning();
 
@@ -460,14 +460,14 @@ async function seed() {
   await db.insert(subscriptions).values([
     {
       tenantId: tenant1.id,
-      plan: "starter",
+      plan: "solo",
       status: "active",
       periodStart: new Date("2026-03-01"),
       periodEnd: new Date("2026-04-01"),
     },
     {
       tenantId: tenant2.id,
-      plan: "growth",
+      plan: "plus",
       status: "active",
       periodStart: new Date("2026-03-01"),
       periodEnd: new Date("2026-04-01"),
