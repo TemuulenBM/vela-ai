@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
       .limit(1);
 
     // Test IG media API directly
-    let mediaTest: Record<string, unknown> = {};
+    const mediaTest: Record<string, unknown> = {};
     try {
       const token = decryptToken(conn.accessToken);
       const url = `https://graph.instagram.com/v21.0/me/media?fields=id,caption,media_type,timestamp&limit=3&access_token=${token}`;
