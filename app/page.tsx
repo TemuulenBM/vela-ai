@@ -9,20 +9,20 @@ import { TiltCard } from "./tilt-card";
 import { GlassShape } from "@/shared/components/ui/glass-shape";
 import { VelaLogo } from "./vela-logo";
 
-const logoStrip = ["Shoppy", "eMarket", "Gobi", "Nomin", "Mmarket"];
+const logoStrip: string[] = [];
 
 const capabilities = [
   {
-    title: "AI Борлуулалт",
+    title: "AI Борлуулагч",
     description:
-      "Template-тэй тэмцэхээ боль. Таны каталогоос суралцсан AI борлуулагч бараа бүрийн мэдээллийг эзэмшсэн байна. Таны дэлгүүрийн давтагдашгүй шинж чанарт тохирсон хариулт.",
+      '"Энэ хувцас M размер байна уу?", "Хүргэлт хэдэн өдөр болдог вэ?" — ийм асуултуудад таны AI шууд хариулна. Бараа бүрийн мэдээллийг судалсан учраас хариулт нь таны мэддэг зүйлтэй адилхан.',
     image: "/images/ai-sales.jpg",
     imageFirst: true,
   },
   {
-    title: "Аналитик Оюун",
+    title: "Юу болж байгааг мэдэх",
     description:
-      "Бид дээд зэргийн тоон шинжилгээг ашиглан борлуулалтын бүх өгөгдлийг автоматаар боловсруулна. Дэлгүүр бүр мэргэжлийн креатив захирлын бүтээсэн мэт мэдээлэл авна.",
+      "Ямар бараа их асуугддаг, хэдэн хүн чатботтой ярьсан, хаана очоод гарсан — бүгдийг нэг дэлгэцнээс харна. Тоо мэдвэл шийдвэр гаргахад хялбар.",
     image: "/images/analytics.jpg",
     imageFirst: false,
   },
@@ -32,24 +32,22 @@ const featureGrid = [
   {
     icon: "bolt",
     title: "Хурдан хариу",
-    description: "Дундаж 2.4 секундэд бараа хайж, нарийвчилсан мэдээллээр хариулна.",
+    description: "Худалдан авагч асуувал 2-3 секундын дотор хариу очно. Хүлээлгэхгүй.",
   },
   {
     icon: "palette",
     title: "Авто-тохиргоо",
-    description: "Ухаалаг дэлгүүр таних систем таны каталогийг хэдхэн минутад бүрэн сурна.",
+    description: "Instagram-аас бараагаа татахад л хангалттай. Үлдсэнийг AI өөрөө зохицуулна.",
   },
   {
     icon: "trending_up",
     title: "Борлуулалт нэмнэ",
-    description:
-      "Cross-sell зөвлөмж, захиалга хүлээн авалт — борлуулалтын бүх алхмыг автоматжуулна.",
+    description: '"Энэ юмтай юу тааруулах вэ?" гэхэд зөвлөгөө өгнө. Захиалга ч авна.',
   },
   {
     icon: "shield",
     title: "Аюулгүй байдал",
-    description:
-      "Мэдээллийн хамгаалалт, тусгаарлалт, нууцлалын бодлого — таны бизнест бүрэн найдвартай.",
+    description: "Таны мэдээлэл зөвхөн таных. Бусад дэлгүүрийн дататай холилдохгүй.",
   },
 ];
 
@@ -63,21 +61,22 @@ const stats = [
 const testimonials = [
   {
     quote:
-      "Vela AI зүгээр вэбсайт бүтээгээгүй, бидэнд дижитал сэтгэгдэл үлдээсэн. Чанар нь давтагдашгүй.",
-    name: "Батбаяр Д.",
-    company: "Gobi Cashmere",
+      "Шөнө 11 цагт захиалга орж ирдэг болсон. Би утсаа ч шалгаагүй байхад AI маань хариулчихсан байдаг.",
+    name: "Дэлгүүр эрхлэгч",
+    company: "Хувцасны брэнд",
     color: "bg-emerald-500/20",
   },
   {
-    quote: "Хамгийн хурдан шийдэл. Нэг ч алдаа гаргалгүй бүх зүйлийг нэгтгэсэн. Цэвэр шидэт ажил.",
-    name: "Оюунцэцэг Б.",
-    company: "Nomin Holdings",
+    quote:
+      "Өмнө нь DM бүрт гараар хариулдаг байсан. Одоо тэр цагийг шинэ бараа оруулахад зарцуулж байна.",
+    name: "Брэнд эзэн",
+    company: "Гоо сайхны бүтээгдэхүүн",
     color: "bg-blue-500/20",
   },
   {
-    quote: "Liquid glass дизайн бол яг бидэнд хэрэгтэй байсан зүйл. Ердийн SaaS-аас тод ялгарна.",
-    name: "Энхбат Т.",
-    company: "eMarket Mongolia",
+    quote: "Хэрэглэгчид маань AI гэдгийг нь ч мэдэхгүй. Яг миний хариулдаг байсан шиг хариулдаг.",
+    name: "Shop эрхлэгч",
+    company: "Онлайн дэлгүүр",
     color: "bg-purple-500/20",
   },
 ];
@@ -112,23 +111,15 @@ export default function LandingPage() {
       {/* ═══ Hero Section — client component with mouse parallax ═══ */}
       <HeroSection />
 
-      {/* ═══ Logo Strip — grayscale hover ═══ */}
+      {/* ═══ Trust Note ═══ */}
       <AnimatedSection>
         <section className="py-16 sm:py-20 px-4 sm:px-6">
-          <div className="mx-auto max-w-4xl text-center">
-            <p className="text-[10px] uppercase tracking-[0.25em] text-white/30 mb-10">
-              Салбарын тэргүүлэгчдийн итгэл
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="text-sm text-white/30 font-light leading-relaxed">
+              Монголын онлайн бизнесүүдэд зориулж бүтээсэн.
+              <br />
+              Одоогоор early access хэрэглэгчдэд нээлттэй.
             </p>
-            <div className="flex items-center justify-center gap-10 sm:gap-16 flex-wrap opacity-50 grayscale hover:grayscale-0 hover:opacity-80 transition-all duration-700">
-              {logoStrip.map((name) => (
-                <span
-                  key={name}
-                  className="font-serif italic text-xl sm:text-2xl text-white/40 hover:text-white/70 transition-colors duration-500"
-                >
-                  {name}
-                </span>
-              ))}
-            </div>
           </div>
         </section>
       </AnimatedSection>
@@ -148,13 +139,13 @@ export default function LandingPage() {
                 Хэрхэн ажилладаг
               </p>
               <h2 className="font-serif italic text-4xl sm:text-5xl md:text-6xl tracking-[-0.03em] text-white leading-[1.05] mb-6">
-                Та төсөөлнө.
+                3 алхам.
                 <br />
-                Бид бүтээнэ.
+                Тэгээд л болоо.
               </h2>
               <p className="text-sm sm:text-base text-white/45 font-light max-w-lg mx-auto leading-relaxed">
-                Манай AI систем таны барааны каталогийг бүрэн функциональ, өндөр бүтээмжтэй
-                борлуулалтын туслах болгон хувиргана — хэдхэн өдрийн дотор.
+                Instagram account-аа холбоно. AI таны бараануудыг сурна. Худалдан авагчид асуухад
+                хариулж эхэлнэ.
               </p>
             </div>
 
@@ -167,11 +158,13 @@ export default function LandingPage() {
       <AnimatedSection>
         <section id="capabilities" className="py-20 sm:py-28 px-4 sm:px-6">
           <div className="mx-auto max-w-6xl">
-            <p className="text-[10px] uppercase tracking-[0.25em] text-white/30 mb-4">Боломжууд</p>
+            <p className="text-[10px] uppercase tracking-[0.25em] text-white/30 mb-4">
+              Юу хийж чадах вэ
+            </p>
             <h2 className="font-serif italic text-4xl sm:text-5xl tracking-[-0.03em] text-white leading-[1.05] mb-16 sm:mb-20 max-w-2xl">
-              Мэргэжлийн функц.
+              Та унтаж байхад ч
               <br />
-              Тэг төвөгтэй байдал.
+              борлуулалт явагдана.
             </h2>
 
             <div className="space-y-20 sm:space-y-28">
@@ -347,7 +340,7 @@ export default function LandingPage() {
             <div className="sm:col-span-2 lg:col-span-1">
               <VelaLogo size={18} />
               <p className="text-sm text-white/40 font-light mt-4 mb-6 leading-relaxed">
-                Монголын e-commerce-д зориулсан AI борлуулалтын ухаалаг шийдэл.
+                Онлайн бизнесүүдэд зориулсан AI борлуулагч.
               </p>
               <div className="flex items-center gap-3">
                 {/* Facebook */}
