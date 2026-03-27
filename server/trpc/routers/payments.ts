@@ -7,7 +7,7 @@ import { tenants, subscriptions, paymentLogs } from "@/server/db/schema";
 import { PLAN_PRICES_MNT, PLAN_LABELS, type PlanType } from "@/shared/lib/plan-config";
 import { createQPayInvoice, checkQPayPayment, generateCallbackToken } from "@/server/lib/qpay";
 
-const planInput = z.enum(["starter", "growth", "pro"]);
+const planInput = z.enum(["solo", "plus", "max"]);
 
 // ─── Shared helper: subscription activate ──────────────────────
 export async function activateSubscription(
@@ -64,14 +64,16 @@ export const paymentsRouter = router({
         });
       }
 
-      // Pending (trialing) subscription байгаа эсэх шалгах
-      const [pendingSub] = await db
-        .select({ id: subscriptions.id })
+      // Pending invoice-тэй (trialing + qpayInvoiceId) subscription байгаа эсэх шалгах
+      // Анхааруулга: register.ts нь trial subscription-г "trialing" status-ээр үүсгэдэг
+      // тул qpayInvoiceId-тай эсэхээр ялгана (invoice байвал = төлбөр хүлээгдэж буй)
+      const pendingSubs = await db
+        .select({ id: subscriptions.id, qpayInvoiceId: subscriptions.qpayInvoiceId })
         .from(subscriptions)
-        .where(and(eq(subscriptions.tenantId, ctx.tenantId), eq(subscriptions.status, "trialing")))
-        .limit(1);
+        .where(and(eq(subscriptions.tenantId, ctx.tenantId), eq(subscriptions.status, "trialing")));
 
-      if (pendingSub) {
+      const hasPendingPayment = pendingSubs.some((s) => s.qpayInvoiceId !== null);
+      if (hasPendingPayment) {
         throw new TRPCError({
           code: "CONFLICT",
           message: "Төлбөр хүлээгдэж буй захиалга байна. Эхлээд төлбөрөө хийнэ үү.",
@@ -209,6 +211,7 @@ export const paymentsRouter = router({
         status: subscriptions.status,
         periodStart: subscriptions.periodStart,
         periodEnd: subscriptions.periodEnd,
+        canceledAt: subscriptions.canceledAt,
       })
       .from(subscriptions)
       .where(and(eq(subscriptions.tenantId, ctx.tenantId), eq(subscriptions.status, "active")))
@@ -224,7 +227,7 @@ export const paymentsRouter = router({
 
     // Active subscription олох
     const [subscription] = await db
-      .select({ id: subscriptions.id })
+      .select({ id: subscriptions.id, periodEnd: subscriptions.periodEnd })
       .from(subscriptions)
       .where(and(eq(subscriptions.tenantId, ctx.tenantId), eq(subscriptions.status, "active")))
       .limit(1);
@@ -236,18 +239,16 @@ export const paymentsRouter = router({
       });
     }
 
-    // Subscription цуцлах
+    // Subscription цуцлах — canceledAt тавина, гэвч status "active" хэвээр
+    // periodEnd дуустал хэрэглэгч paid features ашиглана
     await db
       .update(subscriptions)
-      .set({ status: "canceled", canceledAt: now, updatedAt: now })
+      .set({ canceledAt: now, updatedAt: now })
       .where(eq(subscriptions.id, subscription.id));
 
-    // Tenant → free plan
-    await db
-      .update(tenants)
-      .set({ plan: "free", updatedAt: now })
-      .where(eq(tenants.id, ctx.tenantId));
+    // Tenant plan хэвээр үлдэнэ — periodEnd дуусахад downgrade хийгдэнэ
+    // (checkExpiredSubscriptions cron эсвэл getStore query-д шалгана)
 
-    return { success: true };
+    return { success: true, periodEnd: subscription.periodEnd };
   }),
 });

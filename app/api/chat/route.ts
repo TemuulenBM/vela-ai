@@ -1,8 +1,8 @@
 import { type NextRequest } from "next/server";
 import { type UIMessage } from "ai";
-import { eq } from "drizzle-orm";
+import { eq, and, gte, count } from "drizzle-orm";
 import { db } from "@/server/db/db";
-import { tenants, products, events } from "@/server/db/schema";
+import { tenants, products, events, conversations } from "@/server/db/schema";
 import { authenticateChatRequest } from "@/server/lib/chat-auth";
 import { executeChatPipeline, executeDemoPipeline } from "@/features/chat/lib/pipeline";
 import {
@@ -10,6 +10,7 @@ import {
   createOrGetConversation,
   saveMessage,
 } from "@/features/chat/lib/persistence";
+import { PLAN_LIMITS, OVERAGE_PRICE_MNT, OVERAGE_CAP_MNT } from "@/shared/lib/plan-config";
 
 // In-memory rate limiter
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
@@ -38,6 +39,12 @@ if (typeof globalThis !== "undefined") {
     }
   };
   setInterval(cleanup, 5 * 60_000).unref?.();
+}
+
+/** Get the start of the current month (UTC) */
+function getMonthStart(): Date {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
 }
 
 export async function POST(request: NextRequest) {
@@ -90,11 +97,65 @@ export async function POST(request: NextRequest) {
     const { tenantId } = authResult;
     const anonId = anonymousId || "anonymous";
 
-    // 4. Get or create shopper + conversation
+    // 4. Get tenant info (plan + name)
+    const [tenant] = await db
+      .select({ name: tenants.name, plan: tenants.plan })
+      .from(tenants)
+      .where(eq(tenants.id, tenantId))
+      .limit(1);
+
+    const plan = tenant?.plan ?? "trial";
+
+    // 5. Check conversation limit for current month (зөвхөн шинэ яриа үед)
+    // inputConvId байвал = existing conversation → лимит шалгахгүй (эхлүүлсэн ярианаа дуусгаж чадна)
+    if (!inputConvId) {
+      const monthStart = getMonthStart();
+      const [convCount] = await db
+        .select({ value: count() })
+        .from(conversations)
+        .where(and(eq(conversations.tenantId, tenantId), gte(conversations.createdAt, monthStart)));
+
+      const currentCount = convCount?.value ?? 0;
+      const planLimit = PLAN_LIMITS[plan]?.conversations ?? 0;
+      const overagePrice = OVERAGE_PRICE_MNT[plan] ?? 0;
+
+      if (currentCount >= planLimit) {
+        if (overagePrice === 0) {
+          // Trial/Solo/Plus — no overage, hard block + upgrade suggestion
+          const nextPlan =
+            plan === "trial" ? "Solo" : plan === "solo" ? "Plus" : plan === "plus" ? "Max" : null;
+          const upgradeMsg = nextPlan ? ` ${nextPlan} багц руу upgrade хийж үргэлжлүүлээрэй.` : "";
+          return Response.json(
+            {
+              error: `Сарын ярианы лимит (${planLimit}) дууслаа.${upgradeMsg}`,
+              code: "CONVERSATION_LIMIT_REACHED",
+              currentPlan: plan,
+            },
+            { status: 429 },
+          );
+        }
+
+        // Max plan — check overage cap
+        const overageCount = currentCount - planLimit;
+        const overageSpent = overageCount * overagePrice;
+        if (overageSpent >= OVERAGE_CAP_MNT) {
+          return Response.json(
+            {
+              error: `Нэмэлт ярианы хязгаар (${OVERAGE_CAP_MNT.toLocaleString()}₮) хүрлээ. Дараа сард үргэлжлүүлнэ.`,
+              code: "OVERAGE_CAP_REACHED",
+              currentPlan: plan,
+            },
+            { status: 429 },
+          );
+        }
+      }
+    }
+
+    // 6. Get or create shopper + conversation
     const shopperId = await createOrGetShopper(tenantId, anonId);
     const conversationId = await createOrGetConversation(tenantId, shopperId, inputConvId);
 
-    // 5. Save the latest user message
+    // 7. Save the latest user message
     const lastMessage = messages[messages.length - 1];
     if (lastMessage.role === "user") {
       const textPart = lastMessage.parts.find((p) => p.type === "text");
@@ -108,13 +169,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 6. Get tenant info for system prompt
-    const [tenant] = await db
-      .select({ name: tenants.name })
-      .from(tenants)
-      .where(eq(tenants.id, tenantId))
-      .limit(1);
-
+    // 8. Get product categories for system prompt
     const categories = await db
       .selectDistinct({ category: products.category })
       .from(products)
@@ -124,15 +179,16 @@ export async function POST(request: NextRequest) {
       .map((c) => c.category)
       .filter((c): c is string => c !== null);
 
-    // 7. Execute RAG pipeline
+    // 9. Execute RAG pipeline (with plan-based tool filtering)
     const result = await executeChatPipeline({
       tenantId,
       tenantName: tenant?.name ?? "Дэлгүүр",
       productCategories,
       messages,
+      plan,
     });
 
-    // 8. Save assistant response after stream finishes (fire-and-forget)
+    // 10. Save assistant response after stream finishes (fire-and-forget)
     (async () => {
       try {
         const text = await result.text;
@@ -164,7 +220,7 @@ export async function POST(request: NextRequest) {
       }
     })();
 
-    // 9. Return SSE stream with conversationId header
+    // 11. Return SSE stream with conversationId header
     const response = result.toUIMessageStreamResponse();
     response.headers.set("x-conversation-id", conversationId);
 

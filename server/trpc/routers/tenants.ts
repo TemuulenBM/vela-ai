@@ -1,11 +1,19 @@
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { z } from "zod/v4";
-import { and, eq, ne, isNull, count } from "drizzle-orm";
+import { and, eq, ne, isNull, isNotNull, count, gte } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../trpc";
 import { db } from "@/server/db/db";
-import { tenants, tenantMembers, apiKeys, products, conversations } from "@/server/db/schema";
+import {
+  tenants,
+  tenantMembers,
+  apiKeys,
+  products,
+  conversations,
+  subscriptions,
+} from "@/server/db/schema";
+import { desc } from "drizzle-orm";
 
 export const tenantsRouter = router({
   getStore: protectedProcedure.query(async ({ ctx }) => {
@@ -22,7 +30,39 @@ export const tenantsRouter = router({
       .where(eq(tenants.id, ctx.tenantId))
       .limit(1);
 
-    return tenant ?? null;
+    if (!tenant) return null;
+
+    // Цуцлагдсан subscription хугацаа дуусвал auto-downgrade → trial
+    // Cancel хийхэд canceledAt тавигдаж, status "active" хэвээр үлдэнэ (periodEnd хүртэл)
+    if (tenant.plan !== "trial") {
+      const [expiredSub] = await db
+        .select({ id: subscriptions.id, periodEnd: subscriptions.periodEnd })
+        .from(subscriptions)
+        .where(
+          and(
+            eq(subscriptions.tenantId, ctx.tenantId),
+            eq(subscriptions.status, "active"),
+            isNotNull(subscriptions.canceledAt),
+          ),
+        )
+        .orderBy(desc(subscriptions.createdAt))
+        .limit(1);
+
+      if (expiredSub?.periodEnd && new Date() > expiredSub.periodEnd) {
+        const now = new Date();
+        await db
+          .update(subscriptions)
+          .set({ status: "canceled", updatedAt: now })
+          .where(eq(subscriptions.id, expiredSub.id));
+        await db
+          .update(tenants)
+          .set({ plan: "trial", updatedAt: now })
+          .where(eq(tenants.id, ctx.tenantId));
+        return { ...tenant, plan: "trial" as const };
+      }
+    }
+
+    return tenant;
   }),
 
   updateStore: protectedProcedure
@@ -158,11 +198,17 @@ export const tenantsRouter = router({
   }),
 
   getUsage: protectedProcedure.query(async ({ ctx }) => {
-    const [convCount, prodCount, memberCount] = await Promise.all([
+    // Сарын эхнээс тоолох (PLAN_LIMITS нь сарын хязгаарлалт)
+    const now = new Date();
+    const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+
+    const [convCount, prodCount, memberCount, channelCount] = await Promise.all([
       db
         .select({ value: count() })
         .from(conversations)
-        .where(eq(conversations.tenantId, ctx.tenantId)),
+        .where(
+          and(eq(conversations.tenantId, ctx.tenantId), gte(conversations.createdAt, monthStart)),
+        ),
       db
         .select({ value: count() })
         .from(products)
@@ -171,12 +217,17 @@ export const tenantsRouter = router({
         .select({ value: count() })
         .from(tenantMembers)
         .where(and(eq(tenantMembers.tenantId, ctx.tenantId), isNull(tenantMembers.deletedAt))),
+      db
+        .select({ value: count() })
+        .from(apiKeys)
+        .where(and(eq(apiKeys.tenantId, ctx.tenantId), isNull(apiKeys.revokedAt))),
     ]);
 
     return {
       conversations: convCount[0]?.value ?? 0,
       products: prodCount[0]?.value ?? 0,
       members: memberCount[0]?.value ?? 0,
+      channels: channelCount[0]?.value ?? 0,
     };
   }),
 });

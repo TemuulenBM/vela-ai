@@ -30,7 +30,7 @@ const vector = customType<{ data: number[]; driverParam: string }>({
 });
 
 // ─── Enums ─────────────────────────────────────────────────────
-export const planEnum = pgEnum("plan_enum", ["free", "starter", "growth", "pro"]);
+export const planEnum = pgEnum("plan_enum", ["trial", "solo", "plus", "max"]);
 
 export const eventTypeEnum = pgEnum("event_type_enum", [
   "page_view",
@@ -109,7 +109,7 @@ export const tenants = pgTable("tenants", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   slug: varchar("slug", { length: 100 }).notNull().unique(),
-  plan: planEnum("plan").notNull().default("free"),
+  plan: planEnum("plan").notNull().default("trial"),
   settings: jsonb("settings"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),

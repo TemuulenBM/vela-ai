@@ -14,25 +14,19 @@ import { trpc } from "@/shared/lib/trpc";
 import { PLAN_LABELS, PLAN_PRICES } from "@/shared/lib/plan-config";
 
 type Step = "select" | "paying" | "success";
-type PaidPlan = "starter" | "growth" | "pro";
+type PaidPlan = "solo" | "plus" | "max";
 
-const PAID_PLANS: PaidPlan[] = ["starter", "growth", "pro"];
+const PAID_PLANS: PaidPlan[] = ["solo", "plus", "max"];
 
 const PLAN_FEATURES: Record<string, string[]> = {
-  starter: ["500 яриа / сар", "200 бараа", "3 багийн гишүүн", "Аналитик дашбоард"],
-  growth: [
+  solo: ["300 яриа / сар", "200 бараа", "2 суваг", "Захиалга шалгах", "Суурь аналитик"],
+  plus: ["800 яриа / сар", "500 бараа", "3 суваг", "Cross-sell зөвлөмж", "Бүрэн аналитик"],
+  max: [
     "2,000 яриа / сар",
-    "500 бараа",
-    "5 багийн гишүүн",
-    "Аналитик дашбоард",
-    "Нэмэлт тохиргоо",
-  ],
-  pro: [
-    "10,000 яриа / сар",
     "2,000 бараа",
-    "20 багийн гишүүн",
-    "Аналитик дашбоард",
-    "Нэмэлт тохиргоо",
+    "Хязгааргүй суваг",
+    "Бүх AI боломж + нэмэлт 200 яриа",
+    "Бүрэн аналитик + экспорт",
     "Тусгай дэмжлэг",
   ],
 };
