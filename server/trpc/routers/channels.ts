@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../trpc";
 import { db } from "@/server/db/db";
-import { channelConnections } from "@/server/db/schema";
+import { channelConnections, crawlJobs } from "@/server/db/schema";
 import { encryptToken, decryptToken } from "@/server/lib/meta/crypto";
 import {
   buildOAuthUrl,
@@ -12,6 +12,7 @@ import {
   subscribeInstagramToWebhook,
 } from "@/server/lib/meta/oauth";
 import { getPageCatalogs, syncCatalogProducts } from "@/server/lib/meta/catalog";
+import { processIGSyncStep } from "@/server/lib/instagram/sync-orchestrator";
 
 /** Encrypted pages data-г задалж parsed object буцаана. */
 function decryptPagesData(pagesData: string, tenantId: string) {
@@ -333,7 +334,160 @@ export const channelsRouter = router({
         metadata: { authType: "instagram_login" },
       });
 
-      return { connectionId, igUsername: parsed.igUsername };
+      // Auto-trigger IG product sync (non-blocking)
+      try {
+        const [syncJob] = await db
+          .insert(crawlJobs)
+          .values({
+            tenantId: ctx.tenantId,
+            websiteUrl: `instagram://@${parsed.igUsername}`,
+            status: "pending",
+            config: {
+              source: "instagram",
+              connectionId,
+              igUserId: parsed.igUserId,
+              maxPosts: 500,
+            },
+          })
+          .returning({ id: crawlJobs.id });
+
+        // Fire first step (non-blocking — connection-ийг fail хийхгүй)
+        processIGSyncStep(syncJob.id, ctx.tenantId).catch((err) => {
+          console.error("[IG Sync] Auto-start failed:", err);
+        });
+
+        return { connectionId, igUsername: parsed.igUsername, syncJobId: syncJob.id };
+      } catch (err) {
+        console.error("[IG Sync] Job creation failed:", err);
+        return { connectionId, igUsername: parsed.igUsername };
+      }
+    }),
+
+  // ─────────────────────────────────────────────
+  // Instagram Product Sync
+  // ─────────────────────────────────────────────
+
+  /**
+   * IG sync job-ийн статус авах (сүүлийн job).
+   */
+  getIgSyncStatus: protectedProcedure
+    .input(z.object({ connectionId: z.string().uuid() }).optional())
+    .query(async ({ ctx, input }) => {
+      const query = db
+        .select({
+          id: crawlJobs.id,
+          status: crawlJobs.status,
+          totalFound: crawlJobs.totalFound,
+          totalImported: crawlJobs.totalImported,
+          totalUpdated: crawlJobs.totalUpdated,
+          totalSkipped: crawlJobs.totalSkipped,
+          cursor: crawlJobs.cursor,
+          error: crawlJobs.error,
+          startedAt: crawlJobs.startedAt,
+          completedAt: crawlJobs.completedAt,
+          websiteUrl: crawlJobs.websiteUrl,
+          config: crawlJobs.config,
+        })
+        .from(crawlJobs)
+        .where(eq(crawlJobs.tenantId, ctx.tenantId))
+        .orderBy(desc(crawlJobs.createdAt))
+        .limit(5);
+
+      const jobs = await query;
+      // IG sync job-уудыг шүүх (instagram:// prefix-тэй)
+      const igJobs = jobs.filter((j) => j.websiteUrl.startsWith("instagram://"));
+
+      if (input?.connectionId) {
+        // Тухайн connection-ий сүүлийн job (config JSONB дотор connectionId-аар шүүх)
+        const connJob = igJobs.find((j) => {
+          const cfg = j.config as Record<string, unknown> | null;
+          return cfg?.connectionId === input.connectionId;
+        });
+        return connJob ?? igJobs[0] ?? null;
+      }
+
+      return igJobs[0] ?? null;
+    }),
+
+  /**
+   * IG sync job-ийг нэг step урагшлуулах (frontend polling).
+   */
+  continueIgSync: protectedProcedure
+    .input(z.object({ jobId: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      return processIGSyncStep(input.jobId, ctx.tenantId);
+    }),
+
+  /**
+   * Instagram post-уудаас дахин sync хийх (manual trigger).
+   */
+  resyncInstagram: protectedProcedure
+    .input(z.object({ connectionId: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      // Connection олох
+      const [conn] = await db
+        .select({
+          id: channelConnections.id,
+          igUsername: channelConnections.igUsername,
+          pageId: channelConnections.pageId,
+          status: channelConnections.status,
+        })
+        .from(channelConnections)
+        .where(
+          and(
+            eq(channelConnections.id, input.connectionId),
+            eq(channelConnections.tenantId, ctx.tenantId),
+            eq(channelConnections.platform, "instagram"),
+          ),
+        )
+        .limit(1);
+
+      if (!conn) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Instagram connection олдсонгүй" });
+      }
+      if (conn.status !== "active") {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Connection идэвхгүй байна" });
+      }
+
+      // Одоо ажиллаж байгаа sync байгаа эсэхийг шалгах
+      const activeStatuses = ["pending", "discovering", "extracting", "embedding"] as const;
+      const [activeJob] = await db
+        .select({ id: crawlJobs.id })
+        .from(crawlJobs)
+        .where(
+          and(eq(crawlJobs.tenantId, ctx.tenantId), inArray(crawlJobs.status, [...activeStatuses])),
+        )
+        .limit(1);
+
+      if (activeJob) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "Sync аль хэдийн ажиллаж байна",
+        });
+      }
+
+      // Шинэ sync job үүсгэх
+      const [syncJob] = await db
+        .insert(crawlJobs)
+        .values({
+          tenantId: ctx.tenantId,
+          websiteUrl: `instagram://@${conn.igUsername ?? conn.pageId}`,
+          status: "pending",
+          config: {
+            source: "instagram",
+            connectionId: conn.id,
+            igUserId: conn.pageId,
+            maxPosts: 500,
+          },
+        })
+        .returning({ id: crawlJobs.id });
+
+      // First step
+      processIGSyncStep(syncJob.id, ctx.tenantId).catch((err) => {
+        console.error("[IG Sync] Resync start failed:", err);
+      });
+
+      return { jobId: syncJob.id };
     }),
 
   /**
