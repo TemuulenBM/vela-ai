@@ -62,8 +62,36 @@ export function IGSyncStatus({ connectionId }: { connectionId: string }) {
     };
   }, [isActive, job?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Job байхгүй бол юу ч харуулахгүй
-  if (!job) return null;
+  // Job байхгүй бол "Бараа импорт эхлүүлэх" товч харуулах
+  if (!job) {
+    return (
+      <div className="mt-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] px-5 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[16px] text-white/30">
+              auto_awesome
+            </span>
+            <p className="text-[11px] text-white/40">
+              Instagram пост-уудаас бараа автоматаар импортлох
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => resyncMutation.mutate({ connectionId })}
+            disabled={resyncMutation.isPending}
+          >
+            <span
+              className={`material-symbols-outlined text-[14px] ${resyncMutation.isPending ? "animate-spin" : ""}`}
+            >
+              {resyncMutation.isPending ? "sync" : "play_arrow"}
+            </span>
+            {resyncMutation.isPending ? "Эхлүүлж байна..." : "Импорт эхлүүлэх"}
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const progress =
     job.totalFound > 0 && job.status === "extracting"
