@@ -463,15 +463,18 @@ export default function LandingPage() {
               &copy; {new Date().getFullYear()} Vela AI. Бүх эрх хуулиар хамгаалагдсан.
             </p>
             <div className="flex items-center gap-6">
-              {["Нууцлалын бодлого", "Үйлчилгээний нөхцөл"].map((text) => (
-                <Link
-                  key={text}
-                  href="#"
-                  className="text-xs text-white/20 hover:text-white/40 transition-colors"
-                >
-                  {text}
-                </Link>
-              ))}
+              <Link
+                href="/privacy"
+                className="text-xs text-white/20 hover:text-white/40 transition-colors"
+              >
+                Нууцлалын бодлого
+              </Link>
+              <Link
+                href="/terms"
+                className="text-xs text-white/20 hover:text-white/40 transition-colors"
+              >
+                Үйлчилгээний нөхцөл
+              </Link>
             </div>
           </div>
         </div>
