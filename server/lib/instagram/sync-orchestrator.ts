@@ -74,7 +74,13 @@ async function stepDiscover(
   }
 
   // Access token авах
+  console.log(
+    `[IG Sync] Discover step — connectionId: ${config.connectionId}, tenantId: ${tenantId}`,
+  );
   const accessToken = await getAccessToken(config.connectionId, tenantId);
+  console.log(
+    `[IG Sync] Access token: ${accessToken ? `found (${accessToken.length} chars)` : "NOT FOUND"}`,
+  );
   if (!accessToken) {
     await db
       .update(crawlJobs)
@@ -92,7 +98,13 @@ async function stepDiscover(
   const cursor = config.paginationCursor ?? null;
   const maxPosts = config.maxPosts ?? 500;
 
+  console.log(
+    `[IG Sync] Fetching batch — cursor: ${cursor ?? "null"}, existingMedia: ${existingMedia.length}`,
+  );
   const { media, nextCursor } = await fetchInstagramMediaBatch(accessToken, cursor, 100);
+  console.log(
+    `[IG Sync] Batch result — got ${media.length} media, nextCursor: ${nextCursor ?? "null"}`,
+  );
   const allMedia = [...existingMedia, ...media];
 
   if (nextCursor && allMedia.length < maxPosts) {
@@ -119,6 +131,7 @@ async function stepDiscover(
   const limitedMedia = allMedia.slice(0, maxPosts);
 
   if (limitedMedia.length === 0) {
+    console.log(`[IG Sync] No media found — marking completed`);
     await db
       .update(crawlJobs)
       .set({
