@@ -14,6 +14,7 @@ import {
 import { trpc } from "@/shared/lib/trpc";
 import { useChannels } from "../hooks/use-channels";
 import { CatalogSyncModal } from "./catalog-sync-modal";
+import { IGSyncStatus } from "./ig-sync-status";
 import type { ChannelConnection } from "../types";
 
 const STATUS_CONFIG = {
@@ -530,6 +531,11 @@ function ConnectionCard({
           </Button>
         </div>
       </div>
+
+      {/* Instagram connection бол IG sync status харуулах */}
+      {connection.platform === "instagram" && connection.status === "active" && (
+        <IGSyncStatus connectionId={connection.id} />
+      )}
     </Card>
   );
 }
