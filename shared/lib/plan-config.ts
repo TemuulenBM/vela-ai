@@ -40,6 +40,8 @@ export const OVERAGE_PRICE_MNT: Record<string, number> = {
 
 export const OVERAGE_CAP_MNT = 30_000;
 export const TRIAL_DAYS = 7;
+export const SUBSCRIPTION_GRACE_DAYS = 3;
+export const SUBSCRIPTION_RENEWAL_REMINDER_DAYS = 7;
 
 /** Plan бүрт зөвшөөрөгдсөн AI tools */
 export const PLAN_TOOLS: Record<string, string[]> = {

@@ -1,9 +1,10 @@
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { z } from "zod/v4";
-import { and, eq, ne, isNull, isNotNull, count, gte } from "drizzle-orm";
+import { and, eq, ne, isNull, isNotNull, count, gte, lte, gt, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../trpc";
+import { SUBSCRIPTION_GRACE_DAYS } from "@/shared/lib/plan-config";
 import { db } from "@/server/db/db";
 import {
   tenants,
@@ -32,10 +33,11 @@ export const tenantsRouter = router({
 
     if (!tenant) return null;
 
-    // Цуцлагдсан subscription хугацаа дуусвал auto-downgrade → trial
-    // Cancel хийхэд canceledAt тавигдаж, status "active" хэвээр үлдэнэ (periodEnd хүртэл)
     if (tenant.plan !== "trial") {
-      const [expiredSub] = await db
+      const now = new Date();
+
+      // 1. Canceled sub-ийн хуучин логик хэвээр — canceledAt тавигдсан, periodEnd дуусвал downgrade
+      const [canceledExpired] = await db
         .select({ id: subscriptions.id, periodEnd: subscriptions.periodEnd })
         .from(subscriptions)
         .where(
@@ -48,17 +50,62 @@ export const tenantsRouter = router({
         .orderBy(desc(subscriptions.createdAt))
         .limit(1);
 
-      if (expiredSub?.periodEnd && new Date() > expiredSub.periodEnd) {
-        const now = new Date();
+      if (canceledExpired?.periodEnd && now > canceledExpired.periodEnd) {
         await db
           .update(subscriptions)
           .set({ status: "canceled", updatedAt: now })
-          .where(eq(subscriptions.id, expiredSub.id));
+          .where(eq(subscriptions.id, canceledExpired.id));
         await db
           .update(tenants)
           .set({ plan: "trial", updatedAt: now })
           .where(eq(tenants.id, ctx.tenantId));
         return { ...tenant, plan: "trial" as const };
+      }
+
+      // 2. Cancel хийгээгүй ч гэсэн expired sub шалгах (bug fix)
+      // Valid (non-expired) active sub байвал downgrade хийхгүй
+      const [validSub] = await db
+        .select({ id: subscriptions.id })
+        .from(subscriptions)
+        .where(
+          and(
+            eq(subscriptions.tenantId, ctx.tenantId),
+            eq(subscriptions.status, "active"),
+            isNull(subscriptions.canceledAt),
+            gt(subscriptions.periodEnd, now),
+          ),
+        )
+        .limit(1);
+
+      if (!validSub) {
+        // Valid sub байхгүй — grace period дуусвал downgrade
+        // past_due ч гэсэн шалгах (cron-оос тэмдэглэгдсэн байж болно)
+        const GRACE_MS = SUBSCRIPTION_GRACE_DAYS * 24 * 60 * 60 * 1000;
+        const [expiredSub] = await db
+          .select({ id: subscriptions.id, periodEnd: subscriptions.periodEnd })
+          .from(subscriptions)
+          .where(
+            and(
+              eq(subscriptions.tenantId, ctx.tenantId),
+              inArray(subscriptions.status, ["active", "past_due"]),
+              isNull(subscriptions.canceledAt),
+              lte(subscriptions.periodEnd, now),
+            ),
+          )
+          .orderBy(desc(subscriptions.createdAt))
+          .limit(1);
+
+        if (expiredSub?.periodEnd && now.getTime() > expiredSub.periodEnd.getTime() + GRACE_MS) {
+          await db
+            .update(subscriptions)
+            .set({ status: "canceled", updatedAt: now })
+            .where(eq(subscriptions.id, expiredSub.id));
+          await db
+            .update(tenants)
+            .set({ plan: "trial", updatedAt: now })
+            .where(eq(tenants.id, ctx.tenantId));
+          return { ...tenant, plan: "trial" as const };
+        }
       }
     }
 
