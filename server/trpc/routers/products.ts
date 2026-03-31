@@ -1,11 +1,13 @@
 import { z } from "zod/v4";
 import { and, eq, isNull, desc, count, ilike, sql } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../trpc";
 import { db } from "@/server/db/db";
-import { products, productImages } from "@/server/db/schema";
+import { products, productImages, tenants } from "@/server/db/schema";
 import { buildEmbeddingText } from "@/features/products/lib/embedding";
 import { generateEmbedding } from "@/server/ai/voyage";
 import { searchProducts } from "@/server/lib/product-search";
+import { PLAN_LIMITS } from "@/shared/lib/plan-config";
 
 export const productsRouter = router({
   list: protectedProcedure
@@ -112,6 +114,29 @@ export const productsRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // Check product limit for current plan
+      const [[tenantRow], [{ value: productCount }]] = await Promise.all([
+        db
+          .select({ plan: tenants.plan })
+          .from(tenants)
+          .where(eq(tenants.id, ctx.tenantId))
+          .limit(1),
+        db
+          .select({ value: count() })
+          .from(products)
+          .where(and(eq(products.tenantId, ctx.tenantId), isNull(products.deletedAt))),
+      ]);
+
+      const plan = tenantRow?.plan ?? "trial";
+      const productLimit = PLAN_LIMITS[plan]?.products ?? 0;
+
+      if (productCount >= productLimit) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: `Бүтээгдэхүүний лимит (${productLimit}) хүрлээ. Өргөтгөхийн тулд төлөвлөгөөгөө шинэчилнэ үү.`,
+        });
+      }
+
       const embeddingText = buildEmbeddingText({
         name: input.name,
         description: input.description ?? null,

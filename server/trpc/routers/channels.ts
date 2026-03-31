@@ -1,10 +1,11 @@
 import { z } from "zod";
-import { eq, and, desc, inArray } from "drizzle-orm";
+import { eq, and, desc, inArray, count } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../trpc";
 import { db } from "@/server/db/db";
 import { withTenantCtx } from "@/server/db/rls";
-import { channelConnections, crawlJobs } from "@/server/db/schema";
+import { channelConnections, crawlJobs, tenants } from "@/server/db/schema";
+import { PLAN_LIMITS } from "@/shared/lib/plan-config";
 import { encryptToken, decryptToken } from "@/server/lib/meta/crypto";
 import {
   buildOAuthUrl,
@@ -204,6 +205,62 @@ export const channelsRouter = router({
         throw new TRPCError({ code: "NOT_FOUND", message: "Page олдсонгүй" });
       }
 
+      // Check channel limit before subscribing to webhooks
+      const [[tenantRow], [{ value: activeCount }], [existingMessenger]] = await Promise.all([
+        db
+          .select({ plan: tenants.plan })
+          .from(tenants)
+          .where(eq(tenants.id, ctx.tenantId))
+          .limit(1),
+        db
+          .select({ value: count() })
+          .from(channelConnections)
+          .where(
+            and(
+              eq(channelConnections.tenantId, ctx.tenantId),
+              eq(channelConnections.status, "active"),
+            ),
+          ),
+        db
+          .select({ id: channelConnections.id })
+          .from(channelConnections)
+          .where(
+            and(
+              eq(channelConnections.tenantId, ctx.tenantId),
+              eq(channelConnections.pageId, selectedPage.pageId),
+              eq(channelConnections.platform, "messenger"),
+            ),
+          )
+          .limit(1),
+      ]);
+
+      const plan = tenantRow?.plan ?? "trial";
+      const channelLimit = PLAN_LIMITS[plan]?.channels ?? 0;
+
+      // Count genuinely new connections (upsert won't increment count for existing ones)
+      let newConnectionsCount = existingMessenger ? 0 : 1;
+      if (input.connectInstagram && selectedPage.igAccountId) {
+        const [existingIg] = await db
+          .select({ id: channelConnections.id })
+          .from(channelConnections)
+          .where(
+            and(
+              eq(channelConnections.tenantId, ctx.tenantId),
+              eq(channelConnections.pageId, selectedPage.pageId),
+              eq(channelConnections.platform, "instagram"),
+            ),
+          )
+          .limit(1);
+        if (!existingIg) newConnectionsCount++;
+      }
+
+      if (activeCount + newConnectionsCount > channelLimit) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: `Сувгийн лимит (${channelLimit}) хүрлээ. Өргөтгөхийн тулд төлөвлөгөөгөө шинэчилнэ үү.`,
+        });
+      }
+
       // Subscribe page to webhooks
       await subscribePageToWebhook(selectedPage.pageId, selectedPage.pageAccessToken);
 
@@ -326,6 +383,45 @@ export const channelsRouter = router({
     .input(z.object({ igData: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const parsed = decryptInstagramPayload(input.igData, ctx.tenantId);
+
+      // Check channel limit before subscribing to webhooks
+      const [[tenantRow], [{ value: activeCount }], [existingIg]] = await Promise.all([
+        db
+          .select({ plan: tenants.plan })
+          .from(tenants)
+          .where(eq(tenants.id, ctx.tenantId))
+          .limit(1),
+        db
+          .select({ value: count() })
+          .from(channelConnections)
+          .where(
+            and(
+              eq(channelConnections.tenantId, ctx.tenantId),
+              eq(channelConnections.status, "active"),
+            ),
+          ),
+        db
+          .select({ id: channelConnections.id })
+          .from(channelConnections)
+          .where(
+            and(
+              eq(channelConnections.tenantId, ctx.tenantId),
+              eq(channelConnections.pageId, parsed.igUserId),
+              eq(channelConnections.platform, "instagram"),
+            ),
+          )
+          .limit(1),
+      ]);
+
+      const plan = tenantRow?.plan ?? "trial";
+      const channelLimit = PLAN_LIMITS[plan]?.channels ?? 0;
+
+      if (!existingIg && activeCount + 1 > channelLimit) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: `Сувгийн лимит (${channelLimit}) хүрлээ. Өргөтгөхийн тулд төлөвлөгөөгөө шинэчилнэ үү.`,
+        });
+      }
 
       // Subscribe IG account to webhooks (Instagram Login token → graph.instagram.com)
       await subscribeInstagramToWebhook(parsed.igUserId, parsed.accessToken, true);

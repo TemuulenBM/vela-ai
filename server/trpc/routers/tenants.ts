@@ -13,6 +13,7 @@ import {
   products,
   conversations,
   subscriptions,
+  channelConnections,
 } from "@/server/db/schema";
 import { desc } from "drizzle-orm";
 
@@ -266,8 +267,13 @@ export const tenantsRouter = router({
         .where(and(eq(tenantMembers.tenantId, ctx.tenantId), isNull(tenantMembers.deletedAt))),
       db
         .select({ value: count() })
-        .from(apiKeys)
-        .where(and(eq(apiKeys.tenantId, ctx.tenantId), isNull(apiKeys.revokedAt))),
+        .from(channelConnections)
+        .where(
+          and(
+            eq(channelConnections.tenantId, ctx.tenantId),
+            eq(channelConnections.status, "active"),
+          ),
+        ),
     ]);
 
     return {
