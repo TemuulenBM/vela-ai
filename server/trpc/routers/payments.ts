@@ -3,6 +3,7 @@ import { and, eq, desc } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../trpc";
 import { db } from "@/server/db/db";
+import { withTenantCtx } from "@/server/db/rls";
 import { tenants, subscriptions, paymentLogs } from "@/server/db/schema";
 import { PLAN_PRICES_MNT, PLAN_LABELS, type PlanType } from "@/shared/lib/plan-config";
 import { createQPayInvoice, checkQPayPayment, generateCallbackToken } from "@/server/lib/qpay";
@@ -20,25 +21,29 @@ export async function activateSubscription(
   const periodEnd = new Date(now);
   periodEnd.setDate(periodEnd.getDate() + 30);
 
-  // Subscription activate (race condition guard: WHERE status = 'trialing')
-  await db
-    .update(subscriptions)
-    .set({ status: "active", periodStart: now, periodEnd, updatedAt: now })
-    .where(and(eq(subscriptions.id, subscriptionId), eq(subscriptions.status, "trialing")));
+  await withTenantCtx(tenantId, async (tx) => {
+    // Subscription activate (race condition guard: WHERE status = 'trialing')
+    await tx
+      .update(subscriptions)
+      .set({ status: "active", periodStart: now, periodEnd, updatedAt: now })
+      .where(and(eq(subscriptions.id, subscriptionId), eq(subscriptions.status, "trialing")));
 
-  // Tenant plan update
-  await db.update(tenants).set({ plan, updatedAt: now }).where(eq(tenants.id, tenantId));
+    // Tenant plan update
+    await tx.update(tenants).set({ plan, updatedAt: now }).where(eq(tenants.id, tenantId));
 
-  // Payment log update
-  const firstPayment = paymentResult.rows[0];
-  await db
-    .update(paymentLogs)
-    .set({
-      status: "success",
-      providerTxId: firstPayment ? String(firstPayment.payment_id) : null,
-      rawResponse: paymentResult,
-    })
-    .where(and(eq(paymentLogs.subscriptionId, subscriptionId), eq(paymentLogs.status, "pending")));
+    // Payment log update
+    const firstPayment = paymentResult.rows[0];
+    await tx
+      .update(paymentLogs)
+      .set({
+        status: "success",
+        providerTxId: firstPayment ? String(firstPayment.payment_id) : null,
+        rawResponse: paymentResult,
+      })
+      .where(
+        and(eq(paymentLogs.subscriptionId, subscriptionId), eq(paymentLogs.status, "pending")),
+      );
+  });
 }
 
 export const paymentsRouter = router({

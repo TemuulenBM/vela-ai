@@ -3,6 +3,7 @@ import { and, eq, desc } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../trpc";
 import { db } from "@/server/db/db";
+import { withTenantCtx } from "@/server/db/rls";
 import { crawlJobs, tenants } from "@/server/db/schema";
 import { processCrawlStep } from "@/server/lib/crawler/orchestrator";
 
@@ -16,61 +17,66 @@ export const crawlerRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Check for active crawl (any non-terminal status)
-      const [runningCrawl] = await db
-        .select({ id: crawlJobs.id, status: crawlJobs.status })
-        .from(crawlJobs)
-        .where(eq(crawlJobs.tenantId, ctx.tenantId))
-        .orderBy(desc(crawlJobs.createdAt))
-        .limit(1);
+      const { jobId } = await withTenantCtx(ctx.tenantId, async (tx) => {
+        // Check for active crawl (any non-terminal status)
+        const [runningCrawl] = await tx
+          .select({ id: crawlJobs.id, status: crawlJobs.status })
+          .from(crawlJobs)
+          .where(eq(crawlJobs.tenantId, ctx.tenantId))
+          .orderBy(desc(crawlJobs.createdAt))
+          .limit(1);
 
-      if (
-        runningCrawl &&
-        ["pending", "discovering", "extracting", "embedding"].includes(runningCrawl.status)
-      ) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message: "Аль хэдийн ажиллаж буй crawl байна. Дуусахыг хүлээнэ үү.",
-        });
-      }
+        if (
+          runningCrawl &&
+          ["pending", "discovering", "extracting", "embedding"].includes(runningCrawl.status)
+        ) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Аль хэдийн ажиллаж буй crawl байна. Дуусахыг хүлээнэ үү.",
+          });
+        }
 
-      // Create crawl job
-      const [job] = await db
-        .insert(crawlJobs)
-        .values({
-          tenantId: ctx.tenantId,
-          websiteUrl: input.websiteUrl,
-          status: "pending",
-          config: { maxPages: input.maxPages },
-        })
-        .returning({ id: crawlJobs.id });
+        // Create crawl job
+        const [job] = await tx
+          .insert(crawlJobs)
+          .values({
+            tenantId: ctx.tenantId,
+            websiteUrl: input.websiteUrl,
+            status: "pending",
+            config: { maxPages: input.maxPages },
+          })
+          .returning({ id: crawlJobs.id });
 
-      // Save website URL to tenant settings
-      const [tenant] = await db
-        .select({ settings: tenants.settings })
-        .from(tenants)
-        .where(eq(tenants.id, ctx.tenantId))
-        .limit(1);
+        // Save website URL to tenant settings
+        const [tenant] = await tx
+          .select({ settings: tenants.settings })
+          .from(tenants)
+          .where(eq(tenants.id, ctx.tenantId))
+          .limit(1);
 
-      const currentSettings = (tenant?.settings as Record<string, unknown>) ?? {};
-      await db
-        .update(tenants)
-        .set({
-          settings: {
-            ...currentSettings,
-            crawlerConfig: {
-              ...((currentSettings.crawlerConfig as Record<string, unknown>) ?? {}),
-              websiteUrl: input.websiteUrl,
+        const currentSettings = (tenant?.settings as Record<string, unknown>) ?? {};
+        await tx
+          .update(tenants)
+          .set({
+            settings: {
+              ...currentSettings,
+              crawlerConfig: {
+                ...((currentSettings.crawlerConfig as Record<string, unknown>) ?? {}),
+                websiteUrl: input.websiteUrl,
+              },
             },
-          },
-          updatedAt: new Date(),
-        })
-        .where(eq(tenants.id, ctx.tenantId));
+            updatedAt: new Date(),
+          })
+          .where(eq(tenants.id, ctx.tenantId));
 
-      // Start first step immediately
-      const result = await processCrawlStep(job.id, ctx.tenantId);
+        return { jobId: job.id };
+      });
 
-      return { jobId: job.id, ...result };
+      // processCrawlStep is a long-running orchestrator with its own DB ops —
+      // runs outside the transaction intentionally
+      const result = await processCrawlStep(jobId, ctx.tenantId);
+
+      return { jobId, ...result };
     }),
 
   // ─── Crawl статус шалгах ─────────────────────────────────────
@@ -120,29 +126,31 @@ export const crawlerRouter = router({
   cancelCrawl: protectedProcedure
     .input(z.object({ jobId: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      const [job] = await db
-        .select({ id: crawlJobs.id, status: crawlJobs.status })
-        .from(crawlJobs)
-        .where(and(eq(crawlJobs.id, input.jobId), eq(crawlJobs.tenantId, ctx.tenantId)))
-        .limit(1);
+      await withTenantCtx(ctx.tenantId, async (tx) => {
+        const [job] = await tx
+          .select({ id: crawlJobs.id, status: crawlJobs.status })
+          .from(crawlJobs)
+          .where(and(eq(crawlJobs.id, input.jobId), eq(crawlJobs.tenantId, ctx.tenantId)))
+          .limit(1);
 
-      if (!job) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Crawl job олдсонгүй" });
-      }
+        if (!job) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Crawl job олдсонгүй" });
+        }
 
-      if (job.status === "completed" || job.status === "failed") {
-        return { success: true };
-      }
+        if (job.status === "completed" || job.status === "failed") {
+          return;
+        }
 
-      await db
-        .update(crawlJobs)
-        .set({
-          status: "failed",
-          error: "Хэрэглэгч цуцалсан",
-          completedAt: new Date(),
-          updatedAt: new Date(),
-        })
-        .where(eq(crawlJobs.id, input.jobId));
+        await tx
+          .update(crawlJobs)
+          .set({
+            status: "failed",
+            error: "Хэрэглэгч цуцалсан",
+            completedAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .where(and(eq(crawlJobs.id, input.jobId), eq(crawlJobs.tenantId, ctx.tenantId)));
+      });
 
       return { success: true };
     }),

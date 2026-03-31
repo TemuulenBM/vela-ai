@@ -55,3 +55,4 @@ export { FadeIn, SlideIn, AnimateList, CountUp, StaggerGroup, Reveal3D } from ".
 export { GlassShape } from "./glass-shape";
 export { Sparkline, type SparklineProps } from "./sparkline";
 export { ProgressBar, type ProgressBarProps } from "./progress-bar";
+export { ErrorIcon } from "./error-icon";

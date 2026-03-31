@@ -48,11 +48,13 @@ export const chatRouter = router({
               SELECT count(*)::int
               FROM ${messages}
               WHERE ${messages.conversationId} = ${conversations.id}
+                AND ${messages.tenantId} = ${conversations.tenantId}
             )`,
             lastMessage: sql<string | null>`(
               SELECT ${messages.content}
               FROM ${messages}
               WHERE ${messages.conversationId} = ${conversations.id}
+                AND ${messages.tenantId} = ${conversations.tenantId}
                 AND ${messages.role} IN ('user', 'assistant')
               ORDER BY ${messages.createdAt} DESC
               LIMIT 1
@@ -61,6 +63,7 @@ export const chatRouter = router({
               SELECT ${messages.createdAt}
               FROM ${messages}
               WHERE ${messages.conversationId} = ${conversations.id}
+                AND ${messages.tenantId} = ${conversations.tenantId}
               ORDER BY ${messages.createdAt} DESC
               LIMIT 1
             )`,
@@ -141,6 +144,7 @@ export const chatRouter = router({
             SELECT ${messages.content}
             FROM ${messages}
             WHERE ${messages.conversationId} = ${conversations.id}
+              AND ${messages.tenantId} = ${conversations.tenantId}
               AND ${messages.role} IN ('user', 'assistant')
             ORDER BY ${messages.createdAt} DESC
             LIMIT 1
@@ -149,6 +153,7 @@ export const chatRouter = router({
             SELECT ${messages.createdAt}
             FROM ${messages}
             WHERE ${messages.conversationId} = ${conversations.id}
+              AND ${messages.tenantId} = ${conversations.tenantId}
             ORDER BY ${messages.createdAt} DESC
             LIMIT 1
           )`,

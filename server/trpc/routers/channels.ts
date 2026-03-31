@@ -3,6 +3,7 @@ import { eq, and, desc, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../trpc";
 import { db } from "@/server/db/db";
+import { withTenantCtx } from "@/server/db/rls";
 import { channelConnections, crawlJobs } from "@/server/db/schema";
 import { encryptToken, decryptToken } from "@/server/lib/meta/crypto";
 import {
@@ -276,14 +277,21 @@ export const channelsRouter = router({
       });
 
       // Connection-д catalogId + lastSyncAt хадгалах
-      await db
-        .update(channelConnections)
-        .set({
-          catalogId: input.catalogId,
-          lastSyncAt: new Date(),
-          updatedAt: new Date(),
-        })
-        .where(eq(channelConnections.id, input.connectionId));
+      await withTenantCtx(ctx.tenantId, (tx) =>
+        tx
+          .update(channelConnections)
+          .set({
+            catalogId: input.catalogId,
+            lastSyncAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(channelConnections.id, input.connectionId),
+              eq(channelConnections.tenantId, ctx.tenantId),
+            ),
+          ),
+      );
 
       return result;
     }),
